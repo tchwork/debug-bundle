@@ -50,7 +50,7 @@ class Dumper
 
             if (false !== strpos($a, "\n"))
             {
-                if ('' !== trim($ref_check)) $ref_check = "\n" . $ref_check . "\n";
+                $ref_check = "\"\"\n" . $ref_check . "\"\"";
                 $ref_check = str_replace("\n", "\n" . str_repeat('  ', self::$depth+1), $ref_check);
             }
 
