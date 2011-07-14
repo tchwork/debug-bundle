@@ -13,18 +13,18 @@ class Dumper
     $objectStack = array();
 
 
-    static function dump($a)
+    static function dumpConst($a)
     {
-        return self::dumpVar($a);
+        return self::dump($a, false);
     }
 
-    static function dumpVar(&$a)
+    static function dump(&$a, $ref = true)
     {
         self::$token = "\x9D" . md5(mt_rand(), true);
         self::$refCount = 0;
         self::$depth = 0;
 
-        $d = self::refDump($a);
+        $d = self::refDump($a, $ref ? '1' : '');
 
         foreach (self::$arrayStack as &$a) unset($a[self::$token]);
 
@@ -34,7 +34,7 @@ class Dumper
         return $d;
     }
 
-    protected static function refDump(&$a, $ref_check = '1')
+    protected static function refDump(&$a, $ref = '1')
     {
         switch (true)
         {
@@ -46,22 +46,22 @@ class Dumper
         case NAN   === $a: return 'NAN';
 
         case is_string($a):
-            $ref_check = addcslashes($a, '"');
+            $ref = addcslashes($a, '"');
 
             if (false !== strpos($a, "\n"))
             {
-                $ref_check = "\"\"\n" . $ref_check . "\"\"";
-                $ref_check = str_replace("\n", "\n" . str_repeat('  ', self::$depth+1), $ref_check);
+                $ref = "\"\"\n" . $ref . "\"\"";
+                $ref = str_replace("\n", "\n" . str_repeat('  ', self::$depth+1), $ref);
             }
 
-            return '"' . $ref_check . '"' ;
+            return '"' . $ref . '"' ;
 
         case is_array($a):
-            if ($ref_check)
+            if ($ref)
             {
                 if (isset($a[self::$token])) return "[#{$a[self::$token]}]";
                 $a[self::$token] = ++self::$refCount;
-                $ref_check = '#' . $a[self::$token];
+                $ref = '#' . $a[self::$token];
                 self::$arrayStack[] =& $a;
             }
 
@@ -71,19 +71,19 @@ class Dumper
 
             foreach ($a as $k => &$v)
             {
-                if (self::$token === $k) continue;
-                else if (is_int($k) && 0 <= $k)
+                if (is_int($k) && 0 <= $k)
                 {
                     $b[] = ($k !== $i ? $k . ' => ' : '') . self::refDump($v);
                     $i = $k + 1;
                 }
                 else
                 {
-                    if ('' === $ref_check && isset($k[0]))
+                    if ('' === $ref)
                     {
-                        if ("\0" === $k[0]) $k = implode(':', explode("\0", substr($k, 1), 2));
+                        if (isset($k[0]) && "\0" === $k[0]) $k = implode(':', explode("\0", substr($k, 1), 2));
                         else if (false !== strpos($k, ':')) $k = ':' . $k;
                     }
+                    else if (self::$token === $k) continue;
 
                     $b[] = self::refDump($k) . ' => ' . self::refDump($v);
                 }
@@ -92,22 +92,22 @@ class Dumper
             $k = str_repeat('  ', self::$depth);
             --self::$depth;
 
-            return $ref_check . '[' . ($b ? "\n{$k}" . implode(",\n{$k}", $b) . "\n" . substr($k, 2) : '') . ']';
+            return $ref . '[' . ($b ? "\n{$k}" . implode(",\n{$k}", $b) . "\n" . substr($k, 2) : '') . ']';
 
         case is_object($a):
             $h = spl_object_hash($a);
             $c = get_class($a);
-            $ref_check = 'stdClass' !== $c ? $c : '';
+            $ref = 'stdClass' !== $c ? $c : '';
 
             if (isset(self::$objectStack[$h]))
             {
-                $ref_check .= '{#' . self::$objectStack[$h];
+                $ref .= '{#' . self::$objectStack[$h];
                 $h = '';
             }
             else
             {
                 self::$objectStack[$h] = ++self::$refCount;
-                $ref_check .= '#' . self::$objectStack[$h] . '{';
+                $ref .= '#' . self::$objectStack[$h] . '{';
 
                 if ($a instanceof \Closure && class_exists('ReflectionFunction', false))
                 {
@@ -130,15 +130,16 @@ class Dumper
                     if (false === $h['file'] = $r->getFileName()) unset($h['file']);
                     else $h['lines'] = $r->getStartLine() . '-' . $r->getEndLine();
 
-                    $r = $r->getStaticVariables();
-                    foreach ($r as $c => &$r) $h['use']['$' . $c] =& $r;
+                    if (!$r = $r->getStaticVariables()) unset($h['use']);
+                    else foreach ($r as $c => &$r) $h['use']['$' . $c] =& $r;
+
                 }
                 else $h = (array) $a;
 
                 $h = substr(self::refDump($h, ''), 1, -1);
             }
 
-            return $ref_check . $h . '}';
+            return $ref . $h . '}';
 
         case is_resource($a):
             return ((string) $a) . ' (' . get_resource_type($a) . ')';
