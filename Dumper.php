@@ -4,13 +4,19 @@ namespace Patchwork\PHP;
 
 class Dumper
 {
+    static
+
+    $maxLength = 100,
+    $maxDepth  = 10;
+
     protected static
 
     $token,
     $depth,
     $refCount,
     $arrayStack = array(),
-    $objectStack = array();
+    $objectStack = array(),
+    $objectCasters = array('closure' => array(__CLASS__, 'castClosure'));
 
 
     static function dumpConst($a)
@@ -21,18 +27,24 @@ class Dumper
     static function dump(&$a, $ref = true)
     {
         self::$token = "\x9D" . md5(mt_rand(), true);
-        self::$refCount = 0;
-        self::$depth = 0;
+        self::$refCount = self::$depth = 0;
+        ++self::$maxDepth; ++self::$maxLength;
 
-        $d = self::refDump($a, $ref ? '1' : '');
+        $d = self::refDump($a, $ref ? '1' : '') . "\n";
 
         foreach (self::$arrayStack as &$a) unset($a[self::$token]);
 
-        self::$arrayStack = array();
-        self::$objectStack = array();
+        --self::$maxDepth; --self::$maxLength;
+        self::$arrayStack = self::$objectStack = array();
 
         return $d;
     }
+
+    static function setObjectCaster($class, $callback)
+    {
+        self::$objectCasters[strtolower($class)] = $callback;
+    }
+
 
     protected static function refDump(&$a, $ref = '1')
     {
@@ -63,15 +75,23 @@ class Dumper
                 $a[self::$token] = ++self::$refCount;
                 $ref = '#' . $a[self::$token];
                 self::$arrayStack[] =& $a;
+                if (1 === count($a)) return $ref . '[]';
             }
+            else if (!$a) return $ref . '[]';
 
-            $i = 0;
+            if (++self::$depth === self::$maxDepth) return $ref . '[...]';
+
+            $i = $j = 0;
             $b = array();
-            ++self::$depth;
 
             foreach ($a as $k => &$v)
             {
-                if (is_int($k) && 0 <= $k)
+                if (++$j === self::$maxLength)
+                {
+                    $b[] = '...';
+                    break;
+                }
+                else if (is_int($k) && 0 <= $k)
                 {
                     $b[] = ($k !== $i ? $k . ' => ' : '') . self::refDump($v);
                     $i = $k + 1;
@@ -92,7 +112,7 @@ class Dumper
             $k = str_repeat('  ', self::$depth);
             --self::$depth;
 
-            return $ref . '[' . ($b ? "\n{$k}" . implode(",\n{$k}", $b) . "\n" . substr($k, 2) : '') . ']';
+            return $ref . "[\n{$k}" . implode(",\n{$k}", $b) . "\n" . substr($k, 2) . ']';
 
         case is_object($a):
             $h = spl_object_hash($a);
@@ -109,34 +129,22 @@ class Dumper
                 self::$objectStack[$h] = ++self::$refCount;
                 $ref .= '#' . self::$objectStack[$h] . '{';
 
-                if ($a instanceof \Closure && class_exists('ReflectionFunction', false))
+                $h = null;
+                $c = array($c => $c) + class_parents($a) + class_implements($a) + array('*' => '*');
+
+                foreach ($c as $c)
                 {
-                    $r = new \ReflectionFunction($a);
-                    $h = array();
-                    $r->returnsReference() && $h[] = '&';
-
-                    foreach ($r->getParameters() as $c)
+                    if (isset(self::$objectCasters[strtolower($c)]))
                     {
-                        $n = ($c->isPassedByReference() ? '&$' : '$') . $c->getName();
-
-                        if ($c->isDefaultValueAvailable()) $h[$n] = $c->getDefaultValue();
-                        else $h[] = $n;
+                        $c = self::$objectCasters[strtolower($c)];
+                        $h = false !== $c ? call_user_func($c, $a) : false;
+                        break;
                     }
-
-                    $h['use'] = array();
-
-                    if (method_exists($r, 'getClosureThis')) $h['this'] = $r->getClosureThis();
-
-                    if (false === $h['file'] = $r->getFileName()) unset($h['file']);
-                    else $h['lines'] = $r->getStartLine() . '-' . $r->getEndLine();
-
-                    if (!$r = $r->getStaticVariables()) unset($h['use']);
-                    else foreach ($r as $c => &$r) $h['use']['$' . $c] =& $r;
-
                 }
-                else $h = (array) $a;
 
-                $h = substr(self::refDump($h, ''), 1, -1);
+                if (null === $h) $h = (array) $a;
+                if (false === $h) $h = '...';
+                else $h = substr(self::refDump($h, ''), 1, -1);
             }
 
             return $ref . $h . '}';
@@ -147,5 +155,33 @@ class Dumper
         // float and integer
         default: return (string) $a;
         }
+    }
+
+    static function castClosure($c)
+    {
+        $h = array();
+        if (!class_exists('ReflectionFunction', false)) return $h;
+        $c = new \ReflectionFunction($c);
+        $c->returnsReference() && $h[] = '&';
+
+        foreach ($c->getParameters() as $p)
+        {
+            $n = ($p->isPassedByReference() ? '&$' : '$') . $p->getName();
+
+            if ($p->isDefaultValueAvailable()) $h[$n] = $p->getDefaultValue();
+            else $h[] = $n;
+        }
+
+        $h['use'] = array();
+
+        if (method_exists($c, 'getClosureThis')) $h['this'] = $c->getClosureThis();
+
+        if (false === $h['file'] = $c->getFileName()) unset($h['file']);
+        else $h['lines'] = $c->getStartLine() . '-' . $c->getEndLine();
+
+        if (!$c = $c->getStaticVariables()) unset($h['use']);
+        else foreach ($c as $p => &$c) $h['use']['$' . $p] =& $c;
+
+        return $h;
     }
 }
