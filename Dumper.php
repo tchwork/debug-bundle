@@ -97,22 +97,48 @@ class Dumper
         case is_object($a):
             $h = spl_object_hash($a);
             $c = get_class($a);
+            $ref_check = 'stdClass' !== $c ? $c : '';
 
             if (isset(self::$objectStack[$h]))
             {
-                $ref_check = '{#' . self::$objectStack[$h];
+                $ref_check .= '{#' . self::$objectStack[$h];
                 $h = '';
             }
             else
             {
                 self::$objectStack[$h] = ++self::$refCount;
-                $ref_check = '#' . self::$objectStack[$h] . '{';
+                $ref_check .= '#' . self::$objectStack[$h] . '{';
 
-                $h = (array) $a;
+                if ($a instanceof \Closure && class_exists('ReflectionFunction', false))
+                {
+                    $r = new \ReflectionFunction($a);
+                    $h = array();
+                    $r->returnsReference() && $h[] = '&';
+
+                    foreach ($r->getParameters() as $c)
+                    {
+                        $n = ($c->isPassedByReference() ? '&$' : '$') . $c->getName();
+
+                        if ($c->isDefaultValueAvailable()) $h[$n] = $c->getDefaultValue();
+                        else $h[] = $n;
+                    }
+
+                    $h['use'] = array();
+
+                    if (method_exists($r, 'getClosureThis')) $h['this'] = $r->getClosureThis();
+
+                    if (false === $h['file'] = $r->getFileName()) unset($h['file']);
+                    else $h['lines'] = $r->getStartLine() . '-' . $r->getEndLine();
+
+                    $r = $r->getStaticVariables();
+                    foreach ($r as $c => &$r) $h['use']['$' . $c] =& $r;
+                }
+                else $h = (array) $a;
+
                 $h = substr(self::refDump($h, ''), 1, -1);
             }
 
-            return ('stdClass' !== $c ? $c : '') . $ref_check . $h . '}';
+            return $ref_check . $h . '}';
 
         case is_resource($a):
             return ((string) $a) . ' (' . get_resource_type($a) . ')';
