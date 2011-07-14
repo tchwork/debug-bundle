@@ -150,7 +150,13 @@ class Dumper
             return $ref . $h . '}';
 
         case is_resource($a):
-            return ((string) $a) . ' (' . get_resource_type($a) . ')';
+            if ('stream' === $h = get_resource_type($a))
+            {
+                $h = stream_get_meta_data($a);
+                $h = 'stream' . self::refDump($h, '');
+            }
+
+            return "{$a} ({$h})";
 
         // float and integer
         default: return (string) $a;
