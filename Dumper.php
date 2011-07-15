@@ -81,7 +81,7 @@ class Dumper
                 self::$arrayStack[] =& $a;
                 if (1 === count($a)) return $ref . '[]';
             }
-            else if (!$a) return $ref . '[]';
+            else if (!$a) return '[]';
 
             if (++self::$depth === self::$maxDepth) return $ref . '[...]';
 
