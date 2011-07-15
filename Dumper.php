@@ -14,9 +14,13 @@ class Dumper
     $token,
     $depth,
     $refCount,
+    $resStack = array(),
     $arrayStack = array(),
     $objectStack = array(),
-    $objectCasters = array('closure' => array(__CLASS__, 'castClosure'));
+    $callbacks = array(
+        'o:closure' => array(__CLASS__, 'castClosure'),
+        'r:stream'  => 'stream_get_meta_data',
+    );
 
 
     static function dumpConst($a)
@@ -35,14 +39,14 @@ class Dumper
         foreach (self::$arrayStack as &$a) unset($a[self::$token]);
 
         --self::$maxDepth; --self::$maxLength;
-        self::$arrayStack = self::$objectStack = array();
+        self::$resStack = self::$arrayStack = self::$objectStack = array();
 
         return $d;
     }
 
-    static function setObjectCaster($class, $callback)
+    static function setCallback($type, $callback)
     {
-        self::$objectCasters[strtolower($class)] = $callback;
+        self::$callbacks[strtolower($type)] = $callback;
     }
 
 
@@ -134,9 +138,9 @@ class Dumper
 
                 foreach ($c as $c)
                 {
-                    if (isset(self::$objectCasters[strtolower($c)]))
+                    if (isset(self::$callbacks[$c = 'o:' . strtolower($c)]))
                     {
-                        $c = self::$objectCasters[strtolower($c)];
+                        $c = self::$callbacks[$c];
                         $h = false !== $c ? call_user_func($c, $a) : false;
                         break;
                     }
@@ -150,13 +154,19 @@ class Dumper
             return $ref . $h . '}';
 
         case is_resource($a):
-            if ('stream' === $h = get_resource_type($a))
+            $h = substr((string) $a, 13);
+            $ref = get_resource_type($a);
+            if (isset(self::$resStack[$h])) return "Resource #{$h} ({$ref})";
+            self::$resStack[$h] = 1;
+            $h .= ' (' . $ref;
+
+            if (isset(self::$callbacks[$ref = 'r:' . strtolower($ref)]))
             {
-                $h = stream_get_meta_data($a);
-                $h = 'stream' . self::refDump($h, '');
+                $ref = call_user_func(self::$callbacks[$ref], $a);
+                $h .= self::refDump($ref, '');
             }
 
-            return "{$a} ({$h})";
+            return "Resource #{$h})";
 
         // float and integer
         default: return (string) $a;
