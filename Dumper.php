@@ -127,7 +127,7 @@ class Dumper
             $k = str_repeat('  ', self::$depth);
             --self::$depth;
 
-            return $ref . "[\n{$k}" . implode(",\n{$k}", $b) . "\n" . substr($k, 2) . ']';
+            return $ref . "[\n{$k}" . implode("\n{$k}", $b) . "\n" . substr($k, 2) . ']';
 
         case is_object($a):
             $h = spl_object_hash($a);
@@ -142,7 +142,7 @@ class Dumper
             else
             {
                 self::$objectStack[$h] = ++self::$refCount;
-                $ref .= '#' . self::$objectStack[$h] . '{';
+                $ref .= ('' !== $ref ? ' ' : '') . '#' . self::$objectStack[$h] . '{';
 
                 $h = null;
                 $c = array($c => $c) + class_parents($a) + class_implements($a) + array('*' => '*');
