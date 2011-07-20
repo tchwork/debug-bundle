@@ -94,7 +94,11 @@ class Dumper
             }
             else if (!$a) return '[]';
 
-            if (++self::$depth === self::$maxDepth) return $ref . '[...]';
+            if (++self::$depth === self::$maxDepth)
+            {
+                --self::$depth;
+                return $ref . '[...]';
+            }
 
             $i = $j = 0;
             $b = array();
