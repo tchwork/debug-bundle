@@ -29,7 +29,7 @@ class Dumper
     $resStack = array(),
     $arrayStack = array(),
     $objectStack = array(),
-    $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__proto__'),
+    $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__proto__' => 1),
     $callbacks = array(
         'line'      => array(__CLASS__, 'echoLine'),
         'o:closure' => array(__CLASS__, 'castClosure'),
