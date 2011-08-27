@@ -17,8 +17,9 @@ class Dumper
 {
     public
 
-    $maxData   = 1000,
-    $maxLength = 100,
+    $arrayDecycle = true,
+    $maxData   = 100000,
+    $maxLength = 1000,
     $maxDepth  = 10;
 
     protected
@@ -26,10 +27,11 @@ class Dumper
     $token,
     $depth,
     $refId,
+    $cycles = array(),
     $resStack = array(),
     $arrayStack = array(),
     $objectStack = array(),
-    $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__proto__' => 1),
+    $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__proto__' => 1, '__cyclicRefs' => 1),
     $callbacks = array(
         'line'      => array(__CLASS__, 'echoLine'),
         'o:closure' => array(__CLASS__, 'castClosure'),
@@ -59,7 +61,7 @@ class Dumper
 
         foreach ($this->arrayStack as &$a) unset($a[$this->token]);
 
-        $this->resStack = $this->arrayStack = $this->objectStack = array();
+        $this->cycles = $this->resStack = $this->arrayStack = $this->objectStack = array();
     }
 
     function setCallback($type, $callback)
@@ -121,16 +123,23 @@ class Dumper
     {
         if (empty($a)) return $line .= '[]';
 
-        if (empty($a[$this->token]))
+        if ($this->arrayDecycle)
         {
-            $new = true;
-            $a[$this->token] = ++$this->refId;
-            $this->arrayStack[] =& $a;
-        }
+            if (empty($a[$this->token]))
+            {
+                $new = true;
+                $a[$this->token] = ++$this->refId;
+                $this->arrayStack[] =& $a;
+            }
+            else $this->cycles[$a[$this->token]] = 1;
 
-        $line .= '{"_":"array:' . $a[$this->token] . ':len:' . (count($a) - 1);
-        if (isset($new)) $this->dumpMap($line, $a, false);
-        else $line .= ':"}';
+            $line .= '{"_":"array:' . $a[$this->token] . ':len:' . (count($a) - 1);
+
+            if (empty($new)) return $line .= ':"}';
+        }
+        else $line .= '{"_":"array::len:' . count($a);
+
+        $this->dumpMap($line, $a, false);
     }
 
     protected function dumpObject(&$line, $a)
@@ -143,6 +152,7 @@ class Dumper
             $new = true;
             $this->objectStack[$h] = ++$this->refId;
         }
+        else $this->cycles[$this->objectStack[$h]] = 1;
 
         $line .= '{"_":"' . str_replace('\\', '\\\\', $c) . ':' . $this->objectStack[$h];
 
@@ -171,21 +181,26 @@ class Dumper
 
     protected function dumpResource(&$line, $a)
     {
-        $ref = substr((string) $a, 13);
+        $ref =& $this->resStack[(int) substr((string) $a, 13)];
         $type = get_resource_type($a);
-        $line .= "{\"_\":\"resource:{$type}:{$ref}";
 
-        if (empty($this->resStack[$ref]))
+        if (empty($ref))
         {
-            $this->resStack[$ref] = 1;
+            $ref = ++$this->refId;
+            $line .= "{\"_\":\"resource:{$type}:{$ref}";
 
             if (isset($this->callbacks[$type = 'r:' . strtolower($type)]))
             {
                 $type = call_user_func($this->callbacks[$type], $a);
                 $this->dumpMap($line, $type, false);
             }
+            else $line .= '"}';
         }
-        else $line .= ':"}';
+        else
+        {
+            $this->cycles[$ref] = 1;
+            $line .= "{\"_\":\"resource:{$type}:{$ref}:\"}";
+        }
     }
 
     protected function dumpMap(&$line, array &$a, $is_object)
@@ -223,9 +238,9 @@ class Dumper
         }
 
         if ($len -= $i) $line .= '"__maxLength": ' . $len;
+        if (0 === --$this->depth && $this->cycles) $line .= ', "__cyclicRefs": "#' . implode('#', array_keys($this->cycles)) . '#"';
         call_user_func($this->callbacks['line'], $line);
         $line = substr($pre, 0, -2) . '}';
-        --$this->depth;
     }
 
     static function castClosure($c)
@@ -244,8 +259,6 @@ class Dumper
         }
 
         $a['use'] = array();
-
-        if (method_exists($c, 'getClosureThis')) $a['this'] = $c->getClosureThis();
 
         if (false === $a['file'] = $c->getFileName()) unset($a['file']);
         else $a['lines'] = $c->getStartLine() . '-' . $c->getEndLine();
