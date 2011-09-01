@@ -27,27 +27,32 @@ class Dumper
     $token,
     $depth,
     $refId,
+    $lines = array(),
     $cycles = array(),
     $resStack = array(),
     $arrayStack = array(),
     $objectStack = array(),
     $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__proto__' => 1, '__cyclicRefs' => 1),
     $callbacks = array(
-        'line'      => array(__CLASS__, 'echoLine'),
+        'line' => array(__CLASS__, 'echoLine'),
         'o:closure' => array(__CLASS__, 'castClosure'),
-        'r:stream'  => 'stream_get_meta_data',
+        'r:stream' => 'stream_get_meta_data',
+        'r:process' => 'proc_get_status',
     );
 
-
-    static function dumpConst($a)
-    {
-        self::dump($a, false);
-    }
 
     static function dump(&$a)
     {
         $d = new self;
         $d->dumpLines($a);
+    }
+
+    static function get(&$a)
+    {
+        $d = new self;
+        $d->setCallback('line', array($d, 'pushLine'));
+        $d->dumpLines($a);
+        return implode("\n", $d->lines);
     }
 
     function dumpLines(&$a)
@@ -57,7 +62,7 @@ class Dumper
 
         $line = '';
         $this->refDump($line, $a);
-        '' !== $line && call_user_func($this->callbacks['line'], $line);
+        '' !== $line && call_user_func($this->callbacks['line'], $line, $this->depth);
 
         foreach ($this->arrayStack as &$a) unset($a[$this->token]);
 
@@ -216,14 +221,13 @@ class Dumper
 
         ++$this->depth;
         $i = 0;
-        $pre = str_repeat('  ', $this->depth);
 
         foreach ($a as $k => &$v)
         {
             if ($this->token === $k) continue;
 
-            call_user_func($this->callbacks['line'], $line . ',');
-            $line = $pre;
+            call_user_func($this->callbacks['line'], $line . ',', $this->depth);
+            $line = '';
 
             if ($i === $this->maxLength && 0 < $this->maxLength) break;
 
@@ -239,8 +243,8 @@ class Dumper
 
         if ($len -= $i) $line .= '"__maxLength": ' . $len;
         if (0 === --$this->depth && $this->cycles) $line .= ', "__cyclicRefs": "#' . implode('#', array_keys($this->cycles)) . '#"';
-        call_user_func($this->callbacks['line'], $line);
-        $line = substr($pre, 0, -2) . '}';
+        call_user_func($this->callbacks['line'], $line, $this->depth);
+        $line = str_repeat('  ', $this->depth) . '}';
     }
 
     static function castClosure($c)
@@ -269,8 +273,13 @@ class Dumper
         return $a;
     }
 
-    static function echoLine($line)
+    static function echoLine($line, $depth)
     {
-        echo $line, "\n";
+        echo str_repeat('  ', $depth), $line, "\n";
+    }
+
+    protected function pushLine($line, $depth)
+    {
+        $this->lines[] = str_repeat('  ', $depth) . $line;
     }
 }
