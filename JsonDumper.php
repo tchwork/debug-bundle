@@ -13,7 +13,7 @@
 
 namespace Patchwork\PHP;
 
-class Dumper
+class JsonDumper
 {
     public
 
