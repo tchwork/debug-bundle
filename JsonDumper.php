@@ -219,7 +219,6 @@ class JsonDumper
         if ($this->depth === $this->maxDepth && 0 < $this->maxDepth)
             return $line .= ', "__maxDepth": ' . $len . '}';
 
-        ++$this->depth;
         $i = 0;
 
         foreach ($a as $k => &$v)
@@ -227,6 +226,7 @@ class JsonDumper
             if ($this->token === $k) continue;
 
             call_user_func($this->callbacks['line'], $line . ',', $this->depth);
+            if (0 === $i) ++$this->depth;
             $line = '';
 
             if ($i === $this->maxLength && 0 < $this->maxLength) break;
@@ -241,10 +241,11 @@ class JsonDumper
             ++$i;
         }
 
-        if ($len -= $i) $line .= '"__maxLength": ' . $len;
-        if (0 === --$this->depth && $this->cycles) $line .= ', "__cyclicRefs": "#' . implode('#', array_keys($this->cycles)) . '#"';
+        if ($i && $len -= $i) $line .= '"__maxLength": ' . $len;
+        if (1 === $this->depth && $this->cycles) $line .= ', "__cyclicRefs": "#' . implode('#', array_keys($this->cycles)) . '#"';
         call_user_func($this->callbacks['line'], $line, $this->depth);
-        $line = str_repeat('  ', $this->depth) . '}';
+        $i && --$this->depth;
+        $line = '}';
     }
 
     static function castClosure($c)
