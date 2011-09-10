@@ -28,6 +28,7 @@ class JsonDumper
     $token,
     $depth,
     $counter = 0,
+    $recursiveArray = 0,
     $lines = array(),
     $refPool = array(),
     $valPool = array(),
@@ -152,10 +153,24 @@ class JsonDumper
         $len = count($a);
 
         if ($this->dumpHardRefs) $r = 1;
-        else foreach ($a as $v) if (is_array($v))
+        else
         {
-            $r = 1;
-            break;
+/**/        if (PHP_VERSION_ID >= 50206)
+/**/        {
+                if (0 === $this->recursiveArray)
+                {
+                    // Detect recursive arrays by catching recursive count warnings
+                    $this->recursiveArray = 1;
+                    set_error_handler(array($this, 'catchRecursionWarning'));
+                    count($a, COUNT_RECURSIVE);
+                    restore_error_handler();
+                }
+                if (2 === $this->recursiveArray) $r = 1;
+/**/        }
+/**/        else
+/**/        {
+                $r = 1;
+/**/        }
         }
 
         if (isset($r))
@@ -203,7 +218,13 @@ class JsonDumper
 
         if (null === $h) $h = (array) $a;
         if (false === $h) $line .= ', "__maxDepth": -1}';
-        else $this->dumpHash($line, $h, true);
+        else
+        {
+            $c = $this->recursiveArray;
+            $this->recursiveArray = 0;
+            $this->dumpHash($line, $h, true);
+            $this->recursiveArray = $c;
+        }
     }
 
     protected function dumpResource(&$line, $a)
@@ -284,6 +305,11 @@ class JsonDumper
         call_user_func($this->callbacks['line'], $line, $this->depth);
         $i && --$this->depth;
         $line = '}';
+    }
+
+    function catchRecursionWarning()
+    {
+        $this->recursiveArray = 2;
     }
 
     static function castClosure($c)
