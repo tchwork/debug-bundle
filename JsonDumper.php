@@ -25,11 +25,13 @@ class JsonDumper
     protected
 
     $tag,
+    $token,
     $depth,
     $counter = 0,
     $lines = array(),
     $refPool = array(),
     $valPool = array(),
+    $arrPool = array(),
     $objPool = array(),
     $resPool = array(),
     $softPool = array(),
@@ -42,7 +44,7 @@ class JsonDumper
     );
 
 
-    static function dump($a)
+    static function dump(&$a)
     {
         $d = new self;
         $d->dumpLines($a);
@@ -56,15 +58,17 @@ class JsonDumper
         return implode("\n", $d->lines);
     }
 
-    function dumpLines($a)
+    function dumpLines(&$a)
     {
-        $this->tag = array(-1 => (object) array(), array());
+        $this->token = ~mt_rand();
+        $this->tag = array($this->token => (object) array());
         $this->counter = $this->depth = 0;
 
         $line = '';
         $this->dumpRef($line, $a);
         '' !== $line && call_user_func($this->callbacks['line'], $line, $this->depth);
-        $this->refPool = $this->valPool = $this->resPool = $this->objPool = array();
+        foreach ($this->arrPool as &$a) unset($a[$this->token]);
+        $this->refPool = $this->valPool = $this->arrPool = $this->resPool = $this->objPool = array();
     }
 
     function setCallback($type, $callback)
@@ -74,39 +78,37 @@ class JsonDumper
 
     protected function dumpRef(&$line, &$a)
     {
-        $v = $a;
         ++$this->counter;
 
-        if (is_array($a) && isset($a[-1]) && $a[-1] === $this->tag[-1])
+        if (is_array($a)) $this->dumpArray($line, $a);
+        else
         {
-            $a[0][] = $this->counter;
-            return $line .= '"R`"';
+            $v = $a;
+
+            if ($this->dumpHardRefs && $this->depth)
+            {
+                $this->refPool[$this->counter] =& $a;
+                $this->valPool[$this->counter] = $a;
+                $a = $this->tag;
+            }
+
+            switch (true)
+            {
+            case null === $v: $line .= 'null'; break;
+            case true === $v: $line .= 'true'; break;
+            case false === $v: $line .= 'false'; break;
+            case NAN === $v: $line .= '"f`NAN"'; break;
+            case INF === $v: $line .= '"f`INF"'; break;
+            case -INF === $v: $line .= '"f`-INF"'; break;
+
+            case is_string($v): $this->dumpString($line, $v); break;
+            case is_object($v): $this->dumpObject($line, $v); break;
+            case is_resource($v): $this->dumpResource($line, $v); break;
+
+            // float and integer
+            default: $line .= (string) $v; break;
+            }
         }
-        else if ($this->dumpHardRefs && $this->depth)
-        {
-            $this->refPool[$this->counter] =& $a;
-            $this->valPool[$this->counter] = $a;
-            $a = $this->tag;
-        }
-
-        switch (true)
-        {
-        case null === $v: $line .= 'null'; break;
-        case true === $v: $line .= 'true'; break;
-        case false === $v: $line .= 'false'; break;
-        case NAN === $v: $line .= '"f`NAN"'; break;
-        case INF === $v: $line .= '"f`INF"'; break;
-        case -INF === $v: $line .= '"f`-INF"'; break;
-
-        case is_array($v): $this->dumpArray($line, $v); break;
-        case is_string($v): $this->dumpString($line, $v); break;
-        case is_object($v): $this->dumpObject($line, $v); break;
-        case is_resource($v): $this->dumpResource($line, $v); break;
-
-        // float and integer
-        default: $line .= (string) $v; break;
-        }
-
     }
 
     protected function dumpString(&$line, $a)
@@ -138,14 +140,36 @@ class JsonDumper
         ) . '"';
     }
 
-    protected function dumpArray(&$line, $a)
+    protected function dumpArray(&$line, &$a)
     {
-        if (empty($a)) $line .= '[]';
-        else
+        if (isset($a[$this->token]))
         {
-            $line .= '{"_":"' . $this->counter . ':array:' . count($a) . '"';
+            if ($a[$this->token] === $this->tag[$this->token]) $a[] = $this->counter;
+            else $this->softPool[$this->counter] = $a[$this->token];
+            return $line .= '"R`"';
+        }
+
+        $len = count($a);
+
+        if ($this->dumpHardRefs) $r = 1;
+        else foreach ($a as $v) if (is_array($v))
+        {
+            $r = 1;
+            break;
+        }
+
+        if (isset($r))
+        {
+            $a[$this->token] = $this->counter;
+            $this->arrPool[] =& $a;
+        }
+
+        if ($len)
+        {
+            $line .= '{"_":"' . $this->counter . ':array:' . $len . '"';
             $this->dumpHash($line, $a, false);
         }
+        else $line .= '[]';
     }
 
     protected function dumpObject(&$line, $a)
@@ -205,10 +229,12 @@ class JsonDumper
         else $line .= '}';
     }
 
-    protected function dumpHash(&$line, $a, $is_object)
+    protected function dumpHash(&$line, &$a, $is_object)
     {
         if (!$a) return $line .= '}';
-        else $len = count($a);
+
+        $len = count($a);
+        isset($a[$this->token]) && --$len;
 
         if ($this->depth === $this->maxDepth && 0 < $this->maxDepth)
             return $line .= ', "__maxDepth": ' . $len . '}';
@@ -217,6 +243,8 @@ class JsonDumper
 
         foreach ($a as $k => &$v)
         {
+            if ($k === $this->token) continue;
+
             call_user_func($this->callbacks['line'], $line . ',', $this->depth);
             if (0 === $i) ++$this->depth;
             $line = '';
@@ -237,17 +265,20 @@ class JsonDumper
 
         if (1 === $this->depth)
         {
-            $a = array();
+            $refs = array();
 
             foreach ($this->refPool as $k => &$v)
             {
-                $v[0] && $a[$k] = $v[0];
+                $len = $v;
                 $v = $this->valPool[$k];
+                isset($len[0]) && $refs[$k] = array_slice($len, 1);
             }
 
-            foreach ($this->softPool as $len => $k) $a[$k][] = $len;
+            foreach ($this->softPool as $len => $k) $refs[$k][] = $len;
 
-            $a && $line .= ', "__refs": ' . json_encode($a);
+            $line .= ', "__refs": {';
+            foreach ($refs as $k => &$v) $v = '"' . $k . '":[' . implode(',', $v) . ']';
+            $line .= implode(',', $refs) . '}';
         }
 
         call_user_func($this->callbacks['line'], $line, $this->depth);
