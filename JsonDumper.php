@@ -67,9 +67,9 @@ class JsonDumper extends Dumper
         case null === $a: $this->line .= 'null'; break;
         case true === $a: $this->line .= 'true'; break;
         case false === $a: $this->line .= 'false'; break;
-        case NAN === $a: $this->line .= '"f`NAN"'; break;
         case INF === $a: $this->line .= '"f`INF"'; break;
         case -INF === $a: $this->line .= '"f`-INF"'; break;
+        case is_nan($a): $this->line .= '"f`NAN"'; break;
         default: $this->line .= (string) $a; break;
         }
     }
