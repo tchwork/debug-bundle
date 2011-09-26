@@ -55,9 +55,9 @@ class JsonDumper extends Dumper
         $this->line = '';
     }
 
-    protected function dumpRef($is_soft)
+    protected function dumpRef($soft_ref, $ref_value)
     {
-        $this->line .= $is_soft ? '"r`"' : '"R`"';
+        $this->line .= $soft_ref ? '"r`' . $soft_ref . '"' : '"R`"';
     }
 
     protected function dumpScalar($a)

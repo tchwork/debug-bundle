@@ -33,7 +33,7 @@ abstract class Walker
     $arrayPool = array();
 
 
-    abstract protected function dumpRef($is_soft);
+    abstract protected function dumpRef($soft_ref, $ref_value);
     abstract protected function dumpScalar($val);
     abstract protected function dumpString($str, $is_key);
     abstract protected function dumpObject($obj);
@@ -71,12 +71,8 @@ abstract class Walker
         case is_object($v): $h = pack('H*', spl_object_hash($v)); // no break;
         case is_resource($v): isset($h) || $h = (int) substr((string) $v, 13);
 
-            if (isset($this->objPool[$h]))
-            {
-                $this->linkPool[$this->counter] = $this->objPool[$h];
-                return $this->dumpRef($v);
-            }
-            else $this->objPool[$h] = $this->counter;
+            if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
+            else return $this->dumpRef($this->linkPool[$this->counter] = $this->objPool[$h], $v);
 
             $t = $this->arrayType;
             $this->arrayType = 0;
@@ -92,7 +88,7 @@ abstract class Walker
         {
             if ($a[$this->token] === $this->tag[$this->token]) $a[] = $this->counter;
             else $this->linkPool[$this->counter] = $a[$this->token];
-            return $this->dumpRef(false);
+            return $this->dumpRef(false, null);
         }
 
         if ($this->detectHardRefs) $token = $this->token;
