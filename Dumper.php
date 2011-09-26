@@ -75,7 +75,7 @@ abstract class Dumper extends Walker
 
         if ($len && $this->depth === $this->maxDepth && 0 < $this->maxDepth)
         {
-            $this->dumpString('__maxDepth', ': ');
+            $this->dumpString('__maxDepth', true);
             $this->dumpScalar($len);
             $len = 0;
         }
@@ -93,7 +93,7 @@ abstract class Dumper extends Walker
             {
                 if ($len -= $i)
                 {
-                    $this->dumpString('__maxLength', ': ');
+                    $this->dumpString('__maxLength', true);
                     $this->dumpScalar($len);
                 }
 
@@ -102,7 +102,7 @@ abstract class Dumper extends Walker
             else if (isset($type, $k[0]) && "\0" === $k[0]) $k = implode(':', explode("\0", substr($k, 1), 2));
             else if (isset($this->reserved[$k]) || false !== strpos($k, ':')) $k = ':' . $k;
 
-            $this->dumpString($k, ': ');
+            $this->dumpString($k, true);
             $this->walkRef($a);
             ++$i;
         }

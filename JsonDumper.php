@@ -74,9 +74,14 @@ class JsonDumper extends Dumper
         }
     }
 
-    protected function dumpString($a, $is_key = '')
+    protected function dumpString($a, $is_key)
     {
-        if ($is_key) $this->dumpLine(-($this->hashCounter === $this->counter), $this->line .= ',');
+        if ($is_key)
+        {
+            $this->dumpLine(-($this->hashCounter === $this->counter), $this->line .= ',');
+            $is_key = ': ';
+        }
+        else $is_key = '';
 
         if ('' === $a) return $this->line .= '""' . $is_key;
 
@@ -112,7 +117,7 @@ class JsonDumper extends Dumper
         {
             $this->line .= '{"_":';
             $this->hashCounter = $this->counter;
-            $this->dumpString($this->counter . ':' . $type);
+            $this->dumpString($this->counter . ':' . $type, false);
 
             if ($type = parent::walkHash($type, $a))
             {

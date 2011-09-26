@@ -35,7 +35,7 @@ abstract class Walker
 
     abstract protected function dumpRef($is_soft);
     abstract protected function dumpScalar($val);
-    abstract protected function dumpString($str, $is_key = '');
+    abstract protected function dumpString($str, $is_key);
     abstract protected function dumpObject($obj);
     abstract protected function dumpResource($res);
 
@@ -66,7 +66,7 @@ abstract class Walker
         switch (true)
         {
         default: $this->dumpScalar($v); break;
-        case is_string($v): $this->dumpString($v); break;
+        case is_string($v): $this->dumpString($v, false); break;
 
         case is_object($v): $h = pack('H*', spl_object_hash($v)); // no break;
         case is_resource($v): isset($h) || $h = (int) substr((string) $v, 13);
@@ -134,7 +134,7 @@ abstract class Walker
         foreach ($a as $k => &$a)
         {
             if ($k === $this->token) continue;
-            $this->dumpString($k, ': ');
+            $this->dumpString($k, true);
             $this->walkRef($a);
         }
 
