@@ -5,12 +5,7 @@ Utiliser JSON pour représenter de façon fidèle une variable PHP
 Introduction
 ============
 
-* `print_r()`
-* `var_dump()`
-* `var_export()`
-* `json_encode()`
-* `serialize()`
-
+`print_r()`, `var_dump()`, `var_export()`, `json_encode()`,  `serialize()`.
 Toutes ces fonctions permettent de représenter une variable PHP sous forme de chaîne de caractères,
 chacune permettant d'obtenir une représentation adaptée au besoin du moment :
 
@@ -18,7 +13,7 @@ chacune permettant d'obtenir une représentation adaptée au besoin du moment :
 * être lisible par un programme,
 * être fidèle dans le cas des variables complexes (récursives, objets ou ressources par ex.).
 
-Pour les besoins d'un debuggage, la représentation préférée doit évidement être lisible par un humain et rester la plus fidèle possible.
+Pour les besoins d'un débogage, la représentation préférée doit évidement être lisible par un humain et rester la plus fidèle possible.
 
 Pendant le développement, il est courant en PHP d'afficher les erreurs et les variables intermédiaires au beau milieu de la page sur laquelle on travaille. Pourtant, cette pratique n'est pas recommandée, car elle peut casser le flux de sortie de l'application. Dans le cas des pages HTML simples, c'est généralement acceptable, mais dès que les pages deviennent plus complexes, que PHP est utilisé pour générer d'autres contenus (Javascript, PDF, ZIP, etc.), cette méthode n'est plus adaptée.
 
@@ -27,13 +22,13 @@ Si l'humain est toujours le lecteur final, un système de debug performant a don
 Recherche de la représentation idéale
 =====================================
 
-La représentation intermédiaire d'une variable à debugger doit :
+La représentation intermédiaire d'une variable à déboger doit :
 
-* être aussi fidèle que possible pour permettre un debuggage efficace,
+* être aussi fidèle que possible pour permettre un débogage efficace,
 * être interopérable, en particulier avec le programme en charge de la représenter visuellement,
-* si possible rester lisible par un humain, pour faciliter le debuggage du système debuggage lui-même.
+* si possible rester lisible par un humain, pour faciliter le débogage du système débogage lui-même.
 
-Par ailleurs, le code qui génère cette représentation intermédiaire doit lui-même être aussi neutre que possible du point de vue de l'application dans laquelle il s'exécute :
+Par ailleurs, le code qui génère cette représentation intermédiaire doit être aussi neutre que possible du point de vue de l'application dans laquelle il s'exécute :
 
 * il doit pouvoir être opérant quel que soit le contexte d'exécution et la variable à représenter,
 * il doit être rapide et avoir une emprunte mémoire minimale.
@@ -49,12 +44,12 @@ Sur le seul critère d'être opérant quel que soit le contexte d'exécution, se
 * `var_dump` ne fonctionne pas dans le contexte d'un gestionnaire de flux de sortie,
 * `serialize` ne fonctionne pas avec certains objets natifs ou autres qui génèrent une exception lorsqu'ils sont sérialisés.
 
-Sur le plan de l'intéropérabilité :
+Sur le plan de l'interopérabilité :
 
 * les sorties de `print_r` et `var_dump` sont prévues pour être lues par un humain, pas particulièrement par un programme,
 * `var_export` génère une représentation sous forme de code PHP, ce qui reste lisible pour un humain mais n'est facilement lu que par PHP lui-même,
 * la sortie de `serialize` est prévue pour être lue par la fonction `unserialize` native à PHP, quasiment illisible pour un humain,
-* `json_encode` génère une sortie intéropérable, éventuellement lisible par un humain, même si les caractères encodés gênent la lecture.
+* `json_encode` génère une sortie interopérable, éventuellement lisible par un humain, même si les caractères encodés gênent la lecture.
 
 Sur les autres critères :
 
@@ -65,12 +60,12 @@ Sur les autres critères :
 
 Ainsi, aucune fonction native ne combine les qualités fondamentales recherchées.
 
-Présentation de la représentation choisie
------------------------------------------
+Utiliser JSON pour représenter une variable arbitraire
+------------------------------------------------------
 
 Pour le critère de lisibilité et surtout d'interopérabilité, le format JSON semble le plus adapté.
 
-Sans autre convention, JSON ne suffit pas car il ne permet pas de représenter nativement toute l'étendue des valeurs que peut prendre une variable PHP :
+Sans autre convention, JSON ne suffit pas nativement à représenter toute l'étendue des valeurs que peut prendre une variable PHP :
 
 * chaînes de caractères binaires,
 * références internes, récursives ou non,
@@ -81,3 +76,47 @@ Sans autre convention, JSON ne suffit pas car il ne permet pas de représenter n
 Pour contrôler la performance et l'emprunte mémoire, il est souhaitable également de pouvoir restreindre l'exhaustivité de la représentation, en limitant par exemple les tableaux à leurs premiers éléments, les chaînes de caractères à leurs premiers octets et les structures arborescentes à un niveau de profondeur maximal.
 
 La représentation décrite dans la suite établit des conventions qui permettent d'utiliser JSON pour décrire ces différents cas.
+
+Description JSON détaillée
+==========================
+
+Chaînes de caractères
+---------------------
+
+JSON ne permet de représenter que des chaînes de caractères UTF-8. Une chaîne de caractère PHP arbitraire est préparée ainsi :
+
+Si la chaîne ``$str`` considérée n'est pas valide en UTF-8, alors elle est transformée en UTF-8 grâce à ``"b`" . utf8_encode($str)``.
+Toute chaîne de caractère déjà valide en UTF-8 est conservée identique à elle-même, sauf si elle contient un backtick, auquel cas elle est préfixée par `` u` ``.
+Si une limite de longueur est applicable, la chaîne de caractères est tronquée selon cette limite.
+La longueur initiale décomptée en nombre de caractères UTF-8 est alors préfixée à la chaîne.
+Le prefix `` u` `` est dans ce cas obligatoire même si la chaîne d'origine ne contient pas de backtick.
+Ensuite la chaîne de caractère résultante est encodée en JSON natif.
+
+Par exemple : `"\xA9"` devient ``"b`©"``, ``"a`b"`` devient ``"u`a`b"`` et `"©"` reste sous cette forme. La chaîne UTF-8 de longueur quatre ``"aébà"`` tronquée à deux caractères est représentée sous la forme ``"4u`aé"``. La chaîne de caractère vide est toujours représentée ainsi `""`.
+
+Cette convention de représentation laisse de la place pour d'autres préfix que `` b` `` ou `` u` ``. Ainsi les préfix `` r` ``, `` R` ``, `` f` `` sont utilisés pour représenter des valeurs spéciales (cf. suite).
+
+Nombres et autres scalaires
+---------------------------
+
+Les nombres entiers, flottants ou les valeurs `true`, `false` et `null` sont représentés nativement en JSON.
+
+Les constantes spéciales `NAN`, `INF` et `-INF` sont représentées par des chaînes de caractères JSON, respectivement : ``"f`NAN"``, ``"f`INF"`` et ``"f`-INF"``.
+
+Dans le contexte des clefs d'une structure associative cependant, JSON n'accèpte que des chaînes de caractères.
+Les clefs numériques des tableaux PHP sont donc représentées sous la forme de chaînes de caractères JSON.
+Comme PHP ne fait aucune distinction entre des clefs nommées `"123"` ou `123`, ceci n'a aucun impact sur la fidélité de la représentation.
+
+Structures associatives
+-----------------------
+
+Les tableaux vides sont représentés sous la forme JSON ``[]``.
+
+Les autres structures associatives exploitent la syntaxe objet JSON, selon les règles suivantes :
+
+* les clefs `"_"`, `"__maxLength"`, `"__maxDepth"`, `"__refs"` et `"__proto__"` sont réservées,
+* les clefs correspondant à des propriétés protégées d'objets sont préfixées par `*:`
+* les clefs correspondant à des propriétés privées d'objets sont préfixées par le nom de la classe qui leur est associée suivie d'un `:`,
+* les autres clefs sont préfixées par un `:` lorsqu'elles entrent en collision avec une clef réservée ou qu'elles contiennent un `:`.
+
+TO BE CONTINUED...
