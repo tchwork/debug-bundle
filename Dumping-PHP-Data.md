@@ -83,16 +83,16 @@ Description JSON détaillée
 Chaînes de caractères
 ---------------------
 
-JSON ne permet de représenter que des chaînes de caractères UTF-8. Une chaîne de caractère PHP arbitraire est préparée ainsi :
+JSON ne permet de représenter que des chaînes de caractères UTF-8. Une chaîne de caractères PHP arbitraire est préparée ainsi :
 
 Si la chaîne ``$str`` considérée n'est pas valide en UTF-8, alors elle est transformée en UTF-8 grâce à ``"b`" . utf8_encode($str)``.
-Toute chaîne de caractère déjà valide en UTF-8 est conservée identique à elle-même, sauf si elle contient un backtick, auquel cas elle est préfixée par `` u` ``.
+Toute chaîne de caractères déjà valide en UTF-8 est conservée identique à elle-même, sauf si elle contient un backtick, auquel cas elle est préfixée par `` u` ``.
 Si une limite de longueur est applicable, la chaîne de caractères est tronquée selon cette limite.
 La longueur initiale décomptée en nombre de caractères UTF-8 est alors préfixée à la chaîne.
 Le prefix `` u` `` est dans ce cas obligatoire même si la chaîne d'origine ne contient pas de backtick.
-Ensuite la chaîne de caractère résultante est encodée en JSON natif.
+Ensuite la chaîne de caractères résultante est encodée en JSON natif.
 
-Par exemple : `"\xA9"` devient ``"b`©"``, ``"a`b"`` devient ``"u`a`b"`` et `"©"` reste sous cette forme. La chaîne UTF-8 de longueur quatre ``"aébà"`` tronquée à deux caractères est représentée sous la forme ``"4u`aé"``. La chaîne de caractère vide est toujours représentée ainsi `""`.
+Par exemple : `"\xA9"` devient ``"b`©"``, ``"a`b"`` devient ``"u`a`b"`` et `"©"` reste sous cette forme. La chaîne UTF-8 de longueur quatre ``"aébà"`` tronquée à deux caractères est représentée sous la forme ``"4u`aé"``. La chaîne de caractères vide est toujours représentée ainsi `""`.
 
 Cette convention de représentation laisse de la place pour d'autres préfix que `` b` `` ou `` u` ``. Ainsi les préfix `` r` ``, `` R` ``, `` f` `` sont utilisés pour représenter des valeurs spéciales (cf. suite).
 
@@ -107,16 +107,50 @@ Dans le contexte des clefs d'une structure associative cependant, JSON n'accèpt
 Les clefs numériques des tableaux PHP sont donc représentées sous la forme de chaînes de caractères JSON.
 Comme PHP ne fait aucune distinction entre des clefs nommées `"123"` ou `123`, ceci n'a aucun impact sur la fidélité de la représentation.
 
+Ressources
+----------
+
+Chaque ressource a un type retourné par `get_resource_type()`. Certains types de ressources possèdent des propriétés internes qu'il est possible de consulter avec des fonctions adéquates. Par exemple, il est possible d'obtenir plus d'informations sur les ressources de type `stream` en appelant la fonction `stream_get_meta_data()`, de même avec `proc_get_status()` pour les ressources de type `process`. Les ressources possèdent également un numéro de référence interne auquel on accède en transformant une ressource en chaîne de caractères. Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où `2` est ce numéro de référence interne.
+
+Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont passées par référence, possèdent un type, et des propriétés.
+
+Pour cette raison, le type `resource` est représenté de façon similaire aux objets PHP, selon la convention décrite dans la suite.
+
 Structures associatives
 -----------------------
 
 Les tableaux vides sont représentés sous la forme JSON ``[]``.
 
-Les autres structures associatives exploitent la syntaxe objet JSON, selon les règles suivantes :
+Les tableaux, objets et ressources sont représentés par la syntaxe objet de JSON, selon les règles suivantes :
 
 * les clefs `"_"`, `"__maxLength"`, `"__maxDepth"`, `"__refs"` et `"__proto__"` sont réservées,
 * les clefs correspondant à des propriétés protégées d'objets sont préfixées par `*:`
 * les clefs correspondant à des propriétés privées d'objets sont préfixées par le nom de la classe qui leur est associée suivie d'un `:`,
 * les autres clefs sont préfixées par un `:` lorsqu'elles entrent en collision avec une clef réservée ou qu'elles contiennent un `:`.
 
+Les clefs réservées ont une sémantique définie ainsi :
+
+* `"_"` contient le numéro d'ordre dans la structure associative générale représentée, suivie d'un `:`, puis :
+  * pour les objets du nom de leur classe,
+  * pour les tableaux du mot-clef `array` suivi d'un `:` puis de leur longueur retournée par `count($tableau)`,
+  * pour les ressources du mot-clef `resource` suivi d'un `:` puis de leur type retourné par `get_resource_type($resource)`.
+* `"__maxLength"` contient le nombre d'éléments tronqués lorsqu'une limite de nombre est applicable,
+* `"__maxDepth"` est présent lorsque la structure locale est à un niveau de profondeur supérieur ou égal à la limite applicable, et contient le nombre d'éléments tronqués ; lorsque cette clef est présente, l'objet JSON local ne contient ainsi que deux clefs : `"_"` et `"__maxDepth"`,
+* `"__refs"` contient une table des références internes de la structure générale représentée (cf. suite), elle ne devrait donc être présente qu'au niveau de profondeur le plus bas,
+* `"__proto__"` n'a pas de sémantique particulière mais est réservé pour assurer la compatibilité du JSON produit avec certains navigateurs.
+
+Références internes
+-------------------
+
 TO BE CONTINUED...
+
+Exemples
+========
+
+TO BE CONTINUED...
+
+Implémentation
+==============
+
+See [Patchwork's JsonDumper](https://gist.github.com/1069975#file_json_dumper.php).
+
