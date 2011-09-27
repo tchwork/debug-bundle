@@ -48,7 +48,11 @@ abstract class Dumper extends Walker
             if (isset($this->callbacks[$p = 'o:' . strtolower($p)]))
             {
                 if (!$p = $this->callbacks[$p]) $a = array();
-                else $a = call_user_func($p, $obj);
+                else
+                {
+                    try {$a = call_user_func($p, $obj);}
+                    catch (\Exception $e) {unset($a); continue;}
+                }
                 break;
             }
         }
@@ -63,7 +67,11 @@ abstract class Dumper extends Walker
         $h = get_resource_type($res);
 
         if (empty($this->callbacks['r:' . $h])) $res = array();
-        else $res = call_user_func($this->callbacks['r:' . $h], $res);
+        else
+        {
+            try {$res = call_user_func($this->callbacks['r:' . $h], $res);}
+            catch (\Exception $e) {$res = array();}
+        }
 
         $this->walkHash("resource:{$h}", $res);
     }
