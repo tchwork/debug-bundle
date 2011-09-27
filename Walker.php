@@ -42,8 +42,9 @@ abstract class Walker
 
     function walk(&$a)
     {
-        $this->token = ~mt_rand();
-        $this->tag = array($this->token => (object) array());
+        $this->tag = (object) array();
+        $this->token = md5(mt_rand() . spl_object_hash($this->tag), true);
+        $this->tag = array($this->token => $this->tag);
         $this->counter = $this->depth = 0;
         $this->walkRef($a);
     }
