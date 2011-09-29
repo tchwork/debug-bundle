@@ -55,9 +55,12 @@ class JsonDumper extends Dumper
         $this->line = '';
     }
 
-    protected function dumpRef($soft_ref, $ref_value)
+    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
     {
-        $this->line .= $soft_ref ? '"r`' . $soft_ref . '"' : '"R`"';
+        if (parent::dumpRef($is_soft, $ref_counter, $ref_value)) return;
+
+        $is_soft = $is_soft ? 'r' : 'R';
+        $this->line .= "\"{$is_soft}`{$this->counter}:{$ref_counter}\"";
     }
 
     protected function dumpScalar($a)
@@ -78,7 +81,8 @@ class JsonDumper extends Dumper
     {
         if ($is_key)
         {
-            $this->dumpLine(-($this->hashCounter === $this->counter), $this->line .= ',');
+            $is_key = $this->hashCounter === $this->counter && !isset($this->depthLimited[$this->counter]);
+            $this->dumpLine(-$is_key, $this->line .= ',');
             $is_key = ': ';
         }
         else $is_key = '';
@@ -126,7 +130,8 @@ class JsonDumper extends Dumper
                 $this->line .= implode(',', $type) . '}';
             }
 
-            if ($this->counter !== $this->hashCounter) $this->dumpLine(1);
+            if ($this->counter !== $this->hashCounter || isset($this->depthLimited[$this->counter]))
+                $this->dumpLine(1);
 
             $this->line .= '}';
         }

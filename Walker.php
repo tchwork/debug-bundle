@@ -33,7 +33,7 @@ abstract class Walker
     $arrayPool = array();
 
 
-    abstract protected function dumpRef($soft_ref, $ref_value);
+    abstract protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null);
     abstract protected function dumpScalar($val);
     abstract protected function dumpString($str, $is_key);
     abstract protected function dumpObject($obj);
@@ -73,7 +73,7 @@ abstract class Walker
         case is_resource($v): isset($h) || $h = (int) substr((string) $v, 13);
 
             if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
-            else return $this->dumpRef($this->linkPool[$this->counter] = $this->objPool[$h], $v);
+            else return $this->dumpRef(true, $this->linkPool[$this->counter] = $this->objPool[$h], $v);
 
             $t = $this->arrayType;
             $this->arrayType = 0;
@@ -87,9 +87,21 @@ abstract class Walker
     {
         if (isset($a[$this->token]))
         {
-            if ($a[$this->token] === $this->tag[$this->token]) $a[] = $this->counter;
-            else $this->linkPool[$this->counter] = $a[$this->token];
-            return $this->dumpRef(false, null);
+            if ($this->tag[$this->token] === $c = $a[$this->token])
+            {
+                if (empty($a['ref_counter']))
+                {
+                    $a[] = $this->counter;
+                    return $this->dumpRef(false);
+                }
+
+                $c = $a['ref_counter'];
+                unset($a);
+                $a = $this->valPool[$c];
+            }
+
+            $this->linkPool[-$this->counter] = $c;
+            return $this->dumpRef(false, $c, $a);
         }
 
         if ($this->detectHardRefs) $token = $this->token;
@@ -147,7 +159,11 @@ abstract class Walker
         {
             $len = $v;
             $v = $this->valPool[$k];
-            isset($len[0]) && $refs[$k] = array_slice($len, 1);
+            if (isset($len[0]))
+            {
+                unset($len['ref_counter']);
+                $refs[$k] = array_slice($len, 1);
+            }
         }
 
         $this->refPool = $this->valPool = $this->objPool = array();

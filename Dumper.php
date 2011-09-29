@@ -22,6 +22,7 @@ abstract class Dumper extends Walker
 
     protected
 
+    $depthLimited = array(),
     $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
         'o:closure' => array(__CLASS__, 'castClosure'),
@@ -76,6 +77,27 @@ abstract class Dumper extends Walker
         $this->walkHash("resource:{$h}", $res);
     }
 
+    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
+    {
+        if (null !== $ref_value && isset($this->depthLimited[$ref_counter]) && $this->depth !== $this->maxDepth)
+        {
+            unset($this->depthLimited[$ref_counter]);
+
+            switch (true)
+            {
+            case is_resource($ref_value): $this->dumpResource($ref_value); return true;
+            case is_object($ref_value): $this->dumpObject($ref_value); return true;
+            case is_array($ref_value):
+                $ref_counter = count($ref_value);
+                isset($ref_value[$this->token]) && --$ref_counter;
+                $this->walkHash('array:' . $ref_counter, $ref_value);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function walkHash($type, &$a)
     {
         $len = count($a);
@@ -83,6 +105,11 @@ abstract class Dumper extends Walker
 
         if ($len && $this->depth === $this->maxDepth && 0 < $this->maxDepth)
         {
+            $this->depthLimited[$this->counter] = 1;
+
+            if (isset($this->refPool[$this->counter]))
+                $this->refPool[$this->counter]['ref_counter'] = $this->counter;
+
             $this->dumpString('__maxDepth', true);
             $this->dumpScalar($len);
             $len = 0;
