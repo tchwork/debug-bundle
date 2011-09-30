@@ -100,7 +100,7 @@ Elles permettent également de créer des alias internes à des positions qui ne
 créent pas nécessairement de récursivité, comme par exemple dans ce code où
 $b[0] et $b[1] sont liés par référence : `$a = 123; $b = array(&$a, &$a);`
 
-Les références utilisées pour la transmission des objects/ressources permettent
+Les références utilisées pour la transmission des objets/ressources permettent
 de mettre le même objet/ressource en plusieurs endroits d'une structure
 arborescente.
 
@@ -383,6 +383,27 @@ Exemples
                              "timed_out": false,
                              "blocked": true,
                              "eof": false
+                           }
+
+   $a = array();           []                     // tableau vide pour commencer, puis
+
+   $a[0] =& $a;            { "_": "1:array:1",    // en position 1, tableau de longueur 1
+                             "0": "R`2:1",        // dont la clef "0" en position 2 est un alias de la position 1.
+                             "__refs": {"1":[-2]} // position 1 alias de la position 2
+                           }
+
+   $a = (object) array();
+   $a->b =& $a;
+   $a->c = $a;
+   $a = array($a, 123);
+   $a[2] =& $a[1];         { "_": "1:array:3",    // encore plus de fun avec les references :)
+                             "0": { "_": "2:stdClass",
+                               "b": "R`3:1",
+                               "c": "r`4:2"
+                             },
+                             "1": 123,
+                             "2": "R`6:",
+                             "__refs": {"5":[-6],"1":[-3],"2":[4]}
                            }
 
 ```
