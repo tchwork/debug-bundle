@@ -30,6 +30,84 @@ Si l'humain est toujours le lecteur final, un système de debug performant a
 donc besoin d'une représentation intermédiaire pour transmettre l'état d'une
 variable au système qui l'affichera dans une fenêtre dédiée.
 
+Les types de variables PHP
+==========================
+
+Les variables en PHP peuvent prendre de nombreux types différents, qu'il faut
+tous prendre en compte pour représenter avec fidélité n'importe quelle variable.
+
+Scalaires
+---------
+
+Les scalaires rassemblent les nombres entiers, les nombres à virgule flottante,
+les constantes spéciales `true`, `false`, `null`, `NAN`, `INF` et `-INF`, et
+bien sûr les chaînes de caractères.
+
+Les chaînes de caractères en PHP sont de simples séquences d'octets qui peuvent
+contenir des informations éventuellement binaires, même si UTF-8 est très
+souvent utilisé de nos jours pour représenter du texte.
+
+Tableaux
+--------
+
+Les tableaux PHP sont en réalité des tables de hachages ordonnées. Ils accèptent
+n'importe quelle chaîne de caractères ou entier numérique en guise de clef. Dans
+le cas des clef, PHP ne fait pas la différence entre un entier numérique et sa
+représentation en base 10 sous forme de chaîne de caractères.
+
+Objets
+------
+
+Les objets sont basés sur la même structure de table de hashage ordonnée que les
+tableaux à une exception près : le nom d'une propriété d'objet ne peut pas
+commencer par le caractère NUL ("\x00"). Chaque objet possède également une
+classe principale ainsi que des propriétés associées à une visibilité publique,
+protégée ou privée.
+
+Contrairement aux scalaires et tableaux, les objets sont passés "par référence".
+[Voir le manuel PHP pour plus de précisions](http://php.net/language.oop5.references.php).
+
+Ressources
+----------
+
+Les ressource en PHP ont un type retourné par `get_resource_type()`. Certains
+types possèdent des propriétés internes qu'il est possible de consulter
+avec des fonctions adéquates. Par exemple, il est possible d'obtenir plus
+d'informations sur les ressources de type `stream` en appelant la fonction
+`stream_get_meta_data()`, de même avec `proc_get_status()` pour les ressources
+de type `process`. Les ressources possèdent également un identifiant interne
+auquel on accède en transformant une ressource en chaîne de caractères.
+Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
+`2` est l'identifiant interne de la ressource renvoyée par `opendir()`.
+
+Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont
+passées "par référence", possèdent un type, et des propriétés.
+
+Références
+----------
+
+PHP possède deux mécanismes de gestion de références :
+
+* l'un permet de lier deux variables entre elles pour les rendre alias l'une de
+  l'autre, comme dans `$b =& $a;` par exemple,
+* l'autre est utilisé pour la transmission des objets et des ressources.
+
+Les références par alias permettent de créer des structures récursives infinies,
+comme dans exemple dans `$a = array(); $a[0] =& $a;`.
+
+Elles permettent également de créer des alias internes à des positions qui ne
+créent pas nécessairement de récursivité, comme par exemple dans ce code où
+$b[0] et $b[1] sont liés par référence : `$a = 123; $b = array(&$a, &$a);`
+
+Les références utilisées pour la transmission des objects/ressources permettent
+de mettre le même objet/ressource en plusieurs endroits d'une structure
+arborescente.
+
+La représentation recherchée se doit de refléter la présence de ces deux types
+de références, sans quoi il serait impossible de représenter une structure
+récursive sans tomber dans le piège de la récursivité infinie, d'autre part
+cela permet l'examen des liens internes d'une structure arborescente.
+
 Recherche de la représentation idéale
 =====================================
 
@@ -93,20 +171,14 @@ Sur les autres critères :
 
 Ainsi, aucune fonction native ne combine les qualités fondamentales recherchées.
 
-Utiliser JSON pour représenter une variable arbitraire
-------------------------------------------------------
+Convention JSON détaillée
+=========================
 
 Pour le critère de lisibilité et surtout d'interopérabilité, le format JSON
 semble le plus adapté.
 
 Sans autre convention, JSON ne suffit pas nativement à représenter toute
-l'étendue des valeurs que peut prendre une variable PHP :
-
-* chaînes de caractères binaires,
-* références internes, récursives ou non,
-* constantes spéciales (NAN et +/-INF),
-* type des objets, ainsi que visibilité des propriétés,
-* type et méta-données pour les ressources.
+l'étendue des valeurs que peut prendre une variable PHP.
 
 Pour contrôler la performance et l'emprunte mémoire, il est souhaitable
 également de pouvoir restreindre l'exhaustivité de la représentation, en
@@ -115,10 +187,7 @@ caractères à leurs premiers octets et les structures arborescentes à un nivea
 de profondeur maximal.
 
 La représentation décrite dans la suite établit des conventions qui permettent
-d'utiliser JSON pour décrire ces différents cas.
-
-Description JSON détaillée
-==========================
+d'utiliser JSON pour décrire toutes ces possibilités.
 
 Chaînes de caractères
 ---------------------
@@ -155,33 +224,14 @@ Les constantes spéciales `NAN`, `INF` et `-INF` sont représentées par des
 chaînes de caractères JSON, respectivement :
 ``"f`NAN"``, ``"f`INF"`` et ``"f`-INF"``.
 
-Dans le contexte des clefs d'une structure associative cependant, JSON
-n'accèpte que des chaînes de caractères. Les clefs numériques des tableaux PHP
-sont donc représentées sous la forme de chaînes de caractères JSON. Comme PHP
-ne fait aucune distinction entre des clefs nommées `"123"` ou `123`, ceci n'a
-aucun impact sur la fidélité de la représentation.
+Dans le contexte des clefs d'une structure associative cependant, JSON n'accèpte
+que des chaînes de caractères. Les clefs numériques des tableaux PHP sont donc
+représentées sous la forme de chaînes de caractères JSON. Comme PHP ne fait
+aucune distinction entre les clefs numériques représentées sous forme de chaîne
+de caractères ou d'entier, ceci n'impacte pas la fidélité de la représentation.
 
-Ressources
-----------
-
-Chaque ressource a un type retourné par `get_resource_type()`. Certains types
-de ressources possèdent des propriétés internes qu'il est possible de consulter
-avec des fonctions adéquates. Par exemple, il est possible d'obtenir plus
-d'informations sur les ressources de type `stream` en appelant la fonction
-`stream_get_meta_data()`, de même avec `proc_get_status()` pour les ressources
-de type `process`. Les ressources possèdent également un numéro de référence
-interne auquel on accède en transformant une ressource en chaîne de caractères.
-Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
-`2` est ce numéro de référence interne.
-
-Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont
-passées par référence, possèdent un type, et des propriétés.
-
-Pour cette raison, le type `resource` est représenté de façon similaire aux
-objets PHP, selon la convention décrite dans la suite.
-
-Structures associatives
------------------------
+Structures associatives : tableaux, objets et ressources
+--------------------------------------------------------
 
 Les tableaux vides sont représentés sous la forme JSON ``[]``.
 
@@ -220,6 +270,11 @@ Les clefs réservées ont une sémantique définie ainsi :
 
 Références internes
 -------------------
+
+À l'intérieur des structures arborescentes, on identifie chaque position au
+moyen d'un numéro correspondant à son ordre de découverte dans la structure,
+selon un algorithme de parcours en profondeur tenant compte des éventuelles
+références internes.
 
 TO BE CONTINUED...
 
