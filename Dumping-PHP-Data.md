@@ -207,8 +207,8 @@ si la chaîne d'origine ne contient pas de backtick. Ensuite la chaîne de
 caractères résultante est encodée en JSON natif.
 
 Par exemple : `"\xA9"` devient ``"b`©"``, ``"a`b"`` devient ``"u`a`b"`` et
-`"©"` reste sous cette forme. La chaîne UTF-8 de longueur quatre ``"aébà"``
-tronquée à deux caractères est représentée sous la forme ``"4u`aé"``. La chaîne
+`"©"` reste sous cette forme. La chaîne UTF-8 de longueur quatre ``"déjà"``
+tronquée à deux caractères est représentée sous la forme ``"4u`dé"``. La chaîne
 de caractères vide est toujours représentée ainsi `""`.
 
 Cette convention de représentation laisse de la place pour d'autres préfix
@@ -334,7 +334,58 @@ l'exploitation ou la lecture du résultat brut par un programme ou un humain.
 Exemples
 ========
 
-TO BE CONTINUED...
+```php
+<?php
+
+// Variable PHP         // Représentation JSON
+
+   123                     123
+   1e-9                    1.0E-9
+   true                    true
+   false                   false
+   null                    null
+   NAN                     "f`NAN"
+   INF                     "f`INF"
+   -INF                    "f`-INF"
+   "utf8: déjà vu \x01"    "utf8: déjà vu \u0001"
+   "bin: \xA9"             "b`bin: ©"
+   "avec`backtick"         "u`avec`backtick"
+   "utf8 cut: déjà vu"     "17u`utf8 cut" // 17 est la longueur UTF-8 de la chaîne initiale
+   "bin cut: \xA9"         "10b`bin cut"  // 10 est la longueur de la chaîne initiale
+
+   array(                  { "_": "1:array:3", // "1" est le numéro d'ordre du tableau, "3" sa longeur
+     -1,                     "0": -1,
+     'a',                    "1": "a",
+      "\xA9" => 3,           "b`©": 3
+   )                       }
+
+   (object) array(         { "_": "1:stdClass", // objet de classe stdClass
+      'key' => 1,            "key": 1,
+      'colon:' => 2,         ":colon:": 2,      // nom de propriété contenant un ":"
+      '_' => 3,              ":_": 3            // nom de propriété réservé
+   )                       }
+
+   new foo                 { "_": "1:foo",      // classe foo déclarant 3 propriétés
+                             "pub": "pub",      // ->pub est publique
+                             "*:prot": "prot",  // ->prot protégée
+                             "foo:priv": "priv" // et ->priv privée
+                           }
+
+   new déjà                {"_":"1:déjà"}   // classe déjà déclarée dans un fichier encodé en UTF-8
+   new déjà                {"_":"b`1:déjà"} // classe déjà déclarée dans un fichier encodé en ISO-8859-1
+
+   opendir('.')            { "_": "1:resource:stream",    // opendir() retourne une variable de type "stream"
+                             "wrapper_type": "plainfile", // que stream_get_meta_data() peut détailler
+                             "stream_type": "dir",
+                             "mode": "r",
+                             "unread_bytes": 0,
+                             "seekable": true,
+                             "timed_out": false,
+                             "blocked": true,
+                             "eof": false
+                           }
+
+```
 
 Implémentation
 ==============
