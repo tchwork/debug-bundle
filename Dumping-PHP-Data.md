@@ -64,8 +64,9 @@ commencer par le caractère NUL ("\x00"). Chaque objet possède également une
 classe principale ainsi que des propriétés associées à une visibilité publique,
 protégée ou privée.
 
-Contrairement aux scalaires et tableaux, les objets sont passés "par référence".
-[Voir le manuel PHP pour plus de précisions](http://php.net/language.oop5.references.php).
+Contrairement aux scalaires et tableaux, les objets sont passés "par référence"
+(Voir le [manuel PHP](http://php.net/language.oop5.references.php) pour plus de
+précisions).
 
 Ressources
 ----------
@@ -76,7 +77,7 @@ avec des fonctions adéquates. Par exemple, il est possible d'obtenir plus
 d'informations sur les ressources de type `stream` en appelant la fonction
 `stream_get_meta_data()`, de même avec `proc_get_status()` pour les ressources
 de type `process`. Les ressources possèdent également un identifiant interne
-auquel on accède en transformant une ressource en chaîne de caractères.
+auquel on accède en les transformant en chaîne de caractères.
 Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
 `2` est l'identifiant interne de la ressource renvoyée par `opendir()`.
 
@@ -93,7 +94,7 @@ PHP possède deux mécanismes de gestion de références :
 * l'autre est utilisé pour la transmission des objets et des ressources.
 
 Les références par alias permettent de créer des structures récursives infinies,
-comme dans exemple dans `$a = array(); $a[0] =& $a;`.
+comme par exemple dans `$a = array(); $a[0] =& $a;`.
 
 Elles permettent également de créer des alias internes à des positions qui ne
 créent pas nécessairement de récursivité, comme par exemple dans ce code où
@@ -276,7 +277,59 @@ moyen d'un numéro correspondant à son ordre de découverte dans la structure,
 selon un algorithme de parcours en profondeur tenant compte des éventuelles
 références internes.
 
-TO BE CONTINUED...
+Lorsqu'une référence à une position précédente est recontrée, il est possible
+d'éviter de représenter une seconde fois la valeur de la position courante en
+insérant la chaîne ``"R`"`` si les deux positions sont alias l'une de l'autre,
+et ``"r`"`` si les deux contiennent un même objet ou une même ressource. La
+substitution par ``"R`"`` n'est obligatoire que dans le cas des références
+récursives.
+
+`` R` `` et `` r` `` peuvent optionnellement être concaténés au numéro de la
+position courante suivie d'un `:`, puis à nouveau optionnellement du numéro de
+la position précédente cible associée à la position courante.
+
+Lorsque des références internes sont ainsi collectées, une clef spéciale
+`"__refs"` doit être insérée en dernière position au niveau d'arborescence le
+plus bas de la structure générale, et doit contenir un objet JSON dont les clefs
+sont les numéros des positions cibles et les valeurs des tableaux JSON contenant
+à leur tour autant de numéros que de positions associées à chaque position
+cible. Pour différencier les références de type alias des références de type
+objet/ressource, des numéros d'ordre négatifs sont utilisés pour les alias.
+
+Auto-synchronisation et autres considérations
+---------------------------------------------
+
+Le fait d'insérer le numéro d'ordre local au début de la clef spéciale `"_"` des
+structures associative n'est, sur le plan de la fidélité de la représentation,
+pas strictement nécessaire. Il pourrait suffire en effet de compter à nouveau
+les positions lors de l'inteprétation du JSON pour retrouver ce nombre.
+
+Cependant, ces numéros rendent possible l'interprétation d'une sous-arborescence
+du JSON sans perdre les références : ils servent alors à initialiser le compteur
+de positions et donc à conserver la synchronisation avec les numéros présents
+dans la clef spéciale `"__refs"`.
+
+Les numéros de position dans les marqueurs de références ``"R`"`` ou ``"r`"``
+sont facultatifs pour donner aux implémentations respectant cette description la
+liberté de ne pas chercher à tout prix à les renseigner. Il est en effet
+possible que dans certains cas par exemple il soit plus rapide et/ou moins
+coûteux en terme d'occupation mémoire de faire ainsi.
+
+À l'inverse, la présence de ces numéros lorsqu'elle est possible peut faciliter
+la lecture du JSON, même si la clef spéciale `"__refs"` est le seul endroit qui
+contienne toute l'information disponible.
+
+Les marqueurs de références ``"R`"`` ou ``"r`"`` sont également facultatifs car
+il est parfois plus intéressant de les remplacer par la valeur locale. C'est
+par exemple le cas lorsque la première occurence d'un objet a été amputée en
+raison de l'application d'une limite de profondeur : si le même objet se
+retrouve plus loin dans la structure, il est possible de le représenter de
+façon plus complète s'il se trouve cette fois-ci à un niveau inférieur.
+
+Dernière considération : le JSON décrit ici est conçu à la fois pour permettre
+la plus grande fidélité possible à n'importe quelle variable PHP, mais également
+pour rester aussi proche que possible d'un JSON natif, facilitant d'autant
+l'exploitation ou la lecture du résultat brut par un programme ou un humain.
 
 Exemples
 ========
