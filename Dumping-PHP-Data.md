@@ -375,7 +375,7 @@ Exemples
    new déjà                {"_":"b`1:déjà"} // classe déjà déclarée dans un fichier encodé en ISO-8859-1
 
    opendir('.')            { "_": "1:resource:stream",    // opendir() retourne une variable de type "stream"
-                             "wrapper_type": "plainfile", // que stream_get_meta_data() peut détailler
+                             "wrapper_type": "plainfile", // que stream_get_meta_data() peut servir à détailler
                              "stream_type": "dir",
                              "mode": "r",
                              "unread_bytes": 0,
@@ -393,17 +393,45 @@ Exemples
                            }
 
    $a = (object) array();
-   $a->b =& $a;
-   $a->c = $a;
+   $a->foo =& $a;
+   $a->bar = $a;
    $a = array($a, 123);
-   $a[2] =& $a[1];         { "_": "1:array:3",    // encore plus de fun avec les references :)
-                             "0": { "_": "2:stdClass",
-                               "b": "R`3:1",
-                               "c": "r`4:2"
+   $a[2] =& $a[1];
+   $a;                     { "_": "1:array:3",    // encore plus de fun avec les references :)
+                             "0": {"_":"2:stdClass",
+                               "foo": "R`3:1",
+                               "bar": "r`4:2"
                              },
                              "1": 123,
-                             "2": "R`6:",
+                             "2": "R`6:", // La ligne suivante indique que cette position 6 est alias de la 5
                              "__refs": {"5":[-6],"1":[-3],"2":[4]}
+                           }
+
+   $b = (object) array();
+   $a = array($b, $b);
+   $a[2] =& $a[1];
+   $a;                     { "_": "1:array:3",
+                             "0": {"_":"2:stdClass"},
+                             "1": "r`3:2",
+                             "2": "R`4:",
+                             "__refs": {"3":[-4],"2":[3]}
+                           }
+
+   $b = (object) array(
+     'foo' => 'bar'
+   );
+   $a = array(             { "_": "1:array:5",
+     array($b),              "0": {"_":"2:array:1",
+     1,                        "0": {"_":"3:stdClass",
+     $b,                         "__maxDepth": 1 // Objet tronqué par la limite de profondeur
+     3,                        }
+     4                       },
+   );                        "1": 1,
+                             "2": {"_":"5:stdClass",
+                               "foo": "bar"      // Même objet, mais à un niveau de profondeur inférieur
+                             },
+                             "__maxLength": 2,   // Limite de longueur appliquée au tableau général, 2 éléments tronqués
+                             "__refs": {"3":[5]} // Indication signifiant que les objets en positions 3 et 5 sont les mêmes
                            }
 
 ```
