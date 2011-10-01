@@ -91,7 +91,7 @@ abstract class Walker
             {
                 if (empty($a['ref_counter']))
                 {
-                    $a[] = $this->counter;
+                    $a[] = -$this->counter;
                     return $this->dumpRef(false);
                 }
 

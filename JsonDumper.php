@@ -23,7 +23,7 @@ class JsonDumper extends Dumper
 
     $line = '',
     $lines = array(),
-    $hashCounter;
+    $lastHash = 0;
 
 
     static function dump(&$a)
@@ -81,7 +81,7 @@ class JsonDumper extends Dumper
     {
         if ($is_key)
         {
-            $is_key = $this->hashCounter === $this->counter && !isset($this->depthLimited[$this->counter]);
+            $is_key = $this->lastHash === $this->counter && !isset($this->depthLimited[$this->counter]);
             $this->dumpLine(-$is_key, $this->line .= ',');
             $is_key = ': ';
         }
@@ -119,20 +119,25 @@ class JsonDumper extends Dumper
         if ('array:0' === $type) $this->line .= '[]';
         else
         {
+            $h = $this->lastHash;
             $this->line .= '{"_":';
-            $this->hashCounter = $this->counter;
+            $this->lastHash = $this->counter;
             $this->dumpString($this->counter . ':' . $type, false);
 
             if ($type = parent::walkHash($type, $a))
             {
-                $this->line .= ', "__refs": {';
+                ++$this->depth;
+                $this->dumpString('__refs', true);
+                $this->line .= '{';
                 foreach ($type as $k => &$a) $a = '"' . $k . '":[' . implode(',', $a) . ']';
                 $this->line .= implode(',', $type) . '}';
+                --$this->depth;
             }
 
-            if ($this->counter !== $this->hashCounter || isset($this->depthLimited[$this->counter]))
+            if ($this->counter !== $this->lastHash || isset($this->depthLimited[$this->counter]))
                 $this->dumpLine(1);
 
+            $this->lastHash = $h;
             $this->line .= '}';
         }
     }
