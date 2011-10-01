@@ -2,6 +2,12 @@
 Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
+Nicolas Grekas - nicolas.grekas, gmail.com
+
+Dernière mise à jour : 1er octobre 2011  
+Première publication : 1er octobre 2011  
+URL : https://github.com/nicolas-grekas/Patchwork-Doc/blob/dump-php-data/Dumping-PHP-Data.md
+
 Introduction
 ============
 
@@ -65,7 +71,7 @@ classe principale ainsi que des propriétés associées à une visibilité publi
 protégée ou privée.
 
 Contrairement aux scalaires et tableaux, les objets sont passés "par référence"
-(Voir le [manuel PHP](http://php.net/language.oop5.references.php) pour plus de
+(voir le [manuel PHP](http://php.net/language.oop5.references.php) pour plus de
 précisions).
 
 Ressources
@@ -162,7 +168,7 @@ Sur les autres critères :
   `serialize` les gère parfaitement, `var_export` génère une erreur fatale,
   `var_dump` et `print_r` affichent un laconique `*RECURSION*`, `json_encode`
   émet un warning et place un `null` à la place de chaque référence récursive,
-* pour les variables de type `resources`, seule `var_dump` et `print_r` donnent
+* pour les variables de type `resource`, seule `var_dump` et `print_r` donnent
   une information utile,
 * `json_encode` ne gère que les chaînes de caractères encodées en UTF-8, là où
   les chaînes PHP n'ont pas d'encodage particulier et peuvent même être
@@ -188,7 +194,11 @@ caractères à leurs premiers octets et les structures arborescentes à un nivea
 de profondeur maximal.
 
 La représentation décrite dans la suite établit des conventions qui permettent
-d'utiliser JSON pour décrire toutes ces possibilités.
+d'utiliser JSON pour décrire toutes ces possibilités. Elle est conçue à la fois
+pour permettre la plus grande fidélité possible à n'importe quelle variable PHP,
+mais également pour rester aussi proche que possible d'un JSON natif, facilitant
+d'autant l'exploitation ou la lecture du résultat brut par un programme ou un
+humain.
 
 Chaînes de caractères
 ---------------------
@@ -235,8 +245,9 @@ Structures associatives : tableaux, objets et ressources
 --------------------------------------------------------
 
 Les tableaux vides sont représentés sous la forme JSON ``[]``.
+C'est le seul cas qui utilise la syntaxe des tableaux JSON natifs.
 
-Les tableaux, objets et ressources sont représentés par la syntaxe objet de
+Les tableaux PHP, objets et ressources sont représentés par la syntaxe objet de
 JSON, selon les règles suivantes :
 
 * les clefs `"_"`, `"__maxLength"`, `"__maxDepth"`, `"__refs"` et `"__proto__"`
@@ -326,11 +337,6 @@ raison de l'application d'une limite de profondeur : si le même objet se
 retrouve plus loin dans la structure, il est possible de le représenter de
 façon plus complète s'il se trouve cette fois-ci à un niveau inférieur.
 
-Dernière considération : le JSON décrit ici est conçu à la fois pour permettre
-la plus grande fidélité possible à n'importe quelle variable PHP, mais également
-pour rester aussi proche que possible d'un JSON natif, facilitant d'autant
-l'exploitation ou la lecture du résultat brut par un programme ou un humain.
-
 Exemples
 ========
 
@@ -371,11 +377,11 @@ Exemples
                              "foo:priv": "priv" // et ->priv privée
                            }
 
-   new déjà                {"_":"1:déjà"}   // classe déjà déclarée dans un fichier encodé en UTF-8
-   new déjà                {"_":"b`1:déjà"} // classe déjà déclarée dans un fichier encodé en ISO-8859-1
+   new déjà                {"_":"1:déjà"}   // classe déclarée dans un fichier encodé en UTF-8
+   new déjà                {"_":"b`1:déjà"} // classe déclarée dans un fichier encodé en ISO-8859-1
 
-   opendir('.')            { "_": "1:resource:stream",    // opendir() retourne une variable de type "stream"
-                             "wrapper_type": "plainfile", // que stream_get_meta_data() peut servir à détailler
+   opendir('.')            { "_": "1:resource:stream",    // ressource de type "stream"
+                             "wrapper_type": "plainfile", // que stream_get_meta_data() peut détailler
                              "stream_type": "dir",
                              "mode": "r",
                              "unread_bytes": 0,
@@ -397,13 +403,13 @@ Exemples
    $a->bar = $a;
    $a = array($a, 123);
    $a[2] =& $a[1];
-   $a;                     { "_": "1:array:3",    // encore plus de fun avec les references :)
+   $a;                     { "_": "1:array:3",    // plus de fun avec les references :)
                              "0": {"_":"2:stdClass",
                                "foo": "R`3:1",
                                "bar": "r`4:2"
                              },
                              "1": 123,
-                             "2": "R`6:", // La ligne suivante indique que cette position 6 est alias de la 5
+                             "2": "R`6:", // cette position 6 est alias de la 5
                              "__refs": {"5":[-6],"1":[-3],"2":[4]}
                            }
 
@@ -423,15 +429,15 @@ Exemples
    $a = array(             { "_": "1:array:5",
      array($b),              "0": {"_":"2:array:1",
      1,                        "0": {"_":"3:stdClass",
-     $b,                         "__maxDepth": 1 // Objet tronqué par la limite de profondeur
+     $b,                         "__maxDepth": 1 // objet tronqué par la limite de profondeur
      3,                        }
      4                       },
    );                        "1": 1,
                              "2": {"_":"5:stdClass",
-                               "foo": "bar"      // Même objet, mais à un niveau de profondeur inférieur
+                               "foo": "bar"      // même objet, à un niveau de profondeur inférieur
                              },
-                             "__maxLength": 2,   // Limite de longueur appliquée au tableau général, 2 éléments tronqués
-                             "__refs": {"3":[5]} // Indication signifiant que les objets en positions 3 et 5 sont les mêmes
+                             "__maxLength": 2,   // tableau général tronqué de 2 éléments
+                             "__refs": {"3":[5]} // les objets en positions 3 et 5 sont les mêmes
                            }
 
 ```
