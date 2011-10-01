@@ -17,7 +17,7 @@ abstract class Walker
 {
     public
 
-    $detectHardRefs = true;
+    $checkInternalRefs = true;
 
     protected
 
@@ -26,10 +26,10 @@ abstract class Walker
     $depth = 0,
     $counter = 0,
     $arrayType = 0,
+    $refMap = array(),
     $refPool = array(),
     $valPool = array(),
     $objPool = array(),
-    $linkPool = array(),
     $arrayPool = array();
 
 
@@ -57,7 +57,7 @@ abstract class Walker
 
         $v = $a;
 
-        if ($this->detectHardRefs && 1 < $this->counter)
+        if ($this->checkInternalRefs && 1 < $this->counter)
         {
             $this->refPool[$this->counter] =& $a;
             $this->valPool[$this->counter] = $a;
@@ -73,7 +73,7 @@ abstract class Walker
         case is_resource($v): isset($h) || $h = (int) substr((string) $v, 13);
 
             if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
-            else return $this->dumpRef(true, $this->linkPool[$this->counter] = $this->objPool[$h], $v);
+            else return $this->dumpRef(true, $this->refMap[$this->counter] = $this->objPool[$h], $v);
 
             $t = $this->arrayType;
             $this->arrayType = 0;
@@ -100,11 +100,11 @@ abstract class Walker
                 $a = $this->valPool[$c];
             }
 
-            $this->linkPool[-$this->counter] = $c;
+            $this->refMap[-$this->counter] = $c;
             return $this->dumpRef(false, $c, $a);
         }
 
-        if ($this->detectHardRefs) $token = $this->token;
+        if ($this->checkInternalRefs) $token = $this->token;
         else
         {
 /**/        if (PHP_VERSION_ID >= 50206)
@@ -167,14 +167,14 @@ abstract class Walker
         }
 
         $this->refPool = $this->valPool = $this->objPool = array();
-        foreach ($this->linkPool as $len => $k) $refs[$k][] = $len;
+        foreach ($this->refMap as $len => $k) $refs[$k][] = $len;
         foreach ($this->arrayPool as &$a) unset($a[$this->token]);
-        $this->arrayPool = $this->linkPool = array();
+        $this->arrayPool = $this->refMap = array();
 
         return $refs;
     }
 
-    function catchRecursionWarning()
+    protected function catchRecursionWarning()
     {
         $this->arrayType = 2;
     }
