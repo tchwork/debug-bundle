@@ -445,5 +445,176 @@ Exemples
 Implémentation
 ==============
 
-[Patchwork's JsonDumper](https://gist.github.com/1069975#file_json_dumper.php).
+La classe [`JsonDumper`](https://gist.github.com/1069975#file_json_dumper.php),
+extraite du framework [Patchwork](https://github.com/nicolas-grekas/Patchwork)
+(branche lab/debugger pour l'instant) permet d'obtenir des représentations JSON
+qui respectent le format décrit précédemment.
+
+C'est une classe dérivée de la class `Dumper`, elle même dérivée de la classe
+`Walker`.
+
+`Walker` est une classe abstraite qui implémente le mécanisme nécessaire pour
+parcourir de façon générique n'importe quelle variable PHP, en tenant compte des
+références internes, récursives ou non-récursives, sans présager de l'usage qui
+sera fait des informations découvertes lors de ce parcours. Elle ne propose
+qu'une seule méthode publique `->walk()`, qui déclenche le parcours. Elle
+dispose également d'une propriété publique `->checkInternalRefs` à `true` par
+défaut, qui permet de désactiver la découverte des références internes si le
+mécanisme est jugé trop coûteux. La vérification des références récursives et
+des objets/ressources n'est pas désactivable mais est beaucoup plus légère.
+
+`Dumper` ajoute à `Walker` la gestion d'une limite de profondeur et d'une limite
+de longueur lors du parcours de structures associatives arborescentes. Elle
+ajoute également un mécanisme de callback pour permettre la collecte
+d'informations détaillées sur les objets et les ressources. Par exemple et par
+défaut, les ressources de type `stream` sont complétées au moyen de la fonction
+`stream_get_meta_data`, celles de type `process` par `proc_get_status`, et les
+objets instances de la classe `Closure` sont associés à une méthode qui utilise
+la réflexion pour donner des informations détaillées sur les fonctions anonymes.
+Cette classe est conçue pour implémenter ces mécanismes de façon totalement
+indépendante de la représentation finale, JSON ou autre.
+
+Enfin, `JsonDumper` implémente les spécificités nécessaires pour générer un JSON
+en se basant sur les classes précédentes. Elle ajoute la possibilité de limiter
+la longueur des chaînes de caractères représentées, et est capable de générer
+son résultat ligne après ligne, en appelant un callback spécial dès qu'une
+nouvelle ligne JSON est prête.
+
+Voici son interface consolidée, y compris ses méthodes protégées :
+
+```php
+<?php
+
+namespace Patchwork\PHP;
+
+class JsonDumper extends Dumper // which extends Walker
+{
+    public
+
+    $maxString = 100000,
+
+    $maxLength = 1000,         // inherited from Dumper
+    $maxDepth = 10,            // inherited from Dumper
+
+    $checkInternalRefs = true; // inherited from Walker
+
+
+    function setCallback($type, $callback)
+    {
+        // inherited from Dumper
+        // register a callback for getting resource or objet meta-data
+    }
+
+    function walk(&$a)
+    {
+        // entry point to walk through any variable
+    }
+
+    static function dump(&$a)
+    {
+        // echo a JSON representation of $a
+        // instanciating a JsonDumper object,
+        // registering echo as a line by line callback,
+        // then walking throught $a
+    }
+
+    static function get($a)
+    {
+        // return a JSON representation of $a as a multiline indented string
+        // instanciating a JsonDumper object,
+        // registering a line by line stack callback,
+        // then walking throught $a
+    }
+
+
+    protected function walkRef(&$a)
+    {
+        // dispatch types and count positions
+    }
+
+    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
+    {
+        // specialize dumpRef() from Dumper
+        // which is able to reinject depth limited data seen at a lower depth
+        // otherwise, insert "r`" and "R`" tags
+    }
+
+    protected function dumpScalar($a)
+    {
+        // build JSON for scalars but strings
+    }
+
+    protected function dumpString($a, $is_key)
+    {
+        // build JSON representation for strings
+    }
+
+    protected function dumpObject($obj)
+    {
+        // inherited from Dumper
+        // objet to array casting using callbacks
+    }
+
+    protected function dumpResource($res)
+    {
+        // inherited from Dumper
+        // build resources meta-data using callbacks
+    }
+
+    protected function walkArray(&$a)
+    {
+        // inherited from Walker
+        // check references for arrays and scalars
+    }
+
+    protected function walkHash($type, &$a)
+    {
+        // specialize walkHash() from Dumper
+        // which itselfs replaces walkHash() in Walker
+        // build JSON for associative structures
+        // by looping over $key => $values in associative structures
+        // taking length and depth limit into account
+        // return a map of internal references at the lowest depth
+    }
+
+    protected function cleanRefPools()
+    {
+        // inherited from Walker
+        // clean pools used for references tracking
+        // build the return value of walkHash
+    }
+
+    protected function catchRecursionWarning()
+    {
+        // inherited from Walker
+        // catch recursion warnings emitted by count($array, COUNT_RECURSIVE)
+        // as a trick to quickly detect recursice arrays
+    }
+
+    static function castClosure($c)
+    {
+        // inherited from Dumper
+        // use reflection to dump meta-data for closures
+        // registered as default callback for instances of the Closure class
+    }
+
+    protected function dumpLine($depth_offset)
+    {
+        // call the line by line callback
+    }
+
+    static function echoLine($line, $depth)
+    {
+        // callback registered by JsonDumper::dump()
+        // echo the newly build line
+    }
+
+    protected function stackLine($line, $depth)
+    {
+        // callback registered by JsonDumper::get()
+        // stack the newly build line
+    }
+}
+
+```
 
