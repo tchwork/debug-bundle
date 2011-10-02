@@ -2,11 +2,10 @@
 Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
-Nicolas Grekas - nicolas.grekas, gmail.com
+Nicolas Grekas - nicolas.grekas, gmail.com  
+3 octobre 2011
 
-Dernière mise à jour : 1er octobre 2011  
-Première publication : 1er octobre 2011  
-URL : https://github.com/nicolas-grekas/Patchwork-Doc/blob/dump-php-data/Dumping-PHP-Data.md
+https://github.com/nicolas-grekas/Patchwork-Doc/blob/dump-php-data/Dumping-PHP-Data.md
 
 Introduction
 ============
@@ -29,7 +28,7 @@ variables intermédiaires au beau milieu de la page sur laquelle on travaille.
 Pourtant, cette pratique n'est pas recommandée, car elle peut casser le flux de
 sortie de l'application. Dans le cas des pages HTML simples, c'est généralement
 acceptable, mais dès que les pages deviennent plus complexes, que PHP est
-utilisé pour générer d'autres contenus (Javascript, PDF, ZIP, etc.), cette
+utilisé pour générer d'autres contenus (JavaScript, PDF, ZIP, etc.), cette
 méthode n'est plus adaptée.
 
 Si l'humain est toujours le lecteur final, un système de debug performant a
@@ -58,7 +57,7 @@ Tableaux
 
 Les tableaux PHP sont en réalité des tables de hachages ordonnées. Ils accèptent
 n'importe quelle chaîne de caractères ou entier numérique en guise de clef. Dans
-le cas des clef, PHP ne fait pas la différence entre un entier numérique et sa
+le cas des clefs, PHP ne fait pas la différence entre un entier numérique et sa
 représentation en base 10 sous forme de chaîne de caractères.
 
 Objets
@@ -137,7 +136,7 @@ s'exécute :
 Analyse des fonctions existantes
 --------------------------------
 
-Sur le seul critère d'être opérant quel que soit le contexte d'exécution, seul
+Sur le seul critère d'être opérant quel que soit le contexte d'exécution, seule
 `json_encode` n'est pas disqualifiée :
 
 * `print_r` et jusqu'à PHP 5.3.3 `var_export` génèrent une erreur fatale
@@ -451,7 +450,7 @@ extraite du framework [Patchwork](https://github.com/nicolas-grekas/Patchwork)
 qui respectent le format décrit précédemment.
 
 C'est une classe dérivée de la class `Dumper`, elle même dérivée de la classe
-`Walker`.
+`Walker`, toutes les trois distribuées selon les termes de la LGPL.
 
 `Walker` est une classe abstraite qui implémente le mécanisme nécessaire pour
 parcourir de façon générique n'importe quelle variable PHP, en tenant compte des
@@ -618,3 +617,32 @@ class JsonDumper extends Dumper // which extends Walker
 
 ```
 
+Conclusion
+==========
+
+La convention décrite ici permet de représenter avec fidélité n'importe quelle
+variable PHP, aussi complexe soit-elle. Le format JSON sur lequel elle repose
+garantit une interopérabilité maximale tout en assurant une bonne lisibilité.
+
+L'implémentation faite dans la classe `JsonDumper` exploite l'ensemble des
+possibilités offertes par la représentation tout en donnant un maximum de
+latitude au développeur pour exploiter ses capacités à l'envie, aussi bien en
+terme d'exposition des mécanismes internes de la classe pour autoriser leur
+spécialisation qu'en terme d'utilisation personnalisée, grâce aux callbacks qui
+permettent d'intercepter ligne à ligne le JSON produit et d'ajuster la
+représentation des objets ou des ressources en fonction de leur type.
+
+Cette convention et son implémentation sont extraites du framework Patchwork,
+au sein duquel elles servent de fondation au mécanisme de journalisation des
+événements, en particulier des erreurs et des affichages pour le débogage.
+Patchwork ajoute également un client JavaScript, qui permet de représenter
+visuellement l'information contenue dans le JSON, pour plus d'ergonomie.
+
+Si d'autres frameworks souhaitent exploiter cette convention, ils sont libres de
+réutiliser l'implémentation actuelle selon les termes de la LGPL. Si cette
+licence ou cette implémentation ne leur convenait pas, ils sont libres également
+de réaliser une autre implémentation (Xdebug ?).
+
+D'un autre côté, il reste encore du travail pour rendre plus ergonomique le
+client de représentation visuelle des JSON. Mais de nombreux autres clients
+pourraient également être réalisés : intégré à un IDE, intégré à firebug, etc.
