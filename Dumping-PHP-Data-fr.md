@@ -3,9 +3,9 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-3 octobre 2011
+4 octobre 2011
 
-https://github.com/nicolas-grekas/Patchwork-Doc/blob/dump-php-data/Dumping-PHP-Data.md
+https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md
 
 Introduction
 ============
