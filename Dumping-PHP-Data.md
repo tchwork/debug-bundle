@@ -55,15 +55,15 @@ souvent utilisé de nos jours pour représenter du texte.
 Tableaux
 --------
 
-Les tableaux PHP sont en réalité des tables de hachages ordonnées. Ils accèptent
-n'importe quelle chaîne de caractères ou entier numérique en guise de clef. Dans
-le cas des clefs, PHP ne fait pas la différence entre un entier numérique et sa
+Les tableaux PHP sont en réalité des tables de hachages ordonnées. Ils acceptent
+n'importe quelle chaîne de caractères ou entier numérique en guise de clef.
+PHP ne fait pas la différence entre une clef entière numérique et sa
 représentation en base 10 sous forme de chaîne de caractères.
 
 Objets
 ------
 
-Les objets sont basés sur la même structure de table de hashage ordonnée que les
+Les objets utilisent la même structure de table de hashage ordonnée que les
 tableaux à une exception près : le nom d'une propriété d'objet ne peut pas
 commencer par le caractère NUL ("\x00"). Chaque objet possède également une
 classe principale ainsi que des propriétés associées à une visibilité publique,
@@ -87,7 +87,7 @@ Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
 `2` est l'identifiant interne de la ressource renvoyée par `opendir()`.
 
 Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont
-passées "par référence", possèdent un type, et des propriétés.
+passées "par référence", possèdent un type et des propriétés.
 
 Références
 ----------
@@ -111,19 +111,19 @@ arborescente.
 
 La représentation recherchée se doit de refléter la présence de ces deux types
 de références, sans quoi il serait impossible de représenter une structure
-récursive sans tomber dans le piège de la récursivité infinie, d'autre part
+récursive sans tomber dans le piège de la récursivité infinie. D'autre part
 cela permet l'examen des liens internes d'une structure arborescente.
 
 Recherche de la représentation idéale
 =====================================
 
-La représentation intermédiaire d'une variable à déboger doit :
+La représentation intermédiaire d'une variable à déboguer doit :
 
 * être aussi fidèle que possible pour permettre un débogage efficace,
 * être interopérable, en particulier avec le programme en charge de la
   représenter visuellement,
 * si possible rester lisible par un humain, pour faciliter le débogage du
-  système débogage lui-même.
+  système de débogage lui-même.
 
 Par ailleurs, le code qui génère cette représentation intermédiaire doit être
 aussi neutre que possible du point de vue de l'application dans laquelle il
@@ -292,7 +292,11 @@ d'éviter de représenter une seconde fois la valeur de la position courante en
 insérant la chaîne ``"R`"`` si les deux positions sont alias l'une de l'autre,
 et ``"r`"`` si les deux contiennent un même objet ou une même ressource. La
 substitution par ``"R`"`` n'est obligatoire que dans le cas des références
-récursives.
+récursives car il est parfois plus intéressant de laisser la valeur locale.
+C'est par exemple le cas lorsque la première occurence d'un objet a été amputée
+en raison de l'application d'une limite de profondeur : si le même objet se
+retrouve plus loin dans la structure, il est possible de le représenter de
+façon plus complète s'il se trouve cette fois-ci à un niveau inférieur.
 
 `` R` `` et `` r` `` peuvent optionnellement être concaténés au numéro de la
 position courante suivie d'un `:`, puis à nouveau optionnellement du numéro de
@@ -305,6 +309,7 @@ sont les numéros des positions cibles et les valeurs des tableaux JSON contenan
 à leur tour autant de numéros que de positions associées à chaque position
 cible. Pour différencier les références de type alias des références de type
 objet/ressource, des numéros d'ordre négatifs sont utilisés pour les alias.
+
 
 Auto-synchronisation et autres considérations
 ---------------------------------------------
@@ -328,13 +333,6 @@ coûteux en terme d'occupation mémoire de faire ainsi.
 À l'inverse, la présence de ces numéros lorsqu'elle est possible peut faciliter
 la lecture du JSON, même si la clef spéciale `"__refs"` est le seul endroit qui
 contienne toute l'information disponible.
-
-Les marqueurs de références ``"R`"`` ou ``"r`"`` sont également facultatifs car
-il est parfois plus intéressant de les remplacer par la valeur locale. C'est
-par exemple le cas lorsque la première occurence d'un objet a été amputée en
-raison de l'application d'une limite de profondeur : si le même objet se
-retrouve plus loin dans la structure, il est possible de le représenter de
-façon plus complète s'il se trouve cette fois-ci à un niveau inférieur.
 
 Exemples
 ========
@@ -471,7 +469,7 @@ défaut, les ressources de type `stream` sont complétées au moyen de la foncti
 objets instances de la classe `Closure` sont associés à une méthode qui utilise
 la réflexion pour donner des informations détaillées sur les fonctions anonymes.
 Cette classe est conçue pour implémenter ces mécanismes de façon totalement
-indépendante de la représentation finale, JSON ou autre.
+indépendante de la représentation finale.
 
 Enfin, `JsonDumper` implémente les spécificités nécessaires pour générer un JSON
 en se basant sur les classes précédentes. Elle ajoute la possibilité de limiter
@@ -501,7 +499,7 @@ class JsonDumper extends Dumper // which extends Walker
     function setCallback($type, $callback)
     {
         // inherited from Dumper
-        // register a callback for getting resource or objet meta-data
+        // registers callbacks for getting resources meta-data or casting objets to arrays
     }
 
     function walk(&$a)
@@ -511,7 +509,7 @@ class JsonDumper extends Dumper // which extends Walker
 
     static function dump(&$a)
     {
-        // echo a JSON representation of $a
+        // echoes a JSON representation of $a
         // instanciating a JsonDumper object,
         // registering echo as a line by line callback,
         // then walking throught $a
@@ -519,7 +517,7 @@ class JsonDumper extends Dumper // which extends Walker
 
     static function get($a)
     {
-        // return a JSON representation of $a as a multiline indented string
+        // returns a JSON representation of $a as a multiline indented string
         // instanciating a JsonDumper object,
         // registering a line by line stack callback,
         // then walking throught $a
@@ -528,90 +526,90 @@ class JsonDumper extends Dumper // which extends Walker
 
     protected function walkRef(&$a)
     {
-        // dispatch types and count positions
+        // dispatches types and count positions
     }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
     {
-        // specialize dumpRef() from Dumper
+        // specializes dumpRef() from Dumper
         // which is able to reinject depth limited data seen at a lower depth
-        // otherwise, insert "r`" and "R`" tags
+        // otherwise, inserts "r`" and "R`" tags
     }
 
     protected function dumpScalar($a)
     {
-        // build JSON for scalars but strings
+        // builds JSON for scalars but strings
     }
 
     protected function dumpString($a, $is_key)
     {
-        // build JSON representation for strings
+        // builds JSON representation for strings
     }
 
     protected function dumpObject($obj)
     {
         // inherited from Dumper
-        // objet to array casting using callbacks
+        // casts objet to array using callbacks
     }
 
     protected function dumpResource($res)
     {
         // inherited from Dumper
-        // build resources meta-data using callbacks
+        // builds resources meta-data using callbacks
     }
 
     protected function walkArray(&$a)
     {
         // inherited from Walker
-        // check references for arrays and scalars
+        // checks references for arrays and scalars
     }
 
     protected function walkHash($type, &$a)
     {
-        // specialize walkHash() from Dumper
+        // specializes walkHash() from Dumper
         // which itselfs replaces walkHash() in Walker
-        // build JSON for associative structures
+        // builds JSON for associative structures
         // by looping over $key => $values in associative structures
         // taking length and depth limit into account
-        // return a map of internal references at the lowest depth
+        // returns a map of internal references at the lowest depth
     }
 
     protected function cleanRefPools()
     {
         // inherited from Walker
-        // clean pools used for references tracking
-        // build the return value of walkHash
+        // cleans pools used for references tracking
+        // builds the return value of walkHash
     }
 
     protected function catchRecursionWarning()
     {
         // inherited from Walker
-        // catch recursion warnings emitted by count($array, COUNT_RECURSIVE)
+        // catches recursion warnings emitted by count($array, COUNT_RECURSIVE)
         // as a trick to quickly detect recursice arrays
     }
 
     static function castClosure($c)
     {
         // inherited from Dumper
-        // use reflection to dump meta-data for closures
+        // uses reflection to dump meta-data for closures
         // registered as default callback for instances of the Closure class
     }
 
     protected function dumpLine($depth_offset)
     {
-        // call the line by line callback
+        // calls the line by line callback
     }
 
     static function echoLine($line, $depth)
     {
         // callback registered by JsonDumper::dump()
-        // echo the newly build line
+        // echoes the newly build line
     }
 
     protected function stackLine($line, $depth)
     {
         // callback registered by JsonDumper::get()
-        // stack the newly build line
+        // stacks the newly build line
     }
 }
 
