@@ -5,7 +5,8 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 Nicolas Grekas - nicolas.grekas, gmail.com  
 4 octobre 2011
 
-Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md
+Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
+English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 
 Voir également : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/README.md
 
@@ -71,7 +72,7 @@ commencer par le caractère NUL ("\x00"). Chaque objet possède également une
 classe principale ainsi que des propriétés associées à une visibilité publique,
 protégée ou privée.
 
-Contrairement aux scalaires et tableaux, les objets sont passés "par référence"
+Contrairement aux scalaires et tableaux, les objets sont passés « par référence »
 (voir le [manuel PHP](http://php.net/language.oop5.references.php) pour plus de
 précisions).
 
@@ -89,7 +90,7 @@ Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
 `2` est l'identifiant interne de la ressource renvoyée par `opendir()`.
 
 Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont
-passées "par référence", possèdent un type et des propriétés.
+passées « par référence », possèdent un type et des propriétés.
 
 Références
 ----------
@@ -105,7 +106,7 @@ comme par exemple dans `$a = array(); $a[0] =& $a;`.
 
 Elles permettent également de créer des alias internes à des positions qui ne
 créent pas nécessairement de récursivité, comme par exemple dans ce code où
-$b[0] et $b[1] sont liés par référence : `$a = 123; $b = array(&$a, &$a);`
+$b[0] et $b[1] sont liés par référence : `$a = 123; $b = array(&$a, &$a);`.
 
 Les références utilisées pour la transmission des objets/ressources permettent
 de mettre le même objet/ressource en plusieurs endroits d'une structure
@@ -268,7 +269,7 @@ Les clefs réservées ont une sémantique définie ainsi :
   * pour les tableaux du mot-clef `array` suivi d'un `:` puis de leur longueur
     retournée par `count($tableau)`,
   * pour les ressources du mot-clef `resource` suivi d'un `:` puis de leur type
-    retourné par `get_resource_type($resource)`.
+    retourné par `get_resource_type($resource)`,
 * `"__maxLength"` contient le nombre d'éléments tronqués lorsqu'une limite
   de nombre est applicable,
 * `"__maxDepth"` est présent lorsque la structure locale est à un niveau de
@@ -289,7 +290,7 @@ moyen d'un numéro correspondant à son ordre de découverte dans la structure,
 selon un algorithme de parcours en profondeur tenant compte des éventuelles
 références internes.
 
-Lorsqu'une référence à une position précédente est recontrée, il est possible
+Lorsqu'une référence à une position précédente est rencontrée, il est possible
 d'éviter de représenter une seconde fois la valeur de la position courante en
 insérant la chaîne ``"R`"`` si les deux positions sont alias l'une de l'autre,
 et ``"r`"`` si les deux contiennent un même objet ou une même ressource. La
@@ -402,13 +403,13 @@ Exemples
    $a->bar = $a;
    $a = array($a, 123);
    $a[2] =& $a[1];
-   $a;                     { "_": "1:array:3",    // plus de fun avec les references :)
+   $a;                     { "_": "1:array:3",    // plus de fun avec les références :)
                              "0": {"_":"2:stdClass",
                                "foo": "R`3:1",
                                "bar": "r`4:2"
                              },
                              "1": 123,
-                             "2": "R`6:", // cette position 6 est alias de la 5
+                             "2": "R`6:", // cette position 6 est alias de la 5 comme noté à la ligne suivante
                              "__refs": {"5":[-6],"1":[-3],"2":[4]}
                            }
 
