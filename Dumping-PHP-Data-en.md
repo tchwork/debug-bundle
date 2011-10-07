@@ -403,6 +403,10 @@ Examples
 
 ```
 
+Example visualisation:
+
+![Patchwork debug console](https://github.com/nicolas-grekas/Patchwork-Doc/raw/master/Dumping-PHP-Data-debug-console.png)
+
 Implementation
 ==============
 

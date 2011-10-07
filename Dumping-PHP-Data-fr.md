@@ -442,6 +442,10 @@ Exemples
 
 ```
 
+Example de représentation visuelle :
+
+![Patchwork debug console](https://github.com/nicolas-grekas/Patchwork-Doc/raw/master/Dumping-PHP-Data-debug-console.png)
+
 Implémentation
 ==============
 
