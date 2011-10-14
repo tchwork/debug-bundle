@@ -23,7 +23,7 @@ abstract class Dumper extends Walker
     protected
 
     $depthLimited = array(),
-    $reserved = array('_' => 1, '__maxLength' => 1, '__maxDepth' => 1, '__refs' => 1, '__proto__' => 1),
+    $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
         'o:closure' => array(__CLASS__, 'castClosure'),
         'r:stream' => 'stream_get_meta_data',
@@ -110,7 +110,7 @@ abstract class Dumper extends Walker
             if (isset($this->refPool[$this->counter]))
                 $this->refPool[$this->counter]['ref_counter'] = $this->counter;
 
-            $this->dumpString('__maxDepth', true);
+            $this->dumpString('__cutBy', true);
             $this->dumpScalar($len);
             $len = 0;
         }
@@ -128,7 +128,7 @@ abstract class Dumper extends Walker
             {
                 if ($len -= $i)
                 {
-                    $this->dumpString('__maxLength', true);
+                    $this->dumpString('__cutBy', true);
                     $this->dumpScalar($len);
                 }
 
