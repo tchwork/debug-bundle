@@ -3,7 +3,7 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-4 octobre 2011
+4 octobre 2011 - Mis à jour le 14 oct. 2011
 
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
@@ -252,8 +252,7 @@ C'est le seul cas qui utilise la syntaxe des tableaux JSON natifs.
 Les tableaux PHP, objets et ressources sont représentés par la syntaxe objet de
 JSON, selon les règles suivantes :
 
-* les clefs `"_"`, `"__maxLength"`, `"__maxDepth"`, `"__refs"` et `"__proto__"`
-  sont réservées,
+* les clefs `"_"`, `"__cutBy"`, `"__refs"` et `"__proto__"` sont réservées,
 * les clefs correspondant à des propriétés protégées d'objets sont préfixées
   par `*:`
 * les clefs correspondant à des propriétés privées d'objets sont préfixées par
@@ -270,12 +269,8 @@ Les clefs réservées ont une sémantique définie ainsi :
     retournée par `count($tableau)`,
   * pour les ressources du mot-clef `resource` suivi d'un `:` puis de leur type
     retourné par `get_resource_type($resource)`,
-* `"__maxLength"` contient le nombre d'éléments tronqués lorsqu'une limite
-  de nombre est applicable,
-* `"__maxDepth"` est présent lorsque la structure locale est à un niveau de
-  profondeur supérieur à la limite applicable, et contient le nombre d'éléments
-  tronqués ; lorsque cette clef est présente, l'objet JSON local ne contient
-  ainsi que deux clefs : `"_"` et `"__maxDepth"`,
+* `"__cutBy"` contient le nombre d'éléments tronqués dans la structure locale
+  en application d'une limite de profondeur ou de nombre par exemple,
 * `"__refs"` contient une table des références internes de la structure
   générale représentée (cf. suite), elle ne devrait donc être présente qu'au
   niveau de profondeur le plus bas, en dernière position,
@@ -429,14 +424,14 @@ Exemples
    $a = array(             { "_": "1:array:5",
      array($b),              "0": {"_":"2:array:1",
      1,                        "0": {"_":"3:stdClass",
-     $b,                         "__maxDepth": 1 // objet tronqué par la limite de profondeur
+     $b,                         "__cutBy": 1    // objet tronqué par la limite de profondeur
      3,                        }
      4                       },
    );                        "1": 1,
                              "2": {"_":"5:stdClass",
                                "foo": "bar"      // même objet, à un niveau de profondeur inférieur
                              },
-                             "__maxLength": 2,   // tableau général tronqué de 2 éléments
+                             "__cutBy": 2,       // tableau général tronqué de 2 éléments
                              "__refs": {"3":[5]} // les objets en positions 3 et 5 sont les mêmes
                            }
 

@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high fidelity
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011
+October 4, 2011 - Updated on oct. 14, 2011
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -223,8 +223,7 @@ JSON array syntax is used.
 PHP arrays, objects and resources are represented by JSON objects, with these
 added rules:
 
-* keys `"_"`, `"__maxLength"`, `"__maxDepth"`, `"__refs"` and `"__proto__"` are
-  reserved
+* keys `"_"`, `"__cutBy"`, `"__refs"` and `"__proto__"` are reserved
 * keys for protected properties of objects are prefixed by `*:`
 * keys for private properties of objects are prefixed by the class name they are
   bind to followed by a `:`
@@ -240,12 +239,8 @@ Reserved keys have semantics defined as follows:
     returned by `count($array)`
   * for resources by the `resource` keyword followed by `:` and then by the type
     returned by `get_resource_type($resource)`
-* `"__maxLength "` contains the number of truncated items when a number limit is
-  applicable
-* `"__maxDepth"` is added when the local structure is at a depth level greater
-  than the applicable limit and contains the number of truncated elements. When
-  that key is present, the local JSON object should only contain two keys:
-  `"_"` and `" __maxDepth "`
+* `"__cutBy"` contains the number of truncated elements when the local structure
+  has been cut by a depth or a length limit e.g.
 * `"__refs"` contains a map of internal references of the main structure (see
   later). It should be present only at the last position at the lowest depth
 * `"__proto__"` has no special semantics but is reserved for compatibility with
@@ -390,14 +385,14 @@ Examples
    $a = array(             { "_": "1:array:5",
      array($b),              "0": {"_":"2:array:1",
      1,                        "0": {"_":"3:stdClass",
-     $b,                         "__maxDepth": 1 // object truncated by depth limit
+     $b,                         "__cutBy": 1    // object truncated by a depth limit
      3,                        }
      4                       },
    );                        "1": 1,
                              "2": {"_":"5:stdClass",
                                "foo": "bar"      // same objet, at a lower depth
                              },
-                             "__maxLength": 2,   // main array cut by 2 items
+                             "__cutBy": 2,       // main array cut by 2 items
                              "__refs": {"3":[5]} // objects at positions 3 and 5 are the same
                            }
 
