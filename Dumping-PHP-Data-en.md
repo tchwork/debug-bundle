@@ -277,8 +277,8 @@ Self-synchronization and other considerations
 ---------------------------------------------
 
 Inserting the position number at the beginning of the `"_"` special key is not
-strictly necessary in terms of accuracy of the representation. It may indeed be
-enough to count positions again when intepreting the JSON to retrieve it.
+strictly necessary in terms of accuracy of the representation: counting
+positions again when interpreting the JSON is enough to retrieve it.
 
 However, these numbers make the interpretation of a subtree of the JSON possible
 without losing references: the numbers are then used to initialize the position
@@ -407,7 +407,7 @@ Implementation
 
 The [`JsonDumper`](https://gist.github.com/1069975#file_json_dumper.php) class
 extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork)
-framework (branch lab/debugger for now) provides JSON representations that
+framework (branch lab/bootstrapper for now) provides JSON representations that
 follow the format described above.
 
 This class inherits from the `Dumper` class, itself inheriting from the `Walker`
