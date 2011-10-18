@@ -1,9 +1,9 @@
 ===========================================================
-JSON convention to dump any PHP variable with high fidelity
+JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Updated on oct. 14, 2011
+October 4, 2011 - Updated on oct. 18, 2011
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -19,11 +19,11 @@ specific needs:
 
 * being human readable,
 * being computer readable,
-* being faithful in the case of complex variables (recursive objects or
+* being accurate in the case of complex variables (recursive objects or
   resources e.g.)
 
 For the purpose of debugging, the preferred representation is obviously
-human readable and should remain as faithful as possible.
+human readable and should remain as accurate as possible.
 
 During development, it is common in PHP to display errors and intermediate
 variables in the middle of the page on which we work. However, this practice is
@@ -40,7 +40,7 @@ PHP variable types
 ==================
 
 Variables in PHP can have many different types, which must all be considered to
-represent faithfully any variable.
+represent accurately any variable.
 
 Scalars
 -------
@@ -113,7 +113,7 @@ Search for the ideal representation
 
 The intermediate representation of a variable must:
 
-* be as faithful as possible to allow an effective debugging
+* be as accurate as possible to allow an effective debugging
 * be interoperable, especially with the program in charge of its displaying
 * if possible, remain human readable, to facilitate debugging of the debugging
   system itself
@@ -177,7 +177,7 @@ strings to their first characters and nested structures to a maximum depth.
 
 The dump format described below defines a set of conventions that enables JSON
 for all these possibilities. It is designed both to allow the greatest possible
-fidelity to any PHP variable, and to stay as close as possible to a native JSON,
+accuracy to any PHP variable, and to stay as close as possible to a native JSON,
 thus facilitating its raw usage by computers or humans.
 
 Strings
@@ -212,7 +212,7 @@ respectively: ``"f`NAN"``, ``"f`INF"`` and ``"f`-INF"``.
 
 As JSON only accepts strings as keys, integer keys in PHP arrays are represented
 as JSON strings. Since PHP does no distinction between a numeric key accessed
-as a string or as an integer, this has no fidelity implication.
+as a string or as an integer, this has no accuracy implication.
 
 Associative structures: arrays, objects and resources
 -----------------------------------------------------
@@ -277,7 +277,7 @@ Self-synchronization and other considerations
 ---------------------------------------------
 
 Inserting the position number at the beginning of the `"_"` special key is not
-strictly necessary in terms of fidelity of the representation. It may indeed be
+strictly necessary in terms of accuracy of the representation. It may indeed be
 enough to count positions again when intepreting the JSON to retrieve it.
 
 However, these numbers make the interpretation of a subtree of the JSON possible
@@ -577,7 +577,7 @@ class JsonDumper extends Dumper // which extends Walker
 Conclusion
 ==========
 
-The convention described here can be used to represent faithfully any PHP
+The convention described here can be used to represent accurately any PHP
 variable as complex as it is. The JSON format on which it rests guarantees
 maximum interoperability while ensuring good readability.
 
