@@ -17,7 +17,7 @@ abstract class Dumper extends Walker
 {
     public
 
-    $maxLength = 1000,
+    $maxLength = 100,
     $maxDepth = 10;
 
     protected

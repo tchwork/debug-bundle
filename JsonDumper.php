@@ -70,9 +70,10 @@ class JsonDumper extends Dumper
         case null === $a: $this->line .= 'null'; break;
         case true === $a: $this->line .= 'true'; break;
         case false === $a: $this->line .= 'false'; break;
-        case INF === $a: $this->line .= '"f`INF"'; break;
-        case -INF === $a: $this->line .= '"f`-INF"'; break;
-        case is_nan($a): $this->line .= '"f`NAN"'; break;
+        case INF === $a: $this->line .= '"n`INF"'; break;
+        case -INF === $a: $this->line .= '"n`-INF"'; break;
+        case is_nan($a): $this->line .= '"n`NAN"'; break;
+        case $a > 9007199254740992 && is_int($a): $a = '"n`' . $a . '"'; // JavaScript max integer is 2^53
         default: $this->line .= (string) $a; break;
         }
     }
