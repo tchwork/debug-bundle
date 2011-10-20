@@ -3,7 +3,7 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-4 octobre 2011 - Mis à jour le 14 oct. 2011
+4 octobre 2011 - Mis à jour le 20 oct. 2011
 
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
@@ -224,7 +224,7 @@ tronquée à deux caractères est représentée sous la forme ``"4u`dé"``. La c
 de caractères vide est toujours représentée ainsi `""`.
 
 Cette convention de représentation laisse de la place pour d'autres préfix
-que `` b` `` ou `` u` ``. Ainsi les préfix `` r` ``, `` R` ``, `` f` `` sont
+que `` b` `` ou `` u` ``. Ainsi les préfix `` r` ``, `` R` ``, `` n` `` sont
 utilisés pour représenter des valeurs spéciales (cf. suite).
 
 Nombres et autres scalaires
@@ -233,9 +233,16 @@ Nombres et autres scalaires
 Les nombres entiers, flottants ou les valeurs `true`, `false` et `null` sont
 représentés nativement en JSON.
 
+Les entiers et flottants étant sujets à dépassement ou limite de précision,
+ils peuvent également être représentés sous forme de chaîne de caractère
+préfixée par `` n` ``. Ceci est nécessaire pour les entiers supérieurs à
+2^53, qui est la limite supérieure pour les entiers JavaScript.
+Sur les systèmes 64-bit par exemple, `PHP_INT_MAX` est représenté par
+``"n`9223372036854775807"``.
+
 Les constantes spéciales `NAN`, `INF` et `-INF` sont représentées par des
 chaînes de caractères JSON, respectivement :
-``"f`NAN"``, ``"f`INF"`` et ``"f`-INF"``.
+``"n`NAN"``, ``"n`INF"`` et ``"n`-INF"``.
 
 Dans le contexte des clefs d'une structure associative cependant, JSON n'accèpte
 que des chaînes de caractères. Les clefs numériques des tableaux PHP sont donc
@@ -345,9 +352,10 @@ Exemples
    true                    true
    false                   false
    null                    null
-   NAN                     "f`NAN"
-   INF                     "f`INF"
-   -INF                    "f`-INF"
+   NAN                     "n`NAN"
+   INF                     "n`INF"
+   -INF                    "n`-INF"
+   PHP_INT_MAX             "n`9223372036854775807" // Sur les systèmes 64-bit, PHP_INT_MAX > 2^53
    "utf8: déjà vu \x01"    "utf8: déjà vu \u0001"
    "bin: \xA9"             "b`bin: ©"
    "avec`backtick"         "u`avec`backtick"
@@ -492,7 +500,7 @@ class JsonDumper extends Dumper // which extends Walker
 
     $maxString = 100000,
 
-    $maxLength = 1000,         // inherited from Dumper
+    $maxLength = 100,         // inherited from Dumper
     $maxDepth = 10,            // inherited from Dumper
 
     $checkInternalRefs = true; // inherited from Walker

@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Updated on oct. 18, 2011
+October 4, 2011 - Updated on oct. 20, 2011
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -198,7 +198,7 @@ For example: `"\xA9"` becomes ``"b`©"``, ``"a`b"`` becomes ``"u`a`b"`` and
 characters is represented as ``"4u`dé"``. The empty string is always represented
 as `""`.
 
-This convention leaves room for other prefixes. `` r` ``, `` R` `` and `` f` ``
+This convention leaves room for other prefixes. `` r` ``, `` R` `` and `` n` ``
 are used to dump special values (see below).
 
 Numbers and other scalars
@@ -207,8 +207,14 @@ Numbers and other scalars
 Integers, floats or `true`, `false` and `null` values are represented in JSON
 natively.
 
+As integers and floats are subject to overflow or precision limit they can also
+be represented casted as string and prefixed by `` n` ``. This is mandatory for
+integers greater than 2^53, which is the upper limit for JavaScript integers.
+On 64-bit systems for example, `PHP_INT_MAX` is represented as
+``"n`9223372036854775807"``.
+
 The special constants `NAN`, `INF` and `-INF` are represented by JSON strings,
-respectively: ``"f`NAN"``, ``"f`INF"`` and ``"f`-INF"``.
+respectively: ``"n`NAN"``, ``"n`INF"`` and ``"n`-INF"``.
 
 As JSON only accepts strings as keys, integer keys in PHP arrays are represented
 as JSON strings. Since PHP does no distinction between a numeric key accessed
@@ -285,7 +291,7 @@ without losing references: the numbers are then used to initialize the position
 counter and thus to maintain synchronization with the numbers present in the
 `"__refs"` special key.
 
-Position numbers in ``"R`"`` or ``"R`"`` reference markers are optional to give
+Position numbers in ``"R`"`` or ``"r`"`` reference markers are optional to give
 implementations complying with this description the freedom not to populate them
 when the computational cost is not worth it.
 
@@ -306,9 +312,10 @@ Examples
    true                    true
    false                   false
    null                    null
-   NAN                     "f`NAN"
-   INF                     "f`INF"
-   -INF                    "f`-INF"
+   NAN                     "n`NAN"
+   INF                     "n`INF"
+   -INF                    "n`-INF"
+   PHP_INT_MAX             "n`9223372036854775807" // On 64-bit systems, PHP_INT_MAX > 2^53
    "utf8: déjà vu \x01"    "utf8: déjà vu \u0001"
    "bin: \xA9"             "b`bin: ©"
    "with`backtick"         "u`with`backtick"
@@ -323,8 +330,8 @@ Examples
 
    (object) array(         { "_": "1:stdClass", // stdClass object
       'key' => 1,            "key": 1,
-      'colon:' => 2,         ":colon:": 2,      // propertie name containing a ":"
-      '_' => 3,              ":_": 3            // reserved propertie name
+      'colon:' => 2,         ":colon:": 2,      // property name containing a ":"
+      '_' => 3,              ":_": 3            // reserved property name
    )                       }
 
    new foo                 { "_": "1:foo",      // foo class declaring 3 properties
@@ -449,7 +456,7 @@ class JsonDumper extends Dumper // which extends Walker
 
     $maxString = 100000,
 
-    $maxLength = 1000,         // inherited from Dumper
+    $maxLength = 100,         // inherited from Dumper
     $maxDepth = 10,            // inherited from Dumper
 
     $checkInternalRefs = true; // inherited from Walker
