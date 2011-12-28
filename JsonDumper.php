@@ -13,6 +13,11 @@
 
 namespace Patchwork\PHP;
 
+/**
+ * JsonDumper implements the JSON convention to dump any PHP variable with high accuracy.
+ *
+ * See https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md
+ */
 class JsonDumper extends Dumper
 {
     public

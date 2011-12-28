@@ -13,6 +13,15 @@
 
 namespace Patchwork\PHP;
 
+/**
+ * Walker implements a mechanism to generically traverse any PHP variable.
+ *
+ * It takes internal references into account, recursive or non-recursive, without preempting any
+ * special use of the discovered data. It exposes only one public method ->walk(), which triggers
+ * the traversal. It also has a public property ->checkInternalRefs set to true by default, to
+ * disable the check for internal references if the mechanism is considered too expensive.
+ * Checking recursive references and object/resource can not be disabled but is much lighter.
+ */
 abstract class Walker
 {
     public

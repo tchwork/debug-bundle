@@ -13,6 +13,15 @@
 
 namespace Patchwork\PHP;
 
+/**
+ * Dumper extends Walker and adds managing depth and length limits, alongside with
+ * a callback mechanism for getting detailed information about objects and resources.
+ *
+ * For example and by default, resources of type stream are expanded by stream_get_meta_data,
+ * those of type process by proc_get_status, and closures are associated with a method that
+ * uses reflection to provide detailed information about anonymous functions. This class is
+ * designed to implement these mechanisms in a way independent of the final representation.
+ */
 abstract class Dumper extends Walker
 {
     public
