@@ -3,7 +3,7 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-4 octobre 2011 - Mis à jour le 20 oct. 2011
+4 octobre 2011 - Dernière mise à jour le 2 jan. 2012
 
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
@@ -452,10 +452,10 @@ Example de représentation visuelle :
 Implémentation
 ==============
 
-La classe [`JsonDumper`](https://gist.github.com/1069975#file_json_dumper.php),
+La classe [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php),
 extraite du framework [Patchwork](https://github.com/nicolas-grekas/Patchwork)
-(branche lab/debugger pour l'instant) permet d'obtenir des représentations JSON
-qui respectent le format décrit précédemment.
+permet d'obtenir des représentations JSON qui respectent le format décrit
+précédemment.
 
 C'est une classe dérivée de la class `Dumper`, elle même dérivée de la classe
 `Walker`, toutes les trois distribuées selon les termes de la LGPL.

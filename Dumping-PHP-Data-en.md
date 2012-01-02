@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Updated on oct. 20, 2011
+October 4, 2011 - Last updated on jan. 2, 2012
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -412,10 +412,9 @@ Example visualisation:
 Implementation
 ==============
 
-The [`JsonDumper`](https://gist.github.com/1069975#file_json_dumper.php) class
-extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork)
-framework (branch lab/bootstrapper for now) provides JSON representations that
-follow the format described above.
+The [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php)
+class extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork)
+framework provides JSON representations that follow the format described above.
 
 This class inherits from the `Dumper` class, itself inheriting from the `Walker`
 class, all three distributed under the LGPL terms.
