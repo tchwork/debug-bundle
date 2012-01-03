@@ -37,6 +37,8 @@ abstract class Dumper extends Walker
         'o:closure' => array(__CLASS__, 'castClosure'),
         'r:stream' => 'stream_get_meta_data',
         'r:process' => 'proc_get_status',
+        'r:dba persistent' => array(__CLASS__, 'dbaGetFile'),
+        'r:dba' => array(__CLASS__, 'dbaGetFile'),
     );
 
 
@@ -179,5 +181,11 @@ abstract class Dumper extends Walker
         else foreach ($c as $p => &$c) $a['use']['$' . $p] =& $c;
 
         return $a;
+    }
+
+    static function dbaGetFile($dba)
+    {
+        $list = dba_list();
+        return array('file' => $list[substr((string) $dba, 13)]);
     }
 }
