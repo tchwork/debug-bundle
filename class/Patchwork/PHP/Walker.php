@@ -75,11 +75,15 @@ abstract class Walker
 
         switch (true)
         {
-        default: $this->dumpScalar($v); break;
+        case true  === $v:
+        case false === $v:
+        case null === $v:
+        case is_int($v):
+        case is_float($v): $this->dumpScalar($v); break;
         case is_string($v): $this->dumpString($v, false); break;
 
         case is_object($v): $h = pack('H*', spl_object_hash($v)); // no break;
-        case is_resource($v): isset($h) || $h = (int) substr((string) $v, 13);
+        default: isset($h) || $h = (int) substr((string) $v, 13); // is_resource() is not reliable (see http://php.net/is_resource#103942), so make it the default case
 
             if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
             else return $this->dumpRef(true, $this->refMap[$this->counter] = $this->objPool[$h], $v);
