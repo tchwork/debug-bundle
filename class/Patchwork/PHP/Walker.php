@@ -30,8 +30,6 @@ abstract class Walker
 
     protected
 
-    $tag,
-    $token,
     $depth = 0,
     $counter = 0,
     $arrayType = 0,
@@ -41,6 +39,10 @@ abstract class Walker
     $objPool = array(),
     $arrayPool = array();
 
+    protected static
+
+    $tag,
+    $token;
 
     abstract protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null);
     abstract protected function dumpScalar($val);
@@ -51,10 +53,14 @@ abstract class Walker
 
     function walk(&$a)
     {
-        $this->tag = (object) array();
-        $this->token = md5(mt_rand() . spl_object_hash($this->tag), true);
-        $this->tag = array($this->token => $this->tag);
-        $this->counter = $this->depth = 0;
+        if (empty(self::$tag))
+        {
+            self::$tag = (object) array();
+            self::$token = md5(mt_rand() . spl_object_hash(self::$tag), true);
+            self::$tag = array(self::$token => self::$tag);
+        }
+
+        $this->arrayType = $this->counter = $this->depth = 0;
         $this->walkRef($a);
     }
 
@@ -70,7 +76,7 @@ abstract class Walker
         {
             $this->refPool[$this->counter] =& $a;
             $this->valPool[$this->counter] = $a;
-            $a = $this->tag;
+            $a = self::$tag;
         }
 
         switch (true)
@@ -98,9 +104,9 @@ abstract class Walker
 
     protected function walkArray(&$a)
     {
-        if (isset($a[$this->token]))
+        if (isset($a[self::$token]))
         {
-            if ($this->tag[$this->token] === $c = $a[$this->token])
+            if (self::$tag[self::$token] === $c = $a[self::$token])
             {
                 if (empty($a['ref_counter']))
                 {
@@ -117,7 +123,7 @@ abstract class Walker
             return $this->dumpRef(false, $c, $a);
         }
 
-        if ($this->checkInternalRefs) $token = $this->token;
+        if ($this->checkInternalRefs) $token = self::$token;
         else
         {
 /**/        if (PHP_VERSION_ID >= 50206)
@@ -130,11 +136,11 @@ abstract class Walker
                     count($a, COUNT_RECURSIVE);
                     restore_error_handler();
                 }
-                if (2 === $this->arrayType) $token = $this->token;
+                if (2 === $this->arrayType) $token = self::$token;
 /**/        }
 /**/        else
 /**/        {
-                $token = $this->token;
+                $token = self::$token;
 /**/        }
         }
 
@@ -155,7 +161,7 @@ abstract class Walker
 
         foreach ($a as $k => &$a)
         {
-            if ($k === $this->token) continue;
+            if ($k === self::$token) continue;
             $this->dumpString($k, true);
             $this->walkRef($a);
         }
@@ -181,7 +187,7 @@ abstract class Walker
 
         $this->refPool = $this->valPool = $this->objPool = array();
         foreach ($this->refMap as $len => $k) $refs[$k][] = $len;
-        foreach ($this->arrayPool as &$a) unset($a[$this->token]);
+        foreach ($this->arrayPool as &$a) unset($a[self::$token]);
         $this->arrayPool = $this->refMap = array();
 
         return $refs;

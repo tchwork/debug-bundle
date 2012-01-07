@@ -27,29 +27,34 @@ class JsonDumper extends Dumper
     protected
 
     $line = '',
-    $lines = array(),
     $lastHash = 0;
 
+    protected static
+
+    $lines = array();
 
     static function dump(&$a)
     {
         $d = new self;
-        $d->setCallback('line', array($d, 'echoLine'));
+        $d->setCallback('line', array(__CLASS__, 'echoLine'));
         $d->walk($a);
     }
 
     static function get($a)
     {
         $d = new self;
-        $d->setCallback('line', array($d, 'stackLine'));
+        $d->setCallback('line', array(__CLASS__, 'stackLine'));
         $d->walk($a);
-        return implode("\n", $d->lines);
+        $d = implode("\n", self::$lines);
+        self::$lines = array();
+        return $d;
     }
 
 
     function walk(&$a)
     {
         $this->line = '';
+        $this->lastHash = 0;
         parent::walk($a);
         '' !== $this->line && $this->dumpLine(0);
     }
@@ -149,13 +154,13 @@ class JsonDumper extends Dumper
     }
 
 
-    static function echoLine($line, $depth)
+    protected static function echoLine($line, $depth)
     {
         echo str_repeat('  ', $depth), $line, "\n";
     }
 
-    protected function stackLine($line, $depth)
+    protected static function stackLine($line, $depth)
     {
-        $this->lines[] = str_repeat('  ', $depth) . $line;
+        self::$lines[] = str_repeat('  ', $depth) . $line;
     }
 }

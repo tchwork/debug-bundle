@@ -100,7 +100,7 @@ abstract class Dumper extends Walker
             case is_object($ref_value): $this->dumpObject($ref_value); return true;
             case is_array($ref_value):
                 $ref_counter = count($ref_value);
-                isset($ref_value[$this->token]) && --$ref_counter;
+                isset($ref_value[self::$token]) && --$ref_counter;
                 $this->walkHash('array:' . $ref_counter, $ref_value);
                 return true;
             }
@@ -112,7 +112,7 @@ abstract class Dumper extends Walker
     protected function walkHash($type, &$a)
     {
         $len = count($a);
-        isset($a[$this->token]) && --$len;
+        isset($a[self::$token]) && --$len;
 
         if ($len && $this->depth === $this->maxDepth && 0 < $this->maxDepth)
         {
@@ -134,7 +134,7 @@ abstract class Dumper extends Walker
 
         foreach ($a as $k => &$a)
         {
-            if ($k === $this->token) continue;
+            if ($k === self::$token) continue;
             else if ($i === $this->maxLength && 0 < $this->maxLength)
             {
                 if ($len -= $i)
