@@ -106,7 +106,7 @@ class JsonDumper extends Dumper
         if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($a, 'UTF-8') - 1)
             $a = $len . ('`' !== substr($a, 1, 1) ? 'u`' : '') . substr($a, 0, $this->maxString + 1);
 
-        $this->line .= '"' . str_replace(
+        static $map = array(
             array(
                   '\\', '"', '</',
                   "\x00",  "\x01",  "\x02",  "\x03",  "\x04",  "\x05",  "\x06",  "\x07",
@@ -121,8 +121,9 @@ class JsonDumper extends Dumper
                 '\u0010','\u0011','\u0012','\u0013','\u0014','\u0015','\u0016','\u0017',
                 '\u0018','\u0019','\u001A','\u001B','\u001C','\u001D','\u001E','\u001F',
             ),
-            $a
-        ) . '"' . $is_key;
+        );
+
+        $this->line .= '"' . str_replace($map[0], $map[1], $a) . '"' . $is_key;
     }
 
     protected function walkHash($type, &$a)
