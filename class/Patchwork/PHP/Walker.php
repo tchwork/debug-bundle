@@ -81,9 +81,9 @@ abstract class Walker
 
         switch (true)
         {
-        case true  === $v:
-        case false === $v:
         case null === $v:
+        case true === $v:
+        case false === $v:
         case is_int($v):
         case is_float($v): $this->dumpScalar($v); break;
         case is_string($v): $this->dumpString($v, false); break;
@@ -176,18 +176,18 @@ abstract class Walker
 
         foreach ($this->refPool as $k => &$v)
         {
-            $len = $v;
+            $a = $v;
             $v = $this->valPool[$k];
-            if (isset($len[0]))
+            if (isset($a[0]))
             {
-                unset($len['ref_counter']);
-                $refs[$k] = array_slice($len, 1);
+                unset($a['ref_counter']);
+                $refs[$k] = array_slice($a, 1);
             }
         }
 
         $this->refPool = $this->valPool = $this->objPool = array();
-        foreach ($this->refMap as $len => $k) $refs[$k][] = $len;
-        foreach ($this->arrayPool as &$a) unset($a[self::$token]);
+        foreach ($this->refMap as $a => $k) $refs[$k][] = $a;
+        foreach ($this->arrayPool as &$v) unset($v[self::$token]);
         $this->arrayPool = $this->refMap = array();
 
         return $refs;
