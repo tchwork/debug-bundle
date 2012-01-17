@@ -3,7 +3,7 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-4 octobre 2011 - Dernière mise à jour le 2 jan. 2012
+4 octobre 2011 - Dernière mise à jour le 17 jan. 2012
 
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
@@ -91,6 +91,10 @@ Par exemple : `echo (string) opendir('.');` va afficher `Resource id #2`, où
 
 Les ressources sont donc très similaires aux objets PHP : comme eux, elles sont
 passées « par référence », possèdent un type et des propriétés.
+
+Attention : dans le cas général, la fonction `is_resource()` n'est pas fiable
+pour détecter les variables de type `resource`.
+Voir [ce commentaire](http://php.net/is_resource#103942) dans la doc PHP.
 
 Références
 ----------
@@ -383,7 +387,7 @@ Exemples
    new déjà                {"_":"1:déjà"}   // classe déclarée dans un fichier encodé en UTF-8
    new déjà                {"_":"b`1:déjà"} // classe déclarée dans un fichier encodé en ISO-8859-1
 
-   opendir('.')            { "_": "1:resource:stream",    // ressource de type "stream"
+   $a = opendir('.')       { "_": "1:resource:stream",    // ressource de type "stream"
                              "wrapper_type": "plainfile", // que stream_get_meta_data() peut détailler
                              "stream_type": "dir",
                              "mode": "r",
@@ -393,6 +397,8 @@ Exemples
                              "blocked": true,
                              "eof": false
                            }
+   closedir($a);
+   $a;                     {"_":"1:resource:Unknown"} // impossible de faire mieux pour les ressources fermées
 
    $a = array();           []                     // tableau vide pour commencer, puis
 

@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Last updated on jan. 2, 2012
+October 4, 2011 - Last updated on jan. 17, 2012
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -85,6 +85,10 @@ For example: `echo (string) opendir('.');` may display `Resource id #2`, where
 Resources are therefore very similar to PHP objects: they are passed "by
 reference", have a type and properties.
 
+Warning: in the general case, the `is_resource()` function is not reliable to
+detect variables of type `resource`.
+See [this comment](http://php.net/is_resource#103942) in the PHP doc.
+
 References
 ----------
 
@@ -101,7 +105,7 @@ recursion, such as in this code where $b[0] and $b[1] are bound by reference
 `$a = 123; $b = array(&$a, &$a)`.
 
 References used for the transmission of objects/resources allows the same
-object/resource to exist at many positions in a nested structure.
+object/resource to exist at many places in a nested structure.
 
 The desired representation must reflect the presence of these two types of
 references, otherwise it would be impossible to dump a recursive structure
@@ -343,7 +347,7 @@ Examples
    new déjà                {"_":"1:déjà"}   // class declared in a UTF-8 encoded file
    new déjà                {"_":"b`1:déjà"} // class declared in a ISO-8859-1 encoded file
 
-   opendir('.')            { "_": "1:resource:stream",    // "stream" type resource
+   $a = opendir('.')       { "_": "1:resource:stream",    // "stream" type resource
                              "wrapper_type": "plainfile", // as detailed by stream_get_meta_data()
                              "stream_type": "dir",
                              "mode": "r",
@@ -353,6 +357,8 @@ Examples
                              "blocked": true,
                              "eof": false
                            }
+   closedir($a);
+   $a;                     {"_":"1:resource:Unknown"} // this is the best we can get for closed resources
 
    $a = array();           []                     // empty array, then
 
