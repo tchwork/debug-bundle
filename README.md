@@ -16,17 +16,17 @@ Error handling
 is a flexible error and exception handler.
 
 Its default behavior is to log errors to the same file where fatal errors are
-written by PHP. That way, the same debug stream contains both uncatchable fatal
-errors and catchable ones in an easy to parse format.
+written. That way, the same debug stream contains both uncatchable fatal errors
+and catchable ones in an easy to parse format.
 
 Each error type is handled according to four bit fields:
 
-- *scream* controls which errors are never @-silenced - silenced fatal errors
+- *scream*: controls which errors are never @-silenced - silenced fatal errors
   that can be detected at shutdown time are logged when the bit field allows so,
-- *thrownErrors* controls which errors are turned to exceptions
+- *thrownErrors*: controls which errors are turned to exceptions
   (defaults to *E_RECOVERABLE_ERROR | E_USER_ERROR*),
-- *scopedErrors* controls which errors are logged along with their local scope,
-- *tracedErrors* controls which errors are logged along with their trace (but
+- *scopedErrors*: controls which errors are logged along with their local scope,
+- *tracedErrors*: controls which errors are logged along with their trace (but
   only once for repeated errors).
 
 Since errors, even silenced ones, always have a performance cost, repeated
@@ -39,8 +39,8 @@ High accuracy logging
 Did you try to dump a variable inside an output buffering handler? Any error
 handling or variable logging code out there using either *ob_start()*,
 *print_r()* or *var_dump()* fails in this situation. Neither *serialize()* is
-usable, because some object throw an exception when serialized. If your current
-logger uses *json_encode()* internally (or *var_export()* since PHP 5.3.3) then
+usable, because some objects throw an exception when serialized. If your current
+dumper uses *json_encode()* internally (or *var_export()* since PHP 5.3.3) then
 you may be safe. But even then, you won't be able to log intra-references in
 your arrays/objects, nor details for resources and so on.
 
@@ -76,7 +76,6 @@ objects and resources, alongside with managing depth and length limits.
 
 It extends the *Walker* class.
 
-
 ### Patchwork\PHP\Walker
 
 implements a mechanism to generically traverse any PHP variable.
@@ -91,7 +90,7 @@ references and object/resource can not be disabled but is much lighter.
 Usage
 -----
 
-Including the bootup.logger.php file is the easiest way to start with these
+Including the `bootup.logger.php` file is the easiest way to start with these
 features. By defaults, errors are written to *php://stderr*, but the file is
 here to be tuned by you.
 
