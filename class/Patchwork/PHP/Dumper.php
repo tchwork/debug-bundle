@@ -94,17 +94,17 @@ abstract class Dumper extends Walker
         {
             unset($this->depthLimited[$ref_counter]);
 
-            switch (true)
+            switch (gettype($ref_value))
             {
-            case is_object($ref_value): $this->dumpObject($ref_value); return true;
-            case is_array($ref_value):
+            case 'object': $this->dumpObject($ref_value); return true;
+            case 'array':
                 $ref_counter = count($ref_value);
                 isset($ref_value[self::$token]) && --$ref_counter;
                 $this->walkHash('array:' . $ref_counter, $ref_value);
                 return true;
-            case true === $ref_value: case false === $ref_value: case null === $ref_value: break;
-            case is_int($ref_value): case is_float($ref_value): case is_string($ref_value): break;
-            default: $this->dumpResource($ref_value); return true; // is_resource() is not reliable (see http://php.net/is_resource#103942), so make it the default case
+            case 'unknown type': // See http://php.net/is_resource#103942
+            case 'resource':
+                $this->dumpResource($ref_value); return true;
             }
         }
 

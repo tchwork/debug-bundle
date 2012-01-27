@@ -68,7 +68,7 @@ abstract class Walker
     {
         ++$this->counter;
 
-        if (is_array($a)) return $this->walkArray($a);
+        if ('array' === $t = gettype($a)) return $this->walkArray($a);
 
         $v = $a;
 
@@ -79,17 +79,14 @@ abstract class Walker
             $a = self::$tag;
         }
 
-        switch (true)
+        switch ($t)
         {
-        case null === $v:
-        case true === $v:
-        case false === $v:
-        case is_int($v):
-        case is_float($v): $this->dumpScalar($v); break;
-        case is_string($v): $this->dumpString($v, false); break;
+        default: $this->dumpScalar($v); break;
+        case 'string': $this->dumpString($v, false); break;
 
-        case is_object($v): $h = pack('H*', spl_object_hash($v)); // no break;
-        default: isset($h) || $h = (int) substr((string) $v, 13); // is_resource() is not reliable (see http://php.net/is_resource#103942), so make it the default case
+        case 'object': $h = pack('H*', spl_object_hash($v)); // no break;
+        case 'unknown type': // See http://php.net/is_resource#103942
+        case 'resource': isset($h) || $h = (int) substr((string) $v, 13);
 
             if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
             else return $this->dumpRef(true, $this->refMap[$this->counter] = $this->objPool[$h], $v);
