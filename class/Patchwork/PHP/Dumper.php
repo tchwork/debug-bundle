@@ -120,7 +120,7 @@ abstract class Dumper extends Walker
         {
             $this->depthLimited[$this->counter] = 1;
 
-            if (isset($this->refPool[$this->counter]))
+            if (isset($this->refPool[$this->counter][self::$token]))
                 $this->refPool[$this->counter]['ref_counter'] = $this->counter;
 
             $this->dumpString('__cutBy', true);
