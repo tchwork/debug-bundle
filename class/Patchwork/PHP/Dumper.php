@@ -34,7 +34,8 @@ abstract class Dumper extends Walker
     $depthLimited = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
-        'o:closure' => array(__CLASS__, 'castClosure'),
+        'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
+        'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
         'r:stream' => 'stream_get_meta_data',
         'r:process' => 'proc_get_status',
         'r:dba persistent' => array(__CLASS__, 'dbaGetFile'),
@@ -157,32 +158,6 @@ abstract class Dumper extends Walker
 
         if (--$this->depth) return array();
         else return $this->cleanRefPools();
-    }
-
-    static function castClosure($c)
-    {
-        $a = array();
-        if (!class_exists('ReflectionFunction', false)) return $a;
-        $c = new \ReflectionFunction($c);
-        $c->returnsReference() && $a[] = '&';
-
-        foreach ($c->getParameters() as $p)
-        {
-            $n = ($p->isPassedByReference() ? '&$' : '$') . $p->getName();
-
-            if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
-            else $a[] = $n;
-        }
-
-        $a['use'] = array();
-
-        if (false === $a['file'] = $c->getFileName()) unset($a['file']);
-        else $a['lines'] = $c->getStartLine() . '-' . $c->getEndLine();
-
-        if (!$c = $c->getStaticVariables()) unset($a['use']);
-        else foreach ($c as $p => &$c) $a['use']['$' . $p] =& $c;
-
-        return $a;
     }
 
     static function dbaGetFile($dba)
