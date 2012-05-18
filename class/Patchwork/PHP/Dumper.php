@@ -35,6 +35,7 @@ abstract class Dumper extends Walker
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
         'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
+        'o:pdostatement' => array('Patchwork\PHP\Dumper\Caster', 'castPdoStatement'),
         'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
         'r:stream' => 'stream_get_meta_data',
         'r:process' => 'proc_get_status',

@@ -36,8 +36,11 @@ class Caster
         }
 
         $m = self::META_PREFIX;
-        $a = array($m . 'args' => $a);
-        if ($c->returnsReference()) $a[$m . 'returnsReference'] = true;
+        $a = array(
+            $m . 'returnsRef' => true,
+            $m . 'args' => $a,
+        );
+        if (!$c->returnsReference()) unset($a[$m . 'returnsRef']);
         $a[$m . 'use'] = array();
 
         if (false === $a[$m . 'file'] = $c->getFileName()) unset($a[$m . 'file']);
@@ -89,8 +92,7 @@ class Caster
 
     static function castPdo($c)
     {
-        $a = (array) $c;
-        $m = self::META_PREFIX;
+        $a = array();
         $errmode = $c->getAttribute(\PDO::ATTR_ERRMODE);
         $c->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -104,16 +106,33 @@ class Caster
 
             try
             {
-                $a[$m . $attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
-                if (isset($values[$attr][$a[$m . $attr]])) $a[$m . $attr] = $values[$attr][$a[$m . $attr]];
+                $a[$attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
+                if (isset($values[$attr][$a[$attr]])) $a[$attr] = $values[$attr][$a[$attr]];
             }
             catch (\Exception $attr)
             {
             }
         }
 
+        $m = self::META_PREFIX;
+
+        $a = (array) $c + array(
+            $m . 'errorInfo' => $c->errorInfo(),
+            $m . 'attributes' => $a,
+        );
+
+        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
+
         $c->setAttribute(\PDO::ATTR_ERRMODE, $errmode);
 
+        return $a;
+    }
+
+    static function castPdoStatement($c)
+    {
+        $m = self::META_PREFIX;
+        $a = (array) $c + array($m . 'errorInfo' => $c->errorInfo());
+        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
         return $a;
     }
 }
