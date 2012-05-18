@@ -19,12 +19,13 @@ namespace Patchwork\PHP\Dumper;
  */
 class Caster
 {
+    const META_PREFIX = "\0~\0";
+
     static function castClosure($c)
     {
         $a = array();
         if (!class_exists('ReflectionFunction', false)) return $a;
         $c = new \ReflectionFunction($c);
-        $c->returnsReference() && $a[] = '&';
 
         foreach ($c->getParameters() as $p)
         {
@@ -34,13 +35,16 @@ class Caster
             else $a[] = $n;
         }
 
-        $a['use'] = array();
+        $m = self::META_PREFIX;
+        $a = array($m . 'args' => $a);
+        if ($c->returnsReference()) $a[$m . 'returnsReference'] = true;
+        $a[$m . 'use'] = array();
 
-        if (false === $a['file'] = $c->getFileName()) unset($a['file']);
-        else $a['lines'] = $c->getStartLine() . '-' . $c->getEndLine();
+        if (false === $a[$m . 'file'] = $c->getFileName()) unset($a[$m . 'file']);
+        else $a[$m . 'lines'] = $c->getStartLine() . '-' . $c->getEndLine();
 
-        if (!$c = $c->getStaticVariables()) unset($a['use']);
-        else foreach ($c as $p => &$c) $a['use']['$' . $p] =& $c;
+        if (!$c = $c->getStaticVariables()) unset($a[$m . 'use']);
+        else foreach ($c as $p => &$c) $a[$m . 'use']['$' . $p] =& $c;
 
         return $a;
     }
@@ -86,6 +90,7 @@ class Caster
     static function castPdo($c)
     {
         $a = (array) $c;
+        $m = self::META_PREFIX;
         $errmode = $c->getAttribute(\PDO::ATTR_ERRMODE);
         $c->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -99,8 +104,8 @@ class Caster
 
             try
             {
-                $a[$attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
-                if (isset($values[$attr][$a[$attr]])) $a[$attr] = $values[$attr][$a[$attr]];
+                $a[$m . $attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
+                if (isset($values[$attr][$a[$m . $attr]])) $a[$m . $attr] = $values[$attr][$a[$m . $attr]];
             }
             catch (\Exception $attr)
             {
