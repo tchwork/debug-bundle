@@ -29,7 +29,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $v[] =& $v[0];
         $v['sameobj'] = $v['obj'];
 
-        $this->assertSame( JsonDumper::get($v),
+        $this->assertSame(
 '{"_":"1:array:20",
   "number": 1,
   "0": 1.1,
@@ -56,19 +56,22 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "8": {"_":"23:resource:Unknown"},
   "obj": {"_":"24:stdClass"},
   "closure": {"_":"25:Closure",
-    "0": "$a",
-    "&$b": null,
-    "file": "' . __FILE__ . '",
-    "lines": "' . $v['line'] . '-' . $v['line'] . '"
+    "~:args": {"_":"26:array:2",
+      "0": "$a",
+      "&$b": null
+    },
+    "~:file": "' . __FILE__ . '",
+    "~:lines": "' . $v['line'] . '-' . $v['line'] . '"
   },
   "line": ' . $v['line'] . ',
-  "recurs": {"_":"31:array:1",
-    "0": "R`32:31"
+  "recurs": {"_":"32:array:1",
+    "0": "R`33:32"
   },
-  "9": "R`33:",
-  "sameobj": "r`34:24",
-  "__refs": {"3":[-33],"31":[-32],"24":[34]}
-}'
+  "9": "R`34:",
+  "sameobj": "r`35:24",
+  "__refs": {"3":[-34],"32":[-33],"24":[35]}
+}',
+            JsonDumper::get($v)
         );
     }
 }

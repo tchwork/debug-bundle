@@ -101,7 +101,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
   "time": "%s %dus - %fms - %fms",
   "mem": "%d - %d",
   "data": {"_":"4:array:3",
-    "mesg": "syntax error, unexpected $end",
+    "mesg": "syntax error, unexpected ' . (PHP_VERSION_ID >= 50400 ? 'end of file' : '$end') . '",
     "type": "E_PARSE ' . __FILE__ . '(36) : eval()\'d code:1",
     "level": "4/0"
   }
