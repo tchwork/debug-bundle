@@ -1,12 +1,13 @@
 Patchwork Logger: Advanced PHP error handling and high accuracy JSON logging
 ============================================================================
 
-This package provides five PHP classes, each one focused on a particular aspect
-of errors handling. Together, they offer unprecedented accuracy for logging
-what's going on with the internal state of your applications.
+Here are five PHP classes under Apache 2 and GPLv2 licenses, focused on
+particular aspects of errors handling in PHP. Together, they offer unprecedented
+accuracy for logging what's going on with the internal state of your
+applications.
 
-No viewer is currently provided, but as errors and variables are logged to JSON,
-the debug stream is still both readable by humans and programs.
+For interoperability and readability, errors and variables' states are logged to
+JSON.
 
 Error handling
 --------------
