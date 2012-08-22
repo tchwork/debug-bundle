@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Last updated on jan. 17, 2012
+October 4, 2011 - Last updated on aug. 22, 2012
 
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
@@ -85,8 +85,8 @@ For example: `echo (string) opendir('.');` may display `Resource id #2`, where
 Resources are therefore very similar to PHP objects: they are passed "by
 reference", have a type and properties.
 
-Warning: in the general case, the `is_resource()` function is not reliable to
-detect variables of type `resource`.
+Warning: in the general case, the `is_resource()` function is not reliable for
+detecting variables of type `resource`.
 See [this comment](http://php.net/is_resource#103942) in the PHP doc.
 
 References
@@ -237,8 +237,11 @@ added rules:
 * keys for protected properties of objects are prefixed by `*:`
 * keys for private properties of objects are prefixed by the class name they are
   bind to followed by a `:`
-* other keys are prefixed by a `:` when they collide with a reserved key or when
-  they contain a `:`
+* keys for public properties of objects are prefixed by a `:` when they collide
+  with a reserved key or when they contain a `:`
+* keys for meta-data of objects are prefixed by `~:`. Meta-data can be anything
+  that is relevant to the understanding of one object: static property, special
+  state for internal classes (e.g. a closure's start and end line), etc.
 
 Reserved keys have semantics defined as follows:
 
@@ -252,7 +255,7 @@ Reserved keys have semantics defined as follows:
 * `"__cutBy"` contains the number of truncated elements when the local structure
   has been cut by a depth or a length limit e.g.
 * `"__refs"` contains a map of internal references of the main structure (see
-  later). It should be present only at the last position at the lowest depth
+  below). It should be present only at the last position at the lowest depth
 * `"__proto__"` has no special semantics but is reserved for compatibility with
   some browsers
 
@@ -265,7 +268,7 @@ references into account.
 
 When a reference to a previous position is encountered, it is possible to avoid
 repeating its value a second time by inserting a ``"R`"`` if the two positions
-are aliases of each other, and ``"r`"`` if both contain the same object or
+are aliases of each other, and a ``"r`"`` if both contain the same object or
 resource. The substitution by ``"R`"`` is only required for recursive references
 because it is sometimes more interesting to dump the local value instead. This
 is for example the case when the first occurrence of an object was cut due to a
@@ -423,7 +426,7 @@ class extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork
 framework provides JSON representations that follow the format described above.
 
 This class inherits from the `Dumper` class, itself inheriting from the `Walker`
-class, all three distributed under the LGPL terms.
+class, all three distributed under the Apache 2.0 / GPLv2.0 terms.
 
 `Walker` is an abstract class that implements the mechanism to generically
 traverse any PHP variable, taking internal references into account, recursive
@@ -606,9 +609,7 @@ especially errors and displays for debugging. Patchwork also adds a JavaScript
 client that allows keen visual display of this specific kind of JSON.
 
 If other frameworks wish to exploit this convention, they are welcomed reusing
-the current implementation under the LGPL terms. If this license or the
-implementation does not suit them, they are also welcomed to make another
-implementation (Xdebug?).
+the current implementation under the Apache 2.0 / GPLv2.0 terms.
 
 On the other hand, there is still work to be done to enhance the displaying
 of the JSON. Many other clients could also be made: integrated to an IDE,

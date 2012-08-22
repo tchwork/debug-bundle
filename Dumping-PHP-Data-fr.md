@@ -3,7 +3,7 @@ Convention pour représenter avec fidélité une variable PHP en JSON
 ==================================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-4 octobre 2011 - Dernière mise à jour le 17 jan. 2012
+4 octobre 2011 - Dernière mise à jour le 22 août 2012
 
 Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
 English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
@@ -268,8 +268,13 @@ JSON, selon les règles suivantes :
   par `*:`
 * les clefs correspondant à des propriétés privées d'objets sont préfixées par
   le nom de la classe qui leur est associée suivie d'un `:`,
-* les autres clefs sont préfixées par un `:` lorsqu'elles entrent en collision
-  avec une clef réservée ou qu'elles contiennent un `:`.
+* les clefs clefs correspondant à des propriétés publiques d'objets sont
+  préfixées par un `:` lorsqu'elles entrent en collision avec une clef réservée
+  ou qu'elles contiennent un `:`,
+* les clefs correspondant à des méta-données sont préfixées par `~:`. N'importe
+  quelle méta-donnée peut-être associée à un objet pour faciliter sa
+  compréhension : propriété statique, état spécial géré par une classe interne
+  (les lignes de début et de fin d'une closure par ex.), etc.
 
 Les clefs réservées ont une sémantique définie ainsi :
 
@@ -464,7 +469,8 @@ permet d'obtenir des représentations JSON qui respectent le format décrit
 précédemment.
 
 C'est une classe dérivée de la class `Dumper`, elle même dérivée de la classe
-`Walker`, toutes les trois distribuées selon les termes de la LGPL.
+`Walker`, toutes les trois distribuées selon les termes, au choix, des licenses
+Apache 2.0 ou GPLv2.0.
 
 `Walker` est une classe abstraite qui implémente le mécanisme nécessaire pour
 parcourir de façon générique n'importe quelle variable PHP, en tenant compte des
@@ -653,9 +659,8 @@ Patchwork ajoute également un client JavaScript, qui permet de représenter
 visuellement l'information contenue dans le JSON, pour plus d'ergonomie.
 
 Si d'autres frameworks souhaitent exploiter cette convention, ils sont libres de
-réutiliser l'implémentation actuelle selon les termes de la LGPL. Si cette
-licence ou cette implémentation ne leur convenait pas, ils sont libres également
-de réaliser une autre implémentation (Xdebug ?).
+réutiliser l'implémentation actuelle selon les termes, au choix, des licenses
+Apache 2.0 ou GPLv2.0.
 
 D'un autre côté, il reste encore du travail pour rendre plus ergonomique le
 client de représentation visuelle des JSON. Mais de nombreux autres clients
