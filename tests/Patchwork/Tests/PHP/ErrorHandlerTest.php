@@ -15,7 +15,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
         ErrorHandler::start($f);
         $h = ErrorHandler::getHandler();
-        $h->tracedErrors = 0;
+        $h->setLevel(null, null, null, null, /*traced*/ 0);
         $h->getLogger()->loggedGlobals = array();
 
         try
@@ -34,7 +34,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
         error_reporting(0);
         @eval('abc'); // Parse error to populate error_get_last()
-        $h->scream = E_PARSE;
+        $h->setLevel(null, /*scream*/ E_PARSE);
         ErrorHandler::shutdown();
         error_reporting(E_ALL | E_STRICT);
 
@@ -58,15 +58,16 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         "scope": {"_":"10:array:2",
           "f": "' . $f . '",
           "h": {"_":"12:Patchwork\\\\PHP\\\\ErrorHandler",
-            "scream": 4433,
-            "thrownErrors": 0,
-            "scopedErrors": 4867,
-            "tracedErrors": 0,
-            "*:logger": {"_":"17:Patchwork\\\\PHP\\\\Logger",
+            "*:loggedErrors": -1,
+            "*:screamErrors": 4433,
+            "*:thrownErrors": 0,
+            "*:scopedErrors": 4867,
+            "*:tracedErrors": 0,
+            "*:logger": {"_":"18:Patchwork\\\\PHP\\\\Logger",
               "writeLock": true,
               "lineFormat": "%s",
               "loggedGlobals": [],
-              "*:logStream": {"_":"21:resource:stream",
+              "*:logStream": {"_":"22:resource:stream",
                 "wrapper_type": "plainfile",
                 "stream_type": "STDIO",
                 "mode": "ab",
