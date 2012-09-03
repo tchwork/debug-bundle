@@ -130,6 +130,7 @@ abstract class Walker
                     count($a, COUNT_RECURSIVE);
                     restore_error_handler();
                 }
+
                 if (2 === $this->arrayType) $token = self::$token;
 /**/        }
 /**/        else

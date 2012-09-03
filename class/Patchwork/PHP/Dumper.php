@@ -37,8 +37,8 @@ abstract class Dumper extends Walker
         'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
         'r:stream' => 'stream_get_meta_data',
         'r:process' => 'proc_get_status',
-        'r:dba persistent' => array(__CLASS__, 'dbaGetFile'),
-        'r:dba' => array(__CLASS__, 'dbaGetFile'),
+        'r:dba persistent' => array('Patchwork\PHP\Dumper\Caster', 'castDba'),
+        'r:dba' => array('Patchwork\PHP\Dumper\Caster', 'castDba'),
     );
 
 
@@ -165,11 +165,5 @@ abstract class Dumper extends Walker
 
         if (--$this->depth) return array();
         else return $this->cleanRefPools();
-    }
-
-    static function dbaGetFile($dba)
-    {
-        $list = dba_list();
-        return array('file' => $list[substr((string) $dba, 13)]);
     }
 }

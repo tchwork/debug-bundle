@@ -132,4 +132,10 @@ class Caster
         if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
         return $a;
     }
+
+    static function castDba($dba)
+    {
+        $list = dba_list();
+        return array('file' => $list[substr((string) $dba, 13)]);
+    }
 }
