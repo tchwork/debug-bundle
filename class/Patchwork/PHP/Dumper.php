@@ -23,11 +23,12 @@ abstract class Dumper extends Walker
 {
     public
 
-    $maxLength = 100,
+    $maxLength = 1000,
     $maxDepth = 10;
 
     protected
 
+    $dumpLength = 0,
     $depthLimited = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
@@ -89,7 +90,7 @@ abstract class Dumper extends Walker
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
     {
-        if (null !== $ref_value && isset($this->depthLimited[$ref_counter]) && $this->depth !== $this->maxDepth)
+        if (null !== $ref_value && isset($this->depthLimited[$ref_counter]) && $this->depth < $this->maxDepth)
         {
             unset($this->depthLimited[$ref_counter]);
 
@@ -115,7 +116,7 @@ abstract class Dumper extends Walker
         $len = count($a);
         isset($a[self::$token]) && --$len;
 
-        if ($len && $this->depth === $this->maxDepth && 0 < $this->maxDepth)
+        if ($len && $this->depth >= $this->maxDepth && 0 < $this->maxDepth)
         {
             $this->depthLimited[$this->counter] = 1;
 
@@ -129,16 +130,25 @@ abstract class Dumper extends Walker
 
         if (!$len) return array();
 
-        $i = 0;
         ++$this->depth;
         if (false !== strpos($type, ':')) unset($type);
+
+        if (0 >= $this->maxLength) $len = -1;
+        else if ($this->dumpLength >= $this->maxLength) $i = $max = $this->maxLength;
+        else
+        {
+            $i = $this->dumpLength;
+            $max = $this->maxLength;
+            $this->dumpLength += $len;
+            $len = $i - $max;
+        }
 
         foreach ($a as $k => &$a)
         {
             if ($k === self::$token) continue;
-            else if ($i === $this->maxLength && 0 < $this->maxLength)
+            else if ($len >= 0 && $i++ === $max)
             {
-                if ($len -= $i)
+                if ($len)
                 {
                     $this->dumpString('__cutBy', true);
                     $this->dumpScalar($len);
@@ -151,7 +161,6 @@ abstract class Dumper extends Walker
 
             $this->dumpString($k, true);
             $this->walkRef($a);
-            ++$i;
         }
 
         if (--$this->depth) return array();
