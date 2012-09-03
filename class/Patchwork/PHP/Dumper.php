@@ -30,6 +30,7 @@ abstract class Dumper extends Walker
 
     $dumpLength = 0,
     $depthLimited = array(),
+    $objectsDepth = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
         'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
@@ -49,6 +50,17 @@ abstract class Dumper extends Walker
 
     protected function dumpObject($obj)
     {
+        $c = pack('H*', spl_object_hash($obj));
+
+        if ($this->objectsDepth[$c] < $this->depth)
+        {
+            $this->refPool[$this->counter]['ref_counter'] = $this->counter;
+            $this->dumpRef(true);
+            return;
+        }
+
+        unset($this->objectsDepth[$c]);
+
         $c = get_class($obj);
         $p = array($c => $c)
             + class_parents($obj)
@@ -90,7 +102,20 @@ abstract class Dumper extends Walker
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
     {
-        if (null !== $ref_value && isset($this->depthLimited[$ref_counter]) && $this->depth < $this->maxDepth)
+        if (null === $ref_value) return false;
+
+        if (is_object($ref_value))
+        {
+            $h = pack('H*', spl_object_hash($ref_value));
+
+            if (isset($this->objectsDepth[$h]) && $this->objectsDepth[$h] === $this->depth)
+            {
+                $this->dumpObject($ref_value);
+                return true;
+            }
+        }
+
+        if (isset($this->depthLimited[$ref_counter]) && $this->depth < $this->maxDepth)
         {
             unset($this->depthLimited[$ref_counter]);
 
@@ -143,6 +168,14 @@ abstract class Dumper extends Walker
             $len = $i - $max;
         }
 
+        if ($len < 0)
+        {
+            // Breadth-first for objects
+            foreach ($a as $k)
+                if (is_object($k) && $k = pack('H*', spl_object_hash($k)))
+                    $this->objectsDepth += array($k => $this->depth);
+        }
+
         foreach ($a as $k => &$a)
         {
             if ($k === self::$token) continue;
@@ -162,6 +195,8 @@ abstract class Dumper extends Walker
             $this->dumpString($k, true);
             $this->walkRef($a);
         }
+
+        while (end($this->objectsDepth) === $this->depth) array_pop($this->objectsDepth);
 
         if (--$this->depth) return array();
         else return $this->cleanRefPools();

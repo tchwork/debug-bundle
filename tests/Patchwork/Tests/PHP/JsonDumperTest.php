@@ -20,6 +20,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
             'res' => $g, $h,
             'obj' => (object) array(),
             'closure' => function($a, &$b = null) {}, 'line' => __LINE__,
+            'nobj' => array((object) array()),
         );
 
         $r = array();
@@ -27,10 +28,12 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
 
         $v['recurs'] =& $r;
         $v[] =& $v[0];
-        $v['sameobj'] = $v['obj'];
+        $v['sobj'] = $v['obj'];
+        $v['snobj'] =& $v['nobj'][0];
+        $v['snobj2'] = $v['nobj'][0];
 
         $this->assertSame(
-'{"_":"1:array:20",
+'{"_":"1:array:23",
   "number": 1,
   "0": 1.1,
   "const": null,
@@ -64,12 +67,17 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "~:lines": "' . $v['line'] . '-' . $v['line'] . '"
   },
   "line": ' . $v['line'] . ',
-  "recurs": {"_":"32:array:1",
-    "0": "R`33:32"
+  "nobj": {"_":"32:array:1",
+    "0": "r`33:"
   },
-  "9": "R`34:",
-  "sameobj": "r`35:24",
-  "__refs": {"3":[-34],"32":[-33],"24":[35]}
+  "recurs": {"_":"34:array:1",
+    "0": "R`35:34"
+  },
+  "9": "R`36:",
+  "sobj": "r`37:24",
+  "snobj": {"_":"38:stdClass"},
+  "snobj2": "r`39:33",
+  "__refs": {"3":[-36],"34":[-35],"24":[37],"33":[-38,39]}
 }',
             JsonDumper::get($v)
         );
