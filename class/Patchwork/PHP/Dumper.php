@@ -165,7 +165,7 @@ abstract class Dumper extends Walker
             $i = $this->dumpLength;
             $max = $this->maxLength;
             $this->dumpLength += $len;
-            $len = $i - $max;
+            $len += $i - $max;
         }
 
         if ($len < 0)
