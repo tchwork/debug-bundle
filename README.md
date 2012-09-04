@@ -1,4 +1,4 @@
-Patchwork Logger: Advanced PHP error handling and high accuracy JSON logging
+Patchwork Error Logger: Advanced PHP error handling and high accuracy JSON logging
 ============================================================================
 
 Here are five PHP classes under Apache 2 and GPLv2 licenses, focused on

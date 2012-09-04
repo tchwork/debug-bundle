@@ -1,9 +1,9 @@
 {
-    "name": "patchwork/logger",
+    "name": "patchwork/error-logger",
     "type": "library",
     "description": "Advanced PHP error handling and high accuracy JSON logging",
     "keywords": ["error","exception","log","logging","json","dump"],
-    "homepage": "https://github.com/nicolas-grekas/Patchwork-Logger",
+    "homepage": "https://github.com/nicolas-grekas/Patchwork-Error-Logger",
     "license": "(Apache-2.0 or GPL-2.0)",
     "authors": [
         {

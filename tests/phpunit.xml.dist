@@ -4,7 +4,7 @@
          bootstrap="bootstrap.php"
 >
     <testsuites>
-        <testsuite name="Patchwork Logger Test Suite">
+        <testsuite name="Patchwork Error Logger Test Suite">
             <directory>./Patchwork/</directory>
         </testsuite>
     </testsuites>
