@@ -421,7 +421,7 @@ Example visualisation:
 Implementation
 ==============
 
-The [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php)
+The [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Error-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php)
 class extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork)
 framework provides JSON representations that follow the format described above.
 

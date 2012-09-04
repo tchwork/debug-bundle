@@ -463,7 +463,7 @@ Example de représentation visuelle :
 Implémentation
 ==============
 
-La classe [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php),
+La classe [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Error-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php),
 extraite du framework [Patchwork](https://github.com/nicolas-grekas/Patchwork)
 permet d'obtenir des représentations JSON qui respectent le format décrit
 précédemment.
