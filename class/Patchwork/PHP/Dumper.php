@@ -52,7 +52,7 @@ abstract class Dumper extends Walker
     {
         $c = pack('H*', spl_object_hash($obj));
 
-        if ($this->objectsDepth[$c] < $this->depth)
+        if (isset($this->objectsDepth[$c]) && $this->objectsDepth[$c] < $this->depth)
         {
             $this->refPool[$this->counter]['ref_counter'] = $this->counter;
             $this->dumpRef(true);
@@ -171,9 +171,17 @@ abstract class Dumper extends Walker
         if ($len < 0)
         {
             // Breadth-first for objects
+
             foreach ($a as $k)
-                if (is_object($k) && $k = pack('H*', spl_object_hash($k)))
-                    $this->objectsDepth += array($k => $this->depth);
+            {
+                switch (gettype($k))
+                {
+                case 'object': $len or $this->objectsDepth += array(pack('H*', spl_object_hash($k)) => $this->depth);
+                case 'array': $len = 0;
+                }
+            }
+
+            $len = -1;
         }
 
         foreach ($a as $k => &$a)
