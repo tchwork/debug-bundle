@@ -21,7 +21,7 @@ class Caster
     static function castClosure($c)
     {
         $a = array();
-        if (!class_exists('ReflectionFunction', false) || !method_exists('ReflectionFunction', 'getClosure')) return $a;
+        if (!class_exists('ReflectionFunction', false) || 'Closure' !== get_class($c)) return $a;
         $c = new \ReflectionFunction($c);
 
         foreach ($c->getParameters() as $p)
