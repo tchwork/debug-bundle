@@ -173,7 +173,7 @@ abstract class Walker
         {
             $a = $v;
             $v = $this->valPool[$k];
-            if (isset($a[0], $a[self::$token]))
+            if (is_array($a) && isset($a[0], $a[self::$token]))
             {
                 unset($a['ref_counter']);
                 $refs[$k] = array_slice($a, 1);
