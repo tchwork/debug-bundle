@@ -26,10 +26,19 @@ class Caster
 
         foreach ($c->getParameters() as $p)
         {
-            $n = ($p->isPassedByReference() ? '&$' : '$') . $p->getName();
+            $n = strstr($p->__toString(), '>');
+            $n = substr($n, 2, strpos($n, ' = ') - 2);
+            $n = str_replace(' or NULL', '', $n);
 
-            if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
-            else $a[] = $n;
+            try
+            {
+                if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
+                else $a[] = $n;
+            }
+            catch (\ReflectionException $p)
+            {
+                $a[] = $n;
+            }
         }
 
         $m = self::META_PREFIX;

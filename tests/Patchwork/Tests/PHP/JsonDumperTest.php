@@ -19,7 +19,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
             '[]' => array(),
             'res' => $g, $h,
             'obj' => (object) array(),
-            'closure' => function($a, &$b = null) {}, 'line' => __LINE__,
+            'closure' => function($a, \PDO &$b = null) {}, 'line' => __LINE__,
             'nobj' => array((object) array()),
         );
 
@@ -61,7 +61,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "closure": {"_":"25:Closure",
     "~:args": {"_":"26:array:2",
       "0": "$a",
-      "&$b": null
+      "PDO &$b": null
     },
     "~:file": "' . __FILE__ . '",
     "~:lines": "' . $v['line'] . '-' . $v['line'] . '"
