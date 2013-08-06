@@ -28,15 +28,16 @@ class Caster
         {
             $n = strstr($p->__toString(), '>');
             $n = substr($n, 2, strpos($n, ' = ') - 2);
-            $n = str_replace(' or NULL', '', $n);
 
             try
             {
-                if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
+                if (strpos($n, ' or NULL ')) $a[str_replace(' or NULL', '', $n)] = null;
+                else if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
                 else $a[] = $n;
             }
             catch (\ReflectionException $p)
             {
+                // This will be reached on PHP 5.3.16 because of https://bugs.php.net/62715
                 $a[] = $n;
             }
         }
