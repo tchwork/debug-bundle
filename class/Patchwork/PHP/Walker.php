@@ -65,14 +65,14 @@ abstract class Walker
     {
         ++$this->counter;
 
-        if ('array' === $t = gettype($a)) return $this->walkArray($a);
-
         $v = $a;
+
+        if ('array' === $t = gettype($v)) return $this->walkArray($a);
 
         if ($this->checkInternalRefs && 1 < $this->counter)
         {
             $this->refPool[$this->counter] =& $a;
-            $this->valPool[$this->counter] = $a;
+            $this->valPool[$this->counter] = $v;
             $a = self::$tag;
         }
 
@@ -109,8 +109,7 @@ abstract class Walker
                 }
 
                 $c = $a['ref_counter'];
-                unset($a);
-                $a = $this->valPool[$c];
+                $a =& $this->valPool[$c];
             }
 
             $this->refMap[-$this->counter] = $c;
@@ -127,7 +126,7 @@ abstract class Walker
                     // Detect recursive arrays by catching recursive count warnings
                     $this->arrayType = 1;
                     set_error_handler(array($this, 'catchRecursionWarning'));
-                    count($a, COUNT_RECURSIVE);
+                    count(array(&$a), COUNT_RECURSIVE);
                     restore_error_handler();
                 }
 

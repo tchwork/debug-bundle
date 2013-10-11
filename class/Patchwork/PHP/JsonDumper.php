@@ -64,10 +64,12 @@ class JsonDumper extends Dumper
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
     {
-        if (parent::dumpRef($is_soft, $ref_counter, $ref_value)) return;
+        if (parent::dumpRef($is_soft, $ref_counter, $ref_value)) return true;
 
         $is_soft = $is_soft ? 'r' : 'R';
         $this->line .= "\"{$is_soft}`{$this->counter}:{$ref_counter}\"";
+
+        return false;
     }
 
     protected function dumpScalar($a)
@@ -137,9 +139,8 @@ class JsonDumper extends Dumper
             {
                 ++$this->depth;
                 $this->dumpString('__refs', true);
-                $this->line .= '{';
-                foreach ($type as $k => &$a) $a = '"' . $k . '":[' . implode(',', $a) . ']';
-                $this->line .= implode(',', $type) . '}';
+                foreach ($type as $k => $v) $type[$k] = '"' . $k . '":[' . implode(',', $v) . ']';
+                $this->line .= '{' . implode(',', $type) . '}';
                 --$this->depth;
             }
 
