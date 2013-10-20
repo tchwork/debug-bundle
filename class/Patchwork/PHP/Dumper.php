@@ -83,7 +83,7 @@ abstract class Dumper extends Walker
 
         isset($a) || $a = (array) $obj;
 
-        $this->walkHash($c, $a);
+        $this->walkHash($c, $a, count($a));
     }
 
     protected function dumpResource($res)
@@ -97,14 +97,14 @@ abstract class Dumper extends Walker
             catch (\Exception $e) {$res = array();}
         }
 
-        $this->walkHash("resource:{$h}", $res);
+        $this->walkHash("resource:{$h}", $res, count($res));
     }
 
-    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
+    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
     {
         if (null === $ref_value) return false;
 
-        if (is_object($ref_value))
+        if ('object' === $ref_type)
         {
             $h = pack('H*', spl_object_hash($ref_value));
 
@@ -119,28 +119,28 @@ abstract class Dumper extends Walker
         {
             unset($this->depthLimited[$ref_counter]);
 
-            switch (gettype($ref_value))
+            switch ($ref_type)
             {
-            case 'object': $this->dumpObject($ref_value); return true;
+            case 'object':
+                $this->dumpObject($ref_value);
+                return true;
             case 'array':
-                $ref_counter = count($ref_value);
+                $ref_counter = $this->count($ref_value);
                 isset($ref_value[self::$token]) && --$ref_counter;
-                $this->walkHash('array:' . $ref_counter, $ref_value);
+                $this->walkHash('array:' . $ref_counter, $ref_value, $ref_counter);
                 return true;
             case 'unknown type': // See http://php.net/is_resource#103942
             case 'resource':
-                $this->dumpResource($ref_value); return true;
+                $this->dumpResource($ref_value);
+                return true;
             }
         }
 
         return false;
     }
 
-    protected function walkHash($type, &$a)
+    protected function walkHash($type, &$a, $len)
     {
-        $len = count($a);
-        isset($a[self::$token]) && --$len;
-
         if ($len && $this->depth >= $this->maxDepth && 0 < $this->maxDepth)
         {
             $this->depthLimited[$this->counter] = 1;
