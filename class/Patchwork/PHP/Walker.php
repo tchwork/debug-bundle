@@ -85,7 +85,7 @@ abstract class Walker
         default: $this->dumpScalar($v); break;
         case 'string': $this->dumpString($v, false); break;
 
-        case 'object': $h = pack('H*', spl_object_hash($v)); // no break;
+        case 'object': $h = pack('H*', spl_object_hash($v)); // No break;
         case 'unknown type': // See http://php.net/is_resource#103942
         case 'resource': isset($h) || $h = (int) substr((string) $v, 13);
 
@@ -183,8 +183,8 @@ abstract class Walker
             if (null !== array_splice($v, 0, 0) && isset($v[0], $v[self::$token]))
             {
                 unset($v['ref_counter']);
+                array_splice($v, 0, 1);
                 $refs[$k] = $v;
-                array_splice($refs[$k], 0, 1);
             }
 
             $v = $this->valPool[$k];
