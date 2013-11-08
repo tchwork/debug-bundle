@@ -129,7 +129,6 @@ abstract class Dumper extends Walker
                 isset($ref_value[self::$token]) && --$ref_counter;
                 $this->walkHash('array:' . $ref_counter, $ref_value, $ref_counter);
                 return true;
-            case 'unknown type': // See http://php.net/is_resource#103942
             case 'resource':
                 $this->dumpResource($ref_value);
                 return true;
@@ -172,15 +171,16 @@ abstract class Dumper extends Walker
         {
             // Breadth-first for objects
 
-            foreach ($a as $k)
+            foreach ($a as &$k)
             {
-                switch (gettype($k))
+                switch ($this->gettype($k))
                 {
                 case 'object': $len or $this->objectsDepth += array(pack('H*', spl_object_hash($k)) => $this->depth);
                 case 'array': $len = 0;
                 }
             }
 
+            unset($k);
             $len = -1;
         }
 

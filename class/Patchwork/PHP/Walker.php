@@ -34,7 +34,9 @@ abstract class Walker
     $refPool = array(),
     $valPool = array(),
     $objPool = array(),
-    $arrayPool = array();
+    $arrayPool = array(),
+    $lastErrorMessage = false,
+    $prevErrorHandler;
 
     protected static
 
@@ -50,6 +52,8 @@ abstract class Walker
 
     function walk(&$a)
     {
+        $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
+
         if (empty(self::$tag))
         {
             self::$tag = (object) array();
@@ -59,19 +63,20 @@ abstract class Walker
 
         $this->arrayType = $this->counter = $this->depth = 0;
         $this->walkRef($a);
+
+        restore_error_handler();
     }
 
     protected function walkRef(&$a)
     {
         ++$this->counter;
 
-        $v = $a;
-
-        if ('array' === $t = gettype($v))
+        if ('array' === $t = $this->gettype($a))
         {
-            unset($v);
             return $this->walkArray($a);
         }
+
+        $v = $a;
 
         if ($this->checkInternalRefs && 1 < $this->counter)
         {
@@ -86,7 +91,6 @@ abstract class Walker
         case 'string': $this->dumpString($v, false); break;
 
         case 'object': $h = pack('H*', spl_object_hash($v)); // No break;
-        case 'unknown type': // See http://php.net/is_resource#103942
         case 'resource': isset($h) || $h = (int) substr((string) $v, 13);
 
             if (empty($this->objPool[$h])) $this->objPool[$h] = $this->counter;
@@ -115,7 +119,7 @@ abstract class Walker
                 }
 
                 $c = $a['ref_counter'];
-                $t = gettype($this->valPool[$c]);
+                $t = $this->gettype($this->valPool[$c]);
                 $a =& $this->valPool[$c];
             }
 
@@ -131,10 +135,10 @@ abstract class Walker
                 if (0 === $this->arrayType)
                 {
                     // Detect recursive arrays by catching recursive count warnings
-                    $this->arrayType = 1;
-                    set_error_handler(array($this, 'catchRecursionWarning'));
+                    $this->lastErrorMessage = true;
                     count(array(&$a), COUNT_RECURSIVE);
-                    restore_error_handler();
+                    $this->arrayType = true === $this->lastErrorMessage ? 1 : 2;
+                    $this->lastErrorMessage = false;
                 }
 
                 if (2 === $this->arrayType) $token = self::$token;
@@ -175,12 +179,9 @@ abstract class Walker
     {
         $refs = array();
 
-        set_error_handler('var_dump', 0);
-        $e = error_reporting(0);
-
         foreach ($this->refPool as $k => &$v)
         {
-            if (null !== array_splice($v, 0, 0) && isset($v[0], $v[self::$token]))
+            if ('array' === $this->gettype($v) && isset($v[0], $v[self::$token]))
             {
                 unset($v['ref_counter']);
                 array_splice($v, 0, 1);
@@ -190,9 +191,6 @@ abstract class Walker
             $v = $this->valPool[$k];
         }
 
-        error_reporting($e);
-        restore_error_handler();
-
         $this->refPool = $this->valPool = $this->objPool = array();
         foreach ($this->refMap as $a => $k) $refs[$k][] = $a;
         foreach ($this->arrayPool as &$v) unset($v[self::$token]);
@@ -201,9 +199,19 @@ abstract class Walker
         return $refs;
     }
 
-    protected function catchRecursionWarning()
+    // References friendly variants of native functions
+
+    protected function gettype(&$a)
     {
-        $this->arrayType = 2;
+        $this->lastErrorMessage = true;
+        $this->expectArray($a);
+        $msg = $this->lastErrorMessage;
+        $this->lastErrorMessage = false;
+
+        if (true === $msg) return 'array';
+
+        $i = strpos($msg, 'array, ') + 7;
+        return substr($msg, $i, strpos($msg, ' given', $i) - $i);
     }
 
     protected function count(&$a)
@@ -211,5 +219,20 @@ abstract class Walker
         $len = 0;
         foreach ($a as &$a) ++$len;
         return $len;
+    }
+
+    private function expectArray(array &$a)
+    {
+    }
+
+    function handleError($type, $msg, $file, $line, &$scope)
+    {
+        if (true !== $this->lastErrorMessage)
+        {
+            if (null === $this->prevErrorHandler) return false;
+            else return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$scope));
+        }
+
+        $this->lastErrorMessage = $msg;
     }
 }
