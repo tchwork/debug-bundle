@@ -225,12 +225,12 @@ abstract class Walker
     {
     }
 
-    function handleError($type, $msg, $file, $line, &$scope)
+    function handleError($type, $msg, $file, $line, &$context)
     {
         if (true !== $this->lastErrorMessage)
         {
             if (null === $this->prevErrorHandler) return false;
-            else return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$scope));
+            else return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$context));
         }
 
         $this->lastErrorMessage = $msg;

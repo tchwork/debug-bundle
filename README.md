@@ -26,7 +26,7 @@ Each error type is handled according to four bit fields:
   that can be detected at shutdown time are logged when the bit field allows so,
 - *thrownErrors*: controls which errors are turned to exceptions
   (defaults to *E_RECOVERABLE_ERROR | E_USER_ERROR*),
-- *scopedErrors*: controls which errors are logged along with their local scope,
+- *scopedErrors*: controls which errors are logged along with their local context,
 - *tracedErrors*: controls which errors are logged along with their trace (but
   only once for repeated errors).
 
