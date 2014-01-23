@@ -92,8 +92,18 @@ class JsonDumper extends Dumper
         if ($is_key)
         {
             $this->line .= ',';
-            $is_key = $this->lastHash === $this->counter && !isset($this->depthLimited[$this->counter]);
-            $this->dumpLine(-$is_key);
+            $is_key = $this->lastHash === $this->counter;
+
+            if ('__cutBy' === $a)
+            {
+                if (! $is_key) $this->dumpLine(0);
+            }
+            else
+            {
+                $is_key = $is_key && ! isset($this->depthLimited[$this->counter]);
+                $this->dumpLine(-$is_key);
+            }
+
             $is_key = ': ';
         }
         else $is_key = '';
@@ -145,8 +155,7 @@ class JsonDumper extends Dumper
                 --$this->depth;
             }
 
-            if ($this->counter !== $this->lastHash || isset($this->depthLimited[$this->counter]))
-                $this->dumpLine(1);
+            if ($this->counter !== $this->lastHash) $this->dumpLine(1);
 
             $this->lastHash = $h;
             $this->line .= '}';

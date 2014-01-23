@@ -24,6 +24,7 @@ class CliColorDumper extends Dumper
     $line = '',
     $lastHash = 0,
     $styles = array(
+        // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '38;5;4',
         'const'     => '38;5;4',
         'str'       => '38;5;9',
@@ -63,18 +64,26 @@ class CliColorDumper extends Dumper
         if (parent::dumpRef($is_soft, $ref_counter, $ref_value, $ref_type)) return true;
 
         $is_soft = $is_soft ? '@' : '#';
-        $note = $is_soft . $ref_counter;
 
-        if (isset($ref_type)) switch ($ref_type)
+        if (! $ref_counter)
         {
-        case 'array': $note = 'array ' . $note; break;
-        case 'object': $note = get_class($ref_value) . ' ' . $note; break;
-        case 'resource': $note = 'resource:' . get_resource_type($ref_value) . ' ' . $note; break;
-        case 'string': $ths->dumpString($ref_value, false); break;
-        default: $ths->dumpScalar($ref_value); break;
+            $this->line .= $this->style('ref', $is_soft . $this->counter);
         }
+        else
+        {
+            $note = $is_soft . $ref_counter;
 
-        $this->line .= $this->style('note', $note);
+            if (isset($ref_type)) switch ($ref_type)
+            {
+            case 'array': $note = 'array ' . $note; break;
+            case 'object': $note = get_class($ref_value) . ' ' . $note; break;
+            case 'resource': $note = 'resource:' . get_resource_type($ref_value) . ' ' . $note; break;
+            case 'string': $ths->dumpString($ref_value, false); break;
+            default: $ths->dumpScalar($ref_value); break;
+            }
+
+            $this->line .= $this->style('note', $note);
+        }
 
         return false;
     }
@@ -122,9 +131,20 @@ class CliColorDumper extends Dumper
     {
         if ($is_key)
         {
-            $is_key = $this->lastHash === $this->counter && !isset($this->depthLimited[$this->counter]);
+            $is_key = $this->lastHash === $this->counter;
+
+            if ('__cutBy' === $a)
+            {
+                if (! $is_key) $this->dumpLine(0);
+                else $this->line .= ' ';
+                $this->line .= '…';
+                return;
+            }
+
+            $is_key = $is_key && ! isset($this->depthLimited[$this->counter]);
             $this->dumpLine(-$is_key);
             $is_key = ': ';
+
             $a = explode(':', $a);
 
             if (isset($a[1]))
@@ -223,13 +243,31 @@ class CliColorDumper extends Dumper
 
             $this->line .= ' ' . $this->style('ref', "#$this->counter");
 
-            parent::walkHash($type, $a, $len);
+            $type = parent::walkHash($type, $a, $len);
 
-            if ($this->counter !== $this->lastHash || isset($this->depthLimited[$this->counter]))
-                $this->dumpLine(1);
+            if ($this->counter !== $this->lastHash) $this->dumpLine(1);
 
             $this->lastHash = $h;
             $this->line .= $is_array ? ']' : '}';
+
+            if ($type)
+            {
+                $fmt = strlen($this->counter);
+
+                foreach ($type as $k => $v)
+                {
+                    $this->dumpLine(0);
+
+                    $this->line .= str_repeat(' ', $fmt - strlen($k));
+                    $this->line .= $this->style('ref', "#$k");
+                    $this->line .= ':';
+
+                    foreach ($v as $v)
+                    {
+                        $this->line .= ' ' . $this->style('note', $v < 0 ? '#' . -$v : "@$v");
+                    }
+                }
+            }
         }
     }
 
