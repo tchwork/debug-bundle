@@ -91,19 +91,20 @@ class JsonDumper extends Dumper
     {
         if ($is_key)
         {
+            $this->line .= ',';
             $is_key = $this->lastHash === $this->counter && !isset($this->depthLimited[$this->counter]);
-            $this->dumpLine(-$is_key, $this->line .= ',');
+            $this->dumpLine(-$is_key);
             $is_key = ': ';
         }
         else $is_key = '';
 
         if ('' === $a) return $this->line .= '""' . $is_key;
 
-        if (!preg_match("''u", $a)) $a = 'b`' . utf8_encode($a);
+        if (! preg_match('//u', $a)) $a = 'b`' . utf8_encode($a);
         else if (false !== strpos($a, '`')) $a = 'u`' . $a;
 
         if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($a, 'UTF-8') - 1)
-            $a = $len . ('`' !== substr($a, 1, 1) ? 'u`' : '') . substr($a, 0, $this->maxString + 1);
+            $a = $len . ('`' !== substr($a, 1, 1) ? 'u`' : '') . iconv_substr($a, 0, $this->maxString + 1, 'UTF-8');
 
         static $map = array(
             array(

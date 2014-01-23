@@ -55,7 +55,7 @@ abstract class Dumper extends Walker
         if (isset($this->objectsDepth[$c]) && $this->objectsDepth[$c] < $this->depth)
         {
             $this->refPool[$this->counter]['ref_counter'] = $this->counter;
-            $this->dumpRef(true);
+            $this->dumpRef(true, $this->counter, $obj, 'object');
             return;
         }
 
@@ -89,15 +89,18 @@ abstract class Dumper extends Walker
     protected function dumpResource($res)
     {
         $h = get_resource_type($res);
+        $a = array();
 
-        if (empty($this->callbacks['r:' . $h])) $res = array();
-        else
+        if (! empty($this->callbacks['r:' . $h]))
         {
             try {$res = call_user_func($this->callbacks['r:' . $h], $res);}
             catch (\Exception $e) {$res = array();}
+
+            foreach ($res as $k => $v)
+                $a["\0~\0" . $k] = $v;
         }
 
-        $this->walkHash("resource:{$h}", $res, count($res));
+        $this->walkHash("resource:{$h}", $a, count($a));
     }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
@@ -155,7 +158,7 @@ abstract class Dumper extends Walker
         if (!$len) return array();
 
         ++$this->depth;
-        if (false !== strpos($type, ':')) unset($type);
+        if (0 === strncmp($type, 'array:', 6)) unset($type);
 
         if (0 >= $this->maxLength) $len = -1;
         else if ($this->dumpLength >= $this->maxLength) $i = $max = $this->maxLength;
