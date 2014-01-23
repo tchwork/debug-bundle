@@ -71,18 +71,15 @@ class CliColorDumper extends Dumper
         }
         else
         {
-            $note = $is_soft . $ref_counter;
-
-            if (isset($ref_type)) switch ($ref_type)
+            if (! isset($ref_type)) $note = '';
+            else switch ($ref_type)
             {
-            case 'array': $note = 'array ' . $note; break;
-            case 'object': $note = get_class($ref_value) . ' ' . $note; break;
-            case 'resource': $note = 'resource:' . get_resource_type($ref_value) . ' ' . $note; break;
-            case 'string': $ths->dumpString($ref_value, false); break;
-            default: $ths->dumpScalar($ref_value); break;
+            default: $note = $ref_type . ' '; break;
+            case 'object': $note = get_class($ref_value) . ' '; break;
+            case 'resource': $note = 'resource:' . get_resource_type($ref_value) . ' '; break;
             }
 
-            $this->line .= $this->style('note', $note);
+            $this->line .= $this->style('note', $note . $is_soft . $ref_counter);
         }
 
         return false;
@@ -243,23 +240,50 @@ class CliColorDumper extends Dumper
 
             $this->line .= ' ' . $this->style('ref', "#$this->counter");
 
-            $type = parent::walkHash($type, $a, $len);
+            $refs = parent::walkHash($type, $a, $len);
 
             if ($this->counter !== $this->lastHash) $this->dumpLine(1);
 
             $this->lastHash = $h;
             $this->line .= $is_array ? ']' : '}';
 
-            if ($type)
+            if ($refs)
             {
-                $fmt = strlen($this->counter);
+                $col1 = 0;
+                $type = array();
 
-                foreach ($type as $k => $v)
+                if (isset($this->valPool[1]))
+                {
+                    foreach ($refs as $k => $v)
+                    {
+                        $v = $this->valPool[$k];
+
+                        switch ($h = gettype($v))
+                        {
+                        case 'object': $type[$k] = get_class($v); break;
+                        case 'unknown type':
+                        case 'resource': $type[$k] = 'resource:' . get_resource_type($v); break;
+                        default: $type[$k] = $t; break;
+                        }
+
+                        $col1 = max($col1, strlen($type[$k]));
+                    }
+                }
+
+                $col2 = strlen($this->counter);
+
+                foreach ($refs as $k => $v)
                 {
                     $this->dumpLine(0);
 
-                    $this->line .= str_repeat(' ', $fmt - strlen($k));
+                    $this->line .= str_repeat(' ', $col2 - strlen($k));
                     $this->line .= $this->style('ref', "#$k");
+
+                    if ($col1)
+                    {
+                        $this->line .= sprintf(" % -{$col1}s", $type[$k]);
+                    }
+
                     $this->line .= ':';
 
                     foreach ($v as $v)

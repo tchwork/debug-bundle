@@ -210,6 +210,7 @@ abstract class Dumper extends Walker
         while (end($this->objectsDepth) === $this->depth) array_pop($this->objectsDepth);
 
         if (--$this->depth) return array();
-        else return $this->cleanRefPools();
+        $this->depthLimited = array();
+        return $this->cleanRefPools();
     }
 }

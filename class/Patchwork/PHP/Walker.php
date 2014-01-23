@@ -63,6 +63,7 @@ abstract class Walker
 
         $this->arrayType = $this->counter = $this->depth = 0;
         $this->walkRef($a);
+        $this->valPool = $this->objPool = array();
 
         restore_error_handler();
     }
@@ -78,11 +79,11 @@ abstract class Walker
 
         $v = $a;
 
-        if ($this->checkInternalRefs && 1 < $this->counter)
+        if ($this->checkInternalRefs)
         {
             $this->refPool[$this->counter] =& $a;
             $this->valPool[$this->counter] = $v;
-            $a = self::$tag;
+            if (1 < $this->counter) $a = self::$tag;
         }
 
         switch ($t)
@@ -191,7 +192,7 @@ abstract class Walker
             $v = $this->valPool[$k];
         }
 
-        $this->refPool = $this->valPool = $this->objPool = array();
+        $this->refPool = array();
         foreach ($this->refMap as $a => $k) $refs[$k][] = $a;
         foreach ($this->arrayPool as &$v) unset($v[self::$token]);
         $this->arrayPool = $this->refMap = array();
