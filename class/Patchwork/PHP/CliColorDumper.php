@@ -252,18 +252,18 @@ class CliColorDumper extends Dumper
                 $col1 = 0;
                 $type = array();
 
-                if (isset($this->valPool[1]))
+                foreach ($refs as $k => $v)
                 {
-                    foreach ($refs as $k => $v)
+                    if (isset($this->valPool[$k]))
                     {
                         $v = $this->valPool[$k];
+                        $type[$k] = gettype($v);
 
-                        switch ($h = gettype($v))
+                        switch ($type[$k])
                         {
                         case 'object': $type[$k] = get_class($v); break;
                         case 'unknown type':
                         case 'resource': $type[$k] = 'resource:' . get_resource_type($v); break;
-                        default: $type[$k] = $t; break;
                         }
 
                         $col1 = max($col1, strlen($type[$k]));
@@ -281,7 +281,7 @@ class CliColorDumper extends Dumper
 
                     if ($col1)
                     {
-                        $this->line .= sprintf(" % -{$col1}s", $type[$k]);
+                        $this->line .= sprintf(" % -{$col1}s", isset($type[$k]) ? $type[$k] : 'array');
                     }
 
                     $this->line .= ':';
