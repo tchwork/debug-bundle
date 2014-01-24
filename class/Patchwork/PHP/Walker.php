@@ -52,8 +52,6 @@ abstract class Walker
 
     function walk(&$a)
     {
-        $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
-
         if (empty(self::$tag))
         {
             self::$tag = (object) array();
@@ -62,10 +60,19 @@ abstract class Walker
         }
 
         $this->arrayType = $this->counter = $this->depth = 0;
-        $this->walkRef($a);
-        $this->valPool = $this->objPool = array();
+        $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
+
+        try {$this->walkRef($a);}
+        catch (\Exception $e) {}
 
         restore_error_handler();
+        $this->prevErrorHandler = null;
+
+        $this->refPool = array();
+        $this->valPool = $this->objPool = array();
+        $this->arrayPool = $this->refMap = array();
+
+        if (isset($e)) throw $e;
     }
 
     protected function walkRef(&$a)
@@ -195,7 +202,6 @@ abstract class Walker
         $this->refPool = array();
         foreach ($this->refMap as $a => $k) $refs[$k][] = $a;
         foreach ($this->arrayPool as &$v) unset($v[self::$token]);
-        $this->arrayPool = $this->refMap = array();
 
         return $refs;
     }

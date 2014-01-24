@@ -48,6 +48,16 @@ abstract class Dumper extends Walker
         $this->callbacks[strtolower($type)] = $callback;
     }
 
+    function walk(&$a)
+    {
+        try {parent::walk($a);}
+        catch (\Exception $e) {}
+
+        $this->depthLimited = $this->objectsDepth = array();
+
+        if (isset($e)) throw $e;
+    }
+
     protected function dumpObject($obj, $hash)
     {
         if (isset($this->objectsDepth[$hash]))

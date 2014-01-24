@@ -47,14 +47,14 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "7": "b`é",
   "[]": [],
   "res": {"_":"14:resource:stream",
-    "wrapper_type": "plainfile",
-    "stream_type": "dir",
-    "mode": "r",
-    "unread_bytes": 0,
-    "seekable": true,
-    "timed_out": false,
-    "blocked": true,
-    "eof": false
+    "~:wrapper_type": "plainfile",
+    "~:stream_type": "dir",
+    "~:mode": "r",
+    "~:unread_bytes": 0,
+    "~:seekable": true,
+    "~:timed_out": false,
+    "~:blocked": true,
+    "~:eof": false
   },
   "8": {"_":"23:resource:Unknown"},
   "obj": {"_":"24:stdClass"},
@@ -68,7 +68,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   },
   "line": ' . $v['line'] . ',
   "nobj": {"_":"32:array:1",
-    "0": "r`33:"
+    "0": "r`33:33"
   },
   "recurs": {"_":"34:array:1",
     "0": "R`35:34"
