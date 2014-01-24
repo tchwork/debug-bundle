@@ -25,16 +25,16 @@ class CliColorDumper extends Dumper
     $lastHash = 0,
     $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-        'num'       => '38;5;4',
-        'const'     => '38;5;4',
-        'str'       => '38;5;9',
+        'num'       => '1;38;5;33',
+        'const'     => '1;38;5;33',
+        'str'       => '1;38;5;45',
         'cchr'      => '7',
-        'note'      => '38;5;11',
-        'ref'       => '38;5;8',
-        'public'    => '38;5;2',
-        'protected' => '38;5;3',
-        'private'   => '38;5;1',
-        'meta'      => '38;5;4',
+        'note'      => '38;5;178',
+        'ref'       => '38;5;238',
+        'public'    => '38;5;28',
+        'protected' => '38;5;166',
+        'private'   => '38;5;160',
+        'meta'      => '38;5;27',
     );
 
     static function dump(&$a)

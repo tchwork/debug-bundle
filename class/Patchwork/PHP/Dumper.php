@@ -48,18 +48,18 @@ abstract class Dumper extends Walker
         $this->callbacks[strtolower($type)] = $callback;
     }
 
-    protected function dumpObject($obj)
+    protected function dumpObject($obj, $hash)
     {
-        $c = pack('H*', spl_object_hash($obj));
-
-        if (isset($this->objectsDepth[$c]) && $this->objectsDepth[$c] < $this->depth)
+        if (isset($this->objectsDepth[$hash]))
         {
-            $this->refPool[$this->counter]['ref_counter'] = $this->counter;
-            $this->dumpRef(true, $this->counter, $obj, 'object');
-            return;
+            if ($this->objectsDepth[$hash] < $this->depth)
+            {
+                $this->refPool[$this->counter]['ref_counter'] = $this->counter;
+                $this->dumpRef(true, $this->counter, $obj, 'object');
+                return;
+            }
+            else unset($this->objectsDepth[$hash]);
         }
-
-        unset($this->objectsDepth[$c]);
 
         $c = get_class($obj);
         $p = array($c => $c)
@@ -113,7 +113,7 @@ abstract class Dumper extends Walker
 
             if (isset($this->objectsDepth[$h]) && $this->objectsDepth[$h] === $this->depth)
             {
-                $this->dumpObject($ref_value);
+                $this->dumpObject($ref_value, $h);
                 return true;
             }
         }
@@ -125,7 +125,7 @@ abstract class Dumper extends Walker
             switch ($ref_type)
             {
             case 'object':
-                $this->dumpObject($ref_value);
+                $this->dumpObject($ref_value, $h);
                 return true;
             case 'array':
                 $ref_counter = $this->count($ref_value);
@@ -178,7 +178,13 @@ abstract class Dumper extends Walker
             {
                 switch ($this->gettype($k))
                 {
-                case 'object': $len or $this->objectsDepth += array(pack('H*', spl_object_hash($k)) => $this->depth);
+                case 'object':
+                    if (! $len)
+                    {
+                        $h = pack('H*', spl_object_hash($k));
+                        isset($this->objPool[$h]) or $this->objectsDepth += array($h => $this->depth);
+                    }
+                    // No break;
                 case 'array': $len = 0;
                 }
             }

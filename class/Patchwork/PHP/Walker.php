@@ -46,7 +46,7 @@ abstract class Walker
     abstract protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null);
     abstract protected function dumpScalar($val);
     abstract protected function dumpString($str, $is_key);
-    abstract protected function dumpObject($obj);
+    abstract protected function dumpObject($obj, $hash);
     abstract protected function dumpResource($res);
 
 
@@ -99,7 +99,7 @@ abstract class Walker
 
             $t = $this->arrayType;
             $this->arrayType = 0;
-            if (isset($h[0])) $this->dumpObject($v);
+            if (isset($h[0])) $this->dumpObject($v, $h);
             else $this->dumpResource($v);
             $this->arrayType = $t;
         }
