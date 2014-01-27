@@ -124,9 +124,13 @@ class Caster
         $m = self::META_PREFIX;
 
         $a = (array) $c + array(
+            $m . 'inTransaction' => method_exists($c, 'inTransaction'),
             $m . 'errorInfo' => $c->errorInfo(),
             $m . 'attributes' => $a,
         );
+
+        if ($a[$m . 'inTransaction']) $a[$m . 'inTransaction'] = $c->inTransaction();
+        else unset($a[$m . 'inTransaction']);
 
         if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
 

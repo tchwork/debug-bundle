@@ -98,10 +98,10 @@ class CliColorDumper extends Dumper
 
             switch (true)
             {
-            case INF === $a:   $b = 'INF';   break;
-            case -INF === $a:  $b = '-INF';  break;
-            case is_nan($a):   $b = 'NAN';   break;
-            case is_float($a):
+            case INF === $a:  $b = 'INF';  break;
+            case -INF === $a: $b = '-INF'; break;
+            case is_nan($a):  $b = 'NAN';  break;
+            default:
                 $b = sprintf('%.14E', $a);
                 $a = sprintf('%.17E', $a);
                 $b = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $b === (float) $a ? $b : $a);
