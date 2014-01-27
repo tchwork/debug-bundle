@@ -36,6 +36,7 @@ abstract class Dumper extends Walker
         'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
         'o:pdostatement' => array('Patchwork\PHP\Dumper\Caster', 'castPdoStatement'),
         'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
+        'o:reflector' => array('Patchwork\PHP\Dumper\Caster', 'castReflector'),
         'r:stream' => 'stream_get_meta_data',
         'r:process' => 'proc_get_status',
         'r:dba persistent' => array('Patchwork\PHP\Dumper\Caster', 'castDba'),

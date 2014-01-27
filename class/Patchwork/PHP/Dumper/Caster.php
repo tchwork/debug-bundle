@@ -1,6 +1,6 @@
 <?php // vi: set fenc=utf-8 ts=4 sw=4 et:
 /*
- * Copyright (C) 2012 Nicolas Grekas - p@tchwork.com
+ * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the (at your option):
@@ -18,47 +18,20 @@ class Caster
 {
     const META_PREFIX = "\0~\0";
 
-    static function castClosure($c)
+    static function castReflector(\Reflector $c)
     {
-        $a = array();
-        if (!class_exists('ReflectionFunction', false) || 'Closure' !== get_class($c)) return $a;
-        $c = new \ReflectionFunction($c);
+        return (array) $c + array(self::META_PREFIX . 'reflection' => $c->__toString());
+    }
 
-        foreach ($c->getParameters() as $p)
-        {
-            $n = strstr($p->__toString(), '>');
-            $n = substr($n, 2, strpos($n, ' = ') - 2);
+    static function castClosure(\Closure $c)
+    {
+        if (! class_exists('ReflectionFunction', false)) return array();
 
-            try
-            {
-                if (strpos($n, ' or NULL ')) $a[str_replace(' or NULL', '', $n)] = null;
-                else if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
-                else $a[] = $n;
-            }
-            catch (\ReflectionException $p)
-            {
-                // This will be reached on PHP 5.3.16 because of https://bugs.php.net/62715
-                $a[] = $n;
-            }
-        }
-
-        $m = self::META_PREFIX;
-        $a = array(
-            $m . 'returnsRef' => true,
-            $m . 'args' => $a,
-        );
-        if (!$c->returnsReference()) unset($a[$m . 'returnsRef']);
-        $a[$m . 'use'] = array();
-
-        if (false === $a[$m . 'file'] = $c->getFileName()) unset($a[$m . 'file']);
-        else $a[$m . 'lines'] = $c->getStartLine() . '-' . $c->getEndLine();
-
-        if (!$c = $c->getStaticVariables()) unset($a[$m . 'use']);
-        else foreach ($c as $p => &$c) $a[$m . 'use']['$' . $p] =& $c;
+        $a = ReflectionCaster::castFunction(new \ReflectionFunction($c));
+        unset($a['name']);
 
         return $a;
     }
-
 
     static $pdoAttributes = array(
         'CASE' => array(
@@ -97,7 +70,7 @@ class Caster
         ),
     );
 
-    static function castPdo($c)
+    static function castPdo(\PDO $c)
     {
         $a = array();
         $errmode = $c->getAttribute(\PDO::ATTR_ERRMODE);
@@ -139,7 +112,7 @@ class Caster
         return $a;
     }
 
-    static function castPdoStatement($c)
+    static function castPdoStatement(\PDOStatement $c)
     {
         $m = self::META_PREFIX;
         $a = (array) $c + array($m . 'errorInfo' => $c->errorInfo());
