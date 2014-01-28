@@ -27,7 +27,7 @@ class Caster
     {
         if (! class_exists('ReflectionFunction', false)) return array();
 
-        $a = ReflectionCaster::castFunction(new \ReflectionFunction($c));
+        $a = static::castReflector(new \ReflectionFunction($c));
         unset($a['name']);
 
         return $a;

@@ -59,25 +59,20 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "8": {"_":"23:resource:Unknown"},
   "obj": {"_":"24:stdClass"},
   "closure": {"_":"25:Closure",
-    "~:args": {"_":"26:array:2",
-      "0": "$a",
-      "PDO &$b": null
-    },
-    "~:file": "' . __FILE__ . '",
-    "~:lines": "' . $v['line'] . '-' . $v['line'] . '"
+    "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\PHP\\\\{closure} ] {\n  @@ ' . __FILE__ . ' 22 - 22\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
   },
   "line": ' . $v['line'] . ',
-  "nobj": {"_":"32:array:1",
-    "0": "r`33:33"
+  "nobj": {"_":"28:array:1",
+    "0": "r`29:29"
   },
-  "recurs": {"_":"34:array:1",
-    "0": "R`35:34"
+  "recurs": {"_":"30:array:1",
+    "0": "R`31:30"
   },
-  "9": "R`36:",
-  "sobj": "r`37:24",
-  "snobj": {"_":"38:stdClass"},
-  "snobj2": "r`39:33",
-  "__refs": {"3":[-36],"34":[-35],"24":[37],"33":[-38,39]}
+  "9": "R`32:",
+  "sobj": "r`33:24",
+  "snobj": {"_":"34:stdClass"},
+  "snobj2": "r`35:29",
+  "__refs": {"3":[-32],"30":[-31],"24":[33],"29":[-34,35]}
 }',
             JsonDumper::get($v)
         );
