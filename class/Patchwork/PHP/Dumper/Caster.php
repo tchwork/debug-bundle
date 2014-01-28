@@ -78,7 +78,7 @@ class Caster
 
         foreach (self::$pdoAttributes as $attr => $values)
         {
-            if (!isset($attr[0]))
+            if (! isset($attr[0]))
             {
                 $attr = $values;
                 $values = array();
@@ -87,9 +87,9 @@ class Caster
             try
             {
                 $a[$attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
-                if (isset($values[$attr][$a[$attr]])) $a[$attr] = $values[$attr][$a[$attr]];
+                if (isset($values[$a[$attr]])) $a[$attr] = $values[$a[$attr]];
             }
-            catch (\Exception $attr)
+            catch (\Exception $m)
             {
             }
         }
@@ -105,7 +105,7 @@ class Caster
         if ($a[$m . 'inTransaction']) $a[$m . 'inTransaction'] = $c->inTransaction();
         else unset($a[$m . 'inTransaction']);
 
-        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
+        if (! isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
 
         $c->setAttribute(\PDO::ATTR_ERRMODE, $errmode);
 
@@ -116,7 +116,7 @@ class Caster
     {
         $m = self::META_PREFIX;
         $a = (array) $c + array($m . 'errorInfo' => $c->errorInfo());
-        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
+        if (! isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
         return $a;
     }
 
