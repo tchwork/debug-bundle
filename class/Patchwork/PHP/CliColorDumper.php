@@ -17,7 +17,8 @@ class CliColorDumper extends Dumper
 {
     public
 
-    $maxStringWidth = 80;
+    $maxString = 100000,
+    $maxStringWidth = 120;
 
     protected
 
@@ -176,9 +177,16 @@ class CliColorDumper extends Dumper
             $a = utf8_encode($a);
         }
 
+        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($a, 'UTF-8'))
+        {
+            $a = iconv_substr($a, 0, $this->maxString - 1, 'UTF-8');
+            $cutBy = $len - $this->maxString + 1;
+        }
+        else $cutBy = 0;
+
         $a = explode("\n", $a);
         $x = isset($a[1]);
-        $i = 0;
+        $i = $len = 0;
 
         foreach ($a as $a)
         {
@@ -188,12 +196,13 @@ class CliColorDumper extends Dumper
                 $is_key or $this->line .= '  ';
             }
 
-            $len = iconv_strlen($a);
+            $len = iconv_strlen($a, 'UTF-8');
 
             if (0 < $this->maxStringWidth && $this->maxStringWidth < $len)
             {
                 $a = iconv_substr($a, 0, $this->maxStringWidth - 1, 'UTF-8');
                 $a = $this->style($style, $a) . '…';
+                $cutBy += $len - $this->maxStringWidth + 1;
             }
             else
             {
@@ -212,6 +221,16 @@ class CliColorDumper extends Dumper
                 }
             }
             else $this->line .= $a;
+        }
+
+        if ($cutBy)
+        {
+            if (0 >= $this->maxStringWidth || $this->maxStringWidth >= $len)
+            {
+                $this->line .= '…';
+            }
+
+            $this->dumpScalar($cutBy);
         }
 
         $this->line .= $is_key;
