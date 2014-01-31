@@ -16,6 +16,9 @@
         "php": ">=5.3.0"
     },
     "autoload": {
+        "files": [
+            "bootup.logger.php"
+        ],
         "psr-0": {
             "Patchwork": "class/"
         }

@@ -1,6 +1,6 @@
 <?php // vi: set fenc=utf-8 ts=4 sw=4 et:
 /*
- * Copyright (C) 2012 Nicolas Grekas - p@tchwork.com
+ * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the (at your option):
@@ -28,11 +28,15 @@ abstract class Dumper extends Walker
 
     protected
 
+    $line = '',
+    $lines = array(),
+    $lastHash = 0,
     $dumpLength = 0,
     $depthLimited = array(),
     $objectsDepth = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $callbacks = array(
+        'line' => array(__CLASS__, 'echoLine'),
         'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
         'o:pdostatement' => array('Patchwork\PHP\Dumper\Caster', 'castPdoStatement'),
         'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
@@ -51,13 +55,33 @@ abstract class Dumper extends Walker
 
     function walk(&$a)
     {
+        $this->line = '';
+        $this->lastHash = 0;
+
         try {parent::walk($a);}
         catch (\Exception $e) {}
 
         $this->depthLimited = $this->objectsDepth = array();
+        '' !== $this->line && $this->dumpLine(0);
 
         if (isset($e)) throw $e;
     }
+
+    static function dump(&$a)
+    {
+        $d = new static;
+        $d->walk($a);
+    }
+
+    static function get($a)
+    {
+        $d = new static;
+        $d->setCallback('line', array($d, 'stackLine'));
+        $d->walk($a);
+
+        return implode("\n", $d->lines);
+    }
+
 
     protected function dumpObject($obj, $hash)
     {
@@ -154,6 +178,9 @@ abstract class Dumper extends Walker
 
     protected function walkHash($type, &$a, $len)
     {
+        $lastHash = $this->lastHash;
+        $this->lastHash = $this->counter;
+
         if ($len && $this->depth >= $this->maxDepth && 0 < $this->maxDepth)
         {
             $this->depthLimited[$this->counter] = 1;
@@ -166,7 +193,12 @@ abstract class Dumper extends Walker
             $len = 0;
         }
 
-        if (!$len) return array();
+        if (! $len)
+        {
+            $this->lastHash = $lastHash;
+
+            return array();
+        }
 
         ++$this->depth;
         if (0 === strncmp($type, 'array:', 6)) unset($type);
@@ -226,8 +258,26 @@ abstract class Dumper extends Walker
 
         while (end($this->objectsDepth) === $this->depth) array_pop($this->objectsDepth);
 
+        $this->lastHash = $lastHash;
+
         if (--$this->depth) return array();
         $this->depthLimited = array();
         return $this->cleanRefPools();
+    }
+
+    protected function dumpLine($depth_offset)
+    {
+        call_user_func($this->callbacks['line'], $this->line, $this->depth + $depth_offset);
+        $this->line = '';
+    }
+
+    protected function stackLine($line, $depth)
+    {
+        $this->lines[] = str_repeat('  ', $depth) . $line;
+    }
+
+    protected static function echoLine($line, $depth)
+    {
+        echo str_repeat('  ', $depth) . $line . "\n";
     }
 }

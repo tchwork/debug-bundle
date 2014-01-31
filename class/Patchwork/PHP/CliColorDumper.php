@@ -1,6 +1,6 @@
 <?php // vi: set fenc=utf-8 ts=4 sw=4 et:
 /*
- * Copyright (C) 2012 Nicolas Grekas - p@tchwork.com
+ * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the (at your option):
@@ -22,8 +22,6 @@ class CliColorDumper extends Dumper
 
     protected
 
-    $line = '',
-    $lastHash = 0,
     $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '1;38;5;33',
@@ -38,27 +36,6 @@ class CliColorDumper extends Dumper
         'meta'      => '38;5;27',
     );
 
-    static function dump(&$a)
-    {
-        $d = new self;
-        $d->setCallback('line', array(__CLASS__, 'echoLine'));
-        $d->walk($a);
-    }
-
-
-    function walk(&$a)
-    {
-        $this->line = '';
-        $this->lastHash = 0;
-        parent::walk($a);
-        '' !== $this->line && $this->dumpLine(0);
-    }
-
-    protected function dumpLine($depth_offset)
-    {
-        call_user_func($this->callbacks['line'], $this->line, $this->depth + $depth_offset);
-        $this->line = '';
-    }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
     {
@@ -241,9 +218,6 @@ class CliColorDumper extends Dumper
         if ('array:0' === $type) $this->line .= '[]';
         else
         {
-            $h = $this->lastHash;
-            $this->lastHash = $this->counter;
-
             $is_array = 0 === strncmp($type, 'array:', 6);
 
             if ($is_array)
@@ -259,11 +233,10 @@ class CliColorDumper extends Dumper
 
             $this->line .= ' ' . $this->style('ref', "#$this->counter");
 
+            $startCounter = $this->counter;
             $refs = parent::walkHash($type, $a, $len);
+            if ($this->counter !== $startCounter) $this->dumpLine(1);
 
-            if ($this->counter !== $this->lastHash) $this->dumpLine(1);
-
-            $this->lastHash = $h;
             $this->line .= $is_array ? ']' : '}';
 
             if ($refs)
@@ -341,11 +314,5 @@ class CliColorDumper extends Dumper
         }
 
         return sprintf("\e[%sm%s\e[m", $this->styles[$style], $a);
-    }
-
-
-    protected static function echoLine($line, $depth)
-    {
-        echo str_repeat('  ', $depth), $line, "\n";
     }
 }

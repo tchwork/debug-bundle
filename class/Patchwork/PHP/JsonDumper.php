@@ -1,6 +1,6 @@
 <?php // vi: set fenc=utf-8 ts=4 sw=4 et:
 /*
- * Copyright (C) 2012 Nicolas Grekas - p@tchwork.com
+ * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the (at your option):
@@ -21,46 +21,6 @@ class JsonDumper extends Dumper
 
     $maxString = 100000;
 
-    protected
-
-    $line = '',
-    $lastHash = 0;
-
-    protected static
-
-    $lines = array();
-
-    static function dump(&$a)
-    {
-        $d = new self;
-        $d->setCallback('line', array(__CLASS__, 'echoLine'));
-        $d->walk($a);
-    }
-
-    static function get($a)
-    {
-        $d = new self;
-        $d->setCallback('line', array(__CLASS__, 'stackLine'));
-        $d->walk($a);
-        $d = implode("\n", self::$lines);
-        self::$lines = array();
-        return $d;
-    }
-
-
-    function walk(&$a)
-    {
-        $this->line = '';
-        $this->lastHash = 0;
-        parent::walk($a);
-        '' !== $this->line && $this->dumpLine(0);
-    }
-
-    protected function dumpLine($depth_offset)
-    {
-        call_user_func($this->callbacks['line'], $this->line, $this->depth + $depth_offset);
-        $this->line = '';
-    }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
     {
@@ -141,10 +101,10 @@ class JsonDumper extends Dumper
         if ('array:0' === $type) $this->line .= '[]';
         else
         {
-            $h = $this->lastHash;
             $this->line .= '{"_":';
-            $this->lastHash = $this->counter;
             $this->dumpString($this->counter . ':' . $type, false);
+
+            $startCounter = $this->counter;
 
             if ($type = parent::walkHash($type, $a, $len))
             {
@@ -155,21 +115,9 @@ class JsonDumper extends Dumper
                 --$this->depth;
             }
 
-            if ($this->counter !== $this->lastHash) $this->dumpLine(1);
+            if ($this->counter !== $startCounter) $this->dumpLine(1);
 
-            $this->lastHash = $h;
             $this->line .= '}';
         }
-    }
-
-
-    protected static function echoLine($line, $depth)
-    {
-        echo str_repeat('  ', $depth), $line, "\n";
-    }
-
-    protected static function stackLine($line, $depth)
-    {
-        self::$lines[] = str_repeat('  ', $depth) . $line;
     }
 }
