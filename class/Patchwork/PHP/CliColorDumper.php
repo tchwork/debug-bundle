@@ -120,7 +120,7 @@ class CliColorDumper extends Dumper
             $this->dumpLine(-$is_key);
             $is_key = ': ';
 
-            $a = explode(':', $a);
+            $a = explode(':', $a, 2);
 
             if (isset($a[1]))
             {

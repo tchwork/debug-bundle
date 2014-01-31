@@ -278,6 +278,8 @@ abstract class Dumper extends Walker
 
     protected static function echoLine($line, $depth)
     {
-        echo str_repeat('  ', $depth) . $line . "\n";
+        static $stderr;
+        isset($stderr) or $stderr = fopen('php://stderr', 'wb');
+        fwrite($stderr, str_repeat('  ', $depth) . $line . "\n");
     }
 }
