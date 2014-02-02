@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="patchwork.twig.dumper_extension.class">Patchwork\DumperBundle\Twig\PatchworkDumperExtension</parameter>
+        <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\JsonDumper</parameter>
+        <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\HtmlDumper</parameter>
+        <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\CliDumper</parameter>
+    </parameters>
+
+    <services>
+        <service id="patchwork.twig.dumper_extension" class="%patchwork.twig.dumper_extension.class%">
+            <argument type="service" id="patchwork.dumper.html" />
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="patchwork.dumper" alias="patchwork.dumper.cli" />
+
+        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%">
+            <property name="maxLength" />
+            <property name="maxDepth" />
+            <property name="maxString" />
+            <property name="checkInternalRefs" />
+        </service>
+
+        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%">
+            <property name="maxLength" />
+            <property name="maxDepth" />
+            <property name="maxString" />
+            <property name="maxStringWidth" />
+            <property name="checkInternalRefs" />
+        </service>
+
+        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%">
+            <property name="colors" />
+            <property name="maxLength" />
+            <property name="maxDepth" />
+            <property name="maxString" />
+            <property name="maxStringWidth" />
+            <property name="checkInternalRefs" />
+        </service>
+    </services>
+
+</container>

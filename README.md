@@ -4,10 +4,6 @@ High accuracy and flexible dumping for PHP variables
 This package provides a better `dump()` function, that you can use instead of
 `var_dump()`, *better* being for:
 
-- ablilty to dump internal references, either soft ones (objects or resources)
-  or hard ones (`=&` on arrays or objects properties). Repeated occurences of
-  the same object/array/resource won't appear again and again anymore. Moreover,
-  you'll be able to inspected the reference structure of your data.
 - per object and resource types specialized view: e.g. filter out Doctrine noise
   while dumping a single proxy entity, or get more insight on opened files with
   `stream_get_meta_data()`. Add your own dedicated `Dumper\Caster` and get the
@@ -15,6 +11,10 @@ This package provides a better `dump()` function, that you can use instead of
 - configurable output format: HTML, command line with colors or [a dedicated high
   accuracy JSON format](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
   More to come / add your own.
+- ablilty to dump internal references, either soft ones (objects or resources)
+  or hard ones (`=&` on arrays or objects properties). Repeated occurences of
+  the same object/array/resource won't appear again and again anymore. Moreover,
+  you'll be able to inspected the reference structure of your data.
 - full exposure of the internal mechanisms used for walking through an arbitrary
   PHP data structure.
 
