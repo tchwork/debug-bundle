@@ -26,6 +26,27 @@ abstract class Dumper extends Walker
     $maxLength = 1000,
     $maxDepth = 10;
 
+    static
+
+    $defaultCasters = array(
+        'o:Closure'        => array('Patchwork\PHP\Dumper\BaseCaster', 'castClosure'),
+        'o:Reflector'      => array('Patchwork\PHP\Dumper\BaseCaster', 'castReflector'),
+        'o:PDO'            => array('Patchwork\PHP\Dumper\PdoCaster', 'castPdo'),
+        'o:PDOStatement'   => array('Patchwork\PHP\Dumper\PdoCaster', 'castPdoStatement'),
+        'o:Exception'      => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castException'),
+        'o:ErrorException' => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castErrorException'),
+        'o:Patchwork\PHP\InDepthRecoverableErrorException'
+                           => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castInDepthException'),
+        'o:Doctrine\ORM\Proxy\Proxy'
+                           => array('Patchwork\PHP\Dumper\DoctrineCaster', 'castOrmProxy'),
+        'o:Doctrine\Common\Proxy\Proxy'
+                           => array('Patchwork\PHP\Dumper\DoctrineCaster', 'castCommonProxy'),
+        'r:dba'            => array('Patchwork\PHP\Dumper\BaseCaster', 'castDba'),
+        'r:dba persistent' => array('Patchwork\PHP\Dumper\BaseCaster', 'castDba'),
+        'r:process'        => array('Patchwork\PHP\Dumper\BaseCaster', 'castProcess'),
+        'r:stream'         => array('Patchwork\PHP\Dumper\BaseCaster', 'castStream'),
+    );
+
     protected
 
     $line = '',
@@ -35,22 +56,31 @@ abstract class Dumper extends Walker
     $depthLimited = array(),
     $objectsDepth = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
-    $callbacks = array(
-        'line' => array(__CLASS__, 'echoLine'),
-        'o:pdo' => array('Patchwork\PHP\Dumper\Caster', 'castPdo'),
-        'o:pdostatement' => array('Patchwork\PHP\Dumper\Caster', 'castPdoStatement'),
-        'o:closure' => array('Patchwork\PHP\Dumper\Caster', 'castClosure'),
-        'o:reflector' => array('Patchwork\PHP\Dumper\Caster', 'castReflector'),
-        'r:stream' => 'stream_get_meta_data',
-        'r:process' => 'proc_get_status',
-        'r:dba persistent' => array('Patchwork\PHP\Dumper\Caster', 'castDba'),
-        'r:dba' => array('Patchwork\PHP\Dumper\Caster', 'castDba'),
-    );
+    $lineDumper = array(__CLASS__, 'echoLine'),
+    $casters = array();
 
 
-    function setCallback($type, $callback)
+    function __construct(array $defaultCasters = null)
     {
-        $this->callbacks[strtolower($type)] = $callback;
+        isset($defaultCasters) or $defaultCasters = static::$defaultCasters;
+
+        $this->addCasters($defaultCasters);
+    }
+
+    function addCasters(array $casters)
+    {
+        foreach ($casters as $type => $callback)
+        {
+            $this->casters[strtolower($type)][] = $callback;
+        }
+    }
+
+    function setLineDumper($callback)
+    {
+        $prev = $this->lineDumper;
+        $this->lineDumper = $callback;
+
+        return $prev;
     }
 
     function walk(&$a)
@@ -76,7 +106,7 @@ abstract class Dumper extends Walker
     static function get($a)
     {
         $d = new static;
-        $d->setCallback('line', array($d, 'stackLine'));
+        $d->setLineDumper(array($d, 'stackLine'));
         $d->walk($a);
 
         return implode("\n", $d->lines);
@@ -96,46 +126,46 @@ abstract class Dumper extends Walker
             else unset($this->objectsDepth[$hash]);
         }
 
+        $a = (array) $obj;
         $c = get_class($obj);
         $p = array($c => $c)
             + class_parents($obj)
             + class_implements($obj)
             + array('*' => '*');
 
-        foreach ($p as $p)
+        foreach (array_reverse($p) as $p)
         {
-            if (isset($this->callbacks[$p = 'o:' . strtolower($p)]))
+            if (! empty($this->casters[$p = 'o:' . strtolower($p)]))
             {
-                if (!$p = $this->callbacks[$p]) $a = array();
-                else
+                foreach ($this->casters[$p] as $p)
                 {
-                    try {$a = call_user_func($p, $obj);}
-                    catch (\Exception $e) {unset($a); continue;}
+                    try {$a = call_user_func($p, $obj, $a);}
+                    catch (\Exception $e) {}
                 }
-                break;
             }
         }
-
-        isset($a) || $a = (array) $obj;
 
         $this->walkHash($c, $a, count($a));
     }
 
     protected function dumpResource($res)
     {
-        $h = get_resource_type($res);
+        $type = get_resource_type($res);
         $a = array();
+        $b = array();
 
-        if (! empty($this->callbacks['r:' . $h]))
+        if (! empty($this->casters['r:' . $type]))
         {
-            try {$res = call_user_func($this->callbacks['r:' . $h], $res);}
-            catch (\Exception $e) {$res = array();}
-
-            foreach ($res as $k => $v)
-                $a["\0~\0" . $k] = $v;
+            foreach ($this->casters['r:' . $type] as $c)
+            {
+                try {$b = call_user_func($c, $res, $b);}
+                catch (\Exception $e) {}
+            }
         }
 
-        $this->walkHash("resource:{$h}", $a, count($a));
+        foreach ($b as $b => $c) $a["\0~\0$b"] = $c;
+
+        $this->walkHash("resource:{$type}", $a, count($a));
     }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
@@ -267,7 +297,7 @@ abstract class Dumper extends Walker
 
     protected function dumpLine($depth_offset)
     {
-        call_user_func($this->callbacks['line'], $this->line, $this->depth + $depth_offset);
+        call_user_func($this->lineDumper, $this->line, $this->depth + $depth_offset);
         $this->line = '';
     }
 
