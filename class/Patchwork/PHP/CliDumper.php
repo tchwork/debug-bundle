@@ -11,12 +11,13 @@
 namespace Patchwork\PHP;
 
 /**
- * CliColorDumper dumps variable for command line output.
+ * CliDumper dumps variable for command line output.
  */
-class CliColorDumper extends Dumper
+class CliDumper extends Dumper
 {
     public
 
+    $colors = true,
     $maxString = 100000,
     $maxStringWidth = 120;
 
@@ -145,7 +146,7 @@ class CliColorDumper extends Dumper
         }
         else $is_key = '';
 
-        if ('' === $a) return $this->line .= '"' . $is_key;
+        if ('' === $a) return $this->line .= "''" . $is_key;
 
         isset($style) or $style = 'str';
 
@@ -289,6 +290,8 @@ class CliColorDumper extends Dumper
 
     protected function style($style, $a)
     {
+        if (! $this->colors) return $a;
+
         switch ($style)
         {
         case 'str':

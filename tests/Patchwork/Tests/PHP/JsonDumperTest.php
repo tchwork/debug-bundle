@@ -32,6 +32,9 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $v['snobj'] =& $v['nobj'][0];
         $v['snobj2'] = $v['nobj'][0];
 
+        $json = new JsonDumper;
+        $json = $json->walk($v);
+
         $this->assertSame(
 '{"_":"1:array:23",
   "number": 1,
@@ -74,7 +77,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "snobj2": "r`35:29",
   "__refs": {"3":[-32],"30":[-31],"24":[33],"29":[-34,35]}
 }',
-            JsonDumper::get($v)
+            $json
         );
     }
 }

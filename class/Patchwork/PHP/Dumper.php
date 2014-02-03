@@ -62,8 +62,8 @@ abstract class Dumper extends Walker
 
     function __construct(array $defaultCasters = null)
     {
+        $this->setLineDumper(array($this, 'stackLine'));
         isset($defaultCasters) or $defaultCasters = static::$defaultCasters;
-
         $this->addCasters($defaultCasters);
     }
 
@@ -95,21 +95,18 @@ abstract class Dumper extends Walker
         '' !== $this->line && $this->dumpLine(0);
 
         if (isset($e)) throw $e;
+
+        $lines = implode("\n", $this->lines);
+        $this->lines = array();
+
+        return $lines;
     }
 
     static function dump(&$a)
     {
         $d = new static;
+        $d->setLineDumper(array(get_called_class(), 'echoLine'));
         $d->walk($a);
-    }
-
-    static function get($a)
-    {
-        $d = new static;
-        $d->setLineDumper(array($d, 'stackLine'));
-        $d->walk($a);
-
-        return implode("\n", $d->lines);
     }
 
 
