@@ -28,6 +28,7 @@ abstract class Dumper extends Walker
 
     static
 
+    $defaultOutputStream = 'php://output',
     $defaultCasters = array(
         'o:Closure'        => array('Patchwork\Dumper\Caster\BaseCaster', 'castClosure'),
         'o:Reflector'      => array('Patchwork\Dumper\Caster\BaseCaster', 'castReflector'),
@@ -50,21 +51,32 @@ abstract class Dumper extends Walker
     protected
 
     $line = '',
-    $lines = array(),
     $lastHash = 0,
     $dumpLength = 0,
     $depthLimited = array(),
     $objectsDepth = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $lineDumper = array(__CLASS__, 'echoLine'),
-    $casters = array();
+    $casters = array(),
+    $outputStream;
 
 
-    function __construct(array $defaultCasters = null)
+    function __construct($outputStream = null, array $defaultCasters = null)
     {
-        $this->setLineDumper(array($this, 'stackLine'));
         isset($defaultCasters) or $defaultCasters = static::$defaultCasters;
         $this->addCasters($defaultCasters);
+
+        if (is_callable($outputStream))
+        {
+            $this->setLineDumper($outputStream);
+        }
+        else
+        {
+            isset($outputStream) or $outputStream =& static::$defaultOutputStream;
+            if (is_string($outputStream)) $outputStream = fopen($outputStream, 'wb');
+            $this->outputStream = $outputStream;
+            $this->setLineDumper(array($this, 'echoLine'));
+        }
     }
 
     function addCasters(array $casters)
@@ -95,17 +107,11 @@ abstract class Dumper extends Walker
         '' !== $this->line && $this->dumpLine(0);
 
         if (isset($e)) throw $e;
-
-        $lines = implode("\n", $this->lines);
-        $this->lines = array();
-
-        return $lines;
     }
 
     static function dump(&$a)
     {
         $d = new static;
-        $d->setLineDumper(array(get_called_class(), 'echoLine'));
         $d->walk($a);
     }
 
@@ -298,15 +304,8 @@ abstract class Dumper extends Walker
         $this->line = '';
     }
 
-    protected function stackLine($line, $depth)
+    protected function echoLine($line, $depth)
     {
-        $this->lines[] = str_repeat('  ', $depth) . $line;
-    }
-
-    protected static function echoLine($line, $depth)
-    {
-        static $stderr;
-        isset($stderr) or $stderr = fopen('php://stderr', 'wb');
-        fwrite($stderr, str_repeat('  ', $depth) . $line . "\n");
+        fwrite($this->outputStream, str_repeat('  ', $depth) . $line . "\n");
     }
 }

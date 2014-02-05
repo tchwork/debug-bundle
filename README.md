@@ -21,9 +21,9 @@ This package provides a better `dump()` function, that you can use instead of
 Usage
 -----
 
-The recommended way to install Patchwork Dumper is [through
-composer](http://getcomposer.org). Just create a `composer.json` file and run
-the `php composer.phar install` command to install it:
+The recommended way to use Patchwork Dumper is [through composer](http://getcomposer.org).
+Just create a `composer.json` file and run the `php composer.phar install`
+command to install it:
 
     {
         "require": {

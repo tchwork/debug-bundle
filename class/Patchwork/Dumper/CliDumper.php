@@ -21,6 +21,10 @@ class CliDumper extends Dumper
     $maxString = 100000,
     $maxStringWidth = 120;
 
+    public static
+
+    $defaultOutputStream = 'php://stderr';
+
     protected
 
     $styles = array(
