@@ -1,9 +1,9 @@
 {
-    "name": "patchwork/error-logger",
+    "name": "patchwork/dumper",
     "type": "library",
-    "description": "Advanced PHP error handling and high accuracy JSON logging",
-    "keywords": ["error","exception","log","logging","json","dump"],
-    "homepage": "https://github.com/nicolas-grekas/Patchwork-Error-Logger",
+    "description": "High accuracy and flexible dumping for PHP variables",
+    "keywords": ["dump"],
+    "homepage": "https://github.com/nicolas-grekas/Patchwork-Dumper",
     "license": "(Apache-2.0 or GPL-2.0)",
     "authors": [
         {
@@ -17,10 +17,10 @@
     },
     "autoload": {
         "files": [
-            "bootup.logger.php"
+            "bootup.dumper.php"
         ],
         "psr-0": {
-            "Patchwork": "class/"
+            "Patchwork\\Dumper": "class/"
         }
     }
 }

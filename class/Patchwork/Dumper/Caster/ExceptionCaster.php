@@ -8,9 +8,9 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-namespace Patchwork\PHP\Dumper;
+namespace Patchwork\Dumper\Caster;
 
-use Patchwork\PHP\InDepthRecoverableErrorException as InDepthException;
+use Patchwork\Debug\InDepthRecoverableErrorException as InDepthException;
 
 class ExceptionCaster
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Patchwork\Tests\PHP;
+namespace Patchwork\Tests\Dumper;
 
-use Patchwork\PHP\JsonDumper;
+use Patchwork\Dumper\JsonDumper;
 
 class JsonDumperTest extends \PHPUnit_Framework_TestCase
 {
@@ -62,7 +62,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "8": {"_":"23:resource:Unknown"},
   "obj": {"_":"24:stdClass"},
   "closure": {"_":"25:Closure",
-    "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\PHP\\\\{closure} ] {\n  @@ ' . __FILE__ . ' 22 - 22\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
+    "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\Dumper\\\\{closure} ] {\n  @@ ' . __FILE__ . ' 22 - 22\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
   },
   "line": ' . $v['line'] . ',
   "nobj": {"_":"28:array:1",

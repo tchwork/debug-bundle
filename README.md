@@ -1,99 +1,87 @@
-Patchwork Error Logger: Advanced PHP error handling and high accuracy JSON logging
-============================================================================
+High accuracy and flexible dumping for PHP variables
+====================================================
 
-Here are five PHP classes under Apache 2 and GPLv2 licenses, focused on
-particular aspects of errors handling in PHP. Together, they offer unprecedented
-accuracy for logging what's going on with the internal state of your
-applications.
+This package provides a better `dump()` function, that you can use instead of
+`var_dump()`, *better* being for:
 
-For interoperability and readability, errors and variables' states are logged to
-JSON.
-
-Error handling
---------------
-
-### Patchwork\PHP\ErrorHandler
-
-is a flexible error and exception handler.
-
-Its default behavior is to log errors to the same file where fatal errors are
-written. That way, the same debug stream contains both uncatchable fatal errors
-and catchable ones in an easy to parse format.
-
-Each error type is handled according to four bit fields:
-
-- *scream*: controls which errors are never @-silenced - silenced fatal errors
-  that can be detected at shutdown time are logged when the bit field allows so,
-- *thrownErrors*: controls which errors are turned to exceptions
-  (defaults to *E_RECOVERABLE_ERROR | E_USER_ERROR*),
-- *scopedErrors*: controls which errors are logged along with their local context,
-- *tracedErrors*: controls which errors are logged along with their trace (but
-  only once for repeated errors).
-
-Since errors, even silenced ones, always have a performance cost, repeated
-errors are all logged, so that the developper can see them and weight them as
-more important to fix than others of the same type.
-
-High accuracy logging
----------------------
-
-Did you try to dump a variable inside an output buffering handler? Any error
-handling or variable logging code out there using either *ob_start()*,
-*print_r()* or *var_dump()* fails in this situation. Neither *serialize()* is
-usable, because some objects throw an exception when serialized. If your current
-dumper uses *json_encode()* internally (or *var_export()* since PHP 5.3.3) then
-you may be safe. But even then, you won't be able to log intra-references in
-your arrays/objects, nor details for resources and so on.
-
-Because errors always happen in unexpected situations, a robust logger must work
-whatever the running context is, for any variable type.
-
-In order to allow a higher level of accuracy, variables are logged following the
-[JSON convention to dump any PHP variable with high accuracy](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
-
-To achieve this, several classes are involved:
-
-### Patchwork\PHP\Logger
-
-logs any message to an output stream.
-
-Error messages are handled specifically in order to make them more friendly,
-especially for traces and exceptions.
-
-Logged messages just have to have a type and some associated data. They are sent
-to a *JsonDumper* object who writes to your debug stream (but that can be any
-other destination).
-
-### Patchwork\PHP\JsonDumper
-
-implements the [JSON convention to dump any PHP variable with high accuracy](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
-
-It extends the *Dumper* class.
-
-### Patchwork\PHP\Dumper
-
-Handles a callback mechanism for getting detailed information about dumped
-objects and resources, alongside with managing depth and length limits.
-
-It extends the *Walker* class.
-
-### Patchwork\PHP\Walker
-
-implements a mechanism to generically traverse any PHP variable.
-
-It takes internal references into account, recursive or non-recursive, without
-preempting any special use of the discovered data. It exposes only one public
-method *->walk()*, which triggers the traversal. It also has a public property
-*->checkInternalRefs* set to true by default, to disable the check for internal
-references if the mechanism is considered too expensive. Checking recursive
-references and object/resource can not be disabled but is much lighter.
+- ablilty to dump internal references, either soft ones (objects or resources)
+  or hard ones (`=&` on arrays or objects properties). Repeated occurences of
+  the same object/array/resource won't appear again and again anymore. Moreover,
+  you'll be able to inspected the reference structure of your data.
+- per object and resource types specialized view: e.g. filter out Doctrine noise
+  while dumping a single proxy entity, or get more insight on opened files with
+  `stream_get_meta_data()`. Add your own dedicated `Dumper\Caster` and get the
+  view *you* need.
+- configurable output format: command line with colors or [a dedicated high
+  accuracy JSON format](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
+  More to come / add your own.
+- full exposure of the internal mechanisms used for walking through an arbitrary
+  PHP data structure.
 
 Usage
 -----
 
-Including the `bootup.logger.php` file is the easiest way to start with these
-features. By defaults, errors are written to *php://stderr*, but the file is
-here to be tuned by you.
+The recommended way to install Patchwork Dumper is [through
+composer](http://getcomposer.org). Just create a `composer.json` file and run
+the `php composer.phar install` command to install it:
+
+    {
+        "require": {
+            "patchwork/dumper": "1.0.*"
+        }
+    }
+
+Then, early in your bootstrap sequence, enable e.g. CLI output with colors:
+
+```php
+set_dump_handler(function ($var) {\Patchwork\Dumper\CliDumper::dump($var);});
+```
+
+Then enjoy debugging with `dump($var)`.
+
+More advanced usages are possible. Please check the source code or open issues on
+GitHub to get *how-to* answers.
+
+Example
+-------
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+set_dump_handler(function ($var) {Patchwork\Dumper\CliDumper::dump($var); echo "---\n";});
+
+$var = 1.0;
+dump($var);
+
+$var = fopen(__FILE__, 'rb');
+dump($var);
+
+class foo
+{
+    public $pub = 'Pub';
+    protected $prot = 'Prot';
+    private $priv = 'Priv';
+}
+
+$foo = new foo;
+$var = array($foo, $foo);
+dump($var);
+
+$var = array($foo);
+$var[1] =& $var[0];
+dump($var);
+```
+
+![Example output](tests/example.png)
+
+License
+-------
+
+Patchwork\Dumper is free software; you can redistribute it and/or modify it under
+the terms of the (at your option):
+- [Apache License v2.0](http://apache.org/licenses/LICENSE-2.0.txt), or
+- [GNU General Public License v2.0](http://gnu.org/licenses/gpl-2.0.txt).
 
 This code is extracted from the [Patchwork](http://pa.tchwork.com/) framework
 where it serves as the foundation for the debugging system. It is released here

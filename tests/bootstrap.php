@@ -2,14 +2,13 @@
 
 $dir = dirname(dirname(__FILE__));
 
-require_once $dir . '/class/Patchwork/PHP/Walker.php';
-require_once $dir . '/class/Patchwork/PHP/Dumper.php';
-require_once $dir . '/class/Patchwork/PHP/Dumper/BaseCaster.php';
-require_once $dir . '/class/Patchwork/PHP/Dumper/ExceptionCaster.php';
-require_once $dir . '/class/Patchwork/PHP/Dumper/PdoCaster.php';
-require_once $dir . '/class/Patchwork/PHP/Dumper/DoctrineCaster.php';
-require_once $dir . '/class/Patchwork/PHP/CliDumper.php';
-require_once $dir . '/class/Patchwork/PHP/JsonDumper.php';
-require_once $dir . '/class/Patchwork/PHP/Logger.php';
-require_once $dir . '/class/Patchwork/PHP/ThrowingErrorHandler.php';
-require_once $dir . '/class/Patchwork/PHP/InDepthErrorHandler.php';
+require_once $dir . '/bootup.dumper.php';
+require_once $dir . '/class/Patchwork/Dumper.php';
+require_once $dir . '/class/Patchwork/Dumper/Walker.php';
+require_once $dir . '/class/Patchwork/Dumper/Dumper.php';
+require_once $dir . '/class/Patchwork/Dumper/Caster/BaseCaster.php';
+require_once $dir . '/class/Patchwork/Dumper/Caster/ExceptionCaster.php';
+require_once $dir . '/class/Patchwork/Dumper/Caster/PdoCaster.php';
+require_once $dir . '/class/Patchwork/Dumper/Caster/DoctrineCaster.php';
+require_once $dir . '/class/Patchwork/Dumper/CliDumper.php';
+require_once $dir . '/class/Patchwork/Dumper/JsonDumper.php';

@@ -8,7 +8,7 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-namespace Patchwork\PHP;
+namespace Patchwork\Dumper;
 
 /**
  * Dumper extends Walker and adds managing depth and length limits, alongside with
@@ -29,22 +29,22 @@ abstract class Dumper extends Walker
     static
 
     $defaultCasters = array(
-        'o:Closure'        => array('Patchwork\PHP\Dumper\BaseCaster', 'castClosure'),
-        'o:Reflector'      => array('Patchwork\PHP\Dumper\BaseCaster', 'castReflector'),
-        'o:PDO'            => array('Patchwork\PHP\Dumper\PdoCaster', 'castPdo'),
-        'o:PDOStatement'   => array('Patchwork\PHP\Dumper\PdoCaster', 'castPdoStatement'),
-        'o:Exception'      => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castException'),
-        'o:ErrorException' => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castErrorException'),
-        'o:Patchwork\PHP\InDepthRecoverableErrorException'
-                           => array('Patchwork\PHP\Dumper\ExceptionCaster', 'castInDepthException'),
+        'o:Closure'        => array('Patchwork\Dumper\Caster\BaseCaster', 'castClosure'),
+        'o:Reflector'      => array('Patchwork\Dumper\Caster\BaseCaster', 'castReflector'),
+        'o:PDO'            => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdo'),
+        'o:PDOStatement'   => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdoStatement'),
+        'o:Exception'      => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castException'),
+        'o:ErrorException' => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castErrorException'),
+        'o:Patchwork\Debug\InDepthRecoverableErrorException'
+                           => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castInDepthException'),
         'o:Doctrine\ORM\Proxy\Proxy'
-                           => array('Patchwork\PHP\Dumper\DoctrineCaster', 'castOrmProxy'),
+                           => array('Patchwork\Dumper\Caster\DoctrineCaster', 'castOrmProxy'),
         'o:Doctrine\Common\Proxy\Proxy'
-                           => array('Patchwork\PHP\Dumper\DoctrineCaster', 'castCommonProxy'),
-        'r:dba'            => array('Patchwork\PHP\Dumper\BaseCaster', 'castDba'),
-        'r:dba persistent' => array('Patchwork\PHP\Dumper\BaseCaster', 'castDba'),
-        'r:process'        => array('Patchwork\PHP\Dumper\BaseCaster', 'castProcess'),
-        'r:stream'         => array('Patchwork\PHP\Dumper\BaseCaster', 'castStream'),
+                           => array('Patchwork\Dumper\Caster\DoctrineCaster', 'castCommonProxy'),
+        'r:dba'            => array('Patchwork\Dumper\Caster\BaseCaster', 'castDba'),
+        'r:dba persistent' => array('Patchwork\Dumper\Caster\BaseCaster', 'castDba'),
+        'r:process'        => array('Patchwork\Dumper\Caster\BaseCaster', 'castProcess'),
+        'r:stream'         => array('Patchwork\Dumper\Caster\BaseCaster', 'castStream'),
     );
 
     protected
