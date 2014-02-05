@@ -105,6 +105,7 @@ abstract class Dumper extends Walker
 
         $this->depthLimited = $this->objectsDepth = array();
         '' !== $this->line && $this->dumpLine(0);
+        $this->dumpLine(false); // Notifies end of dump
 
         if (isset($e)) throw $e;
     }

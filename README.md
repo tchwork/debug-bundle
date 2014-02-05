@@ -12,7 +12,7 @@ This package provides a better `dump()` function, that you can use instead of
   while dumping a single proxy entity, or get more insight on opened files with
   `stream_get_meta_data()`. Add your own dedicated `Dumper\Caster` and get the
   view *you* need.
-- configurable output format: command line with colors or [a dedicated high
+- configurable output format: HTML, command line with colors or [a dedicated high
   accuracy JSON format](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
   More to come / add your own.
 - full exposure of the internal mechanisms used for walking through an arbitrary
@@ -35,6 +35,12 @@ Then, early in your bootstrap sequence, enable e.g. CLI output with colors:
 
 ```php
 set_dump_handler(function ($var) {\Patchwork\Dumper\CliDumper::dump($var);});
+```
+
+or HTML mode with:
+
+```php
+set_dump_handler(function ($var) {\Patchwork\Dumper\HtmlDumper::dump($var);});
 ```
 
 Then enjoy debugging with `dump($var)`.

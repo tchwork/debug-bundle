@@ -11,4 +11,5 @@ require_once $dir . '/class/Patchwork/Dumper/Caster/ExceptionCaster.php';
 require_once $dir . '/class/Patchwork/Dumper/Caster/PdoCaster.php';
 require_once $dir . '/class/Patchwork/Dumper/Caster/DoctrineCaster.php';
 require_once $dir . '/class/Patchwork/Dumper/CliDumper.php';
+require_once $dir . '/class/Patchwork/Dumper/HtmlDumper.php';
 require_once $dir . '/class/Patchwork/Dumper/JsonDumper.php';

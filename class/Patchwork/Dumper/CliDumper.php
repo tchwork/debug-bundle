@@ -19,14 +19,7 @@ class CliDumper extends Dumper
 
     $colors = true,
     $maxString = 100000,
-    $maxStringWidth = 120;
-
-    public static
-
-    $defaultOutputStream = 'php://stderr';
-
-    protected
-
+    $maxStringWidth = 120,
     $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '1;38;5;33',
@@ -40,6 +33,10 @@ class CliDumper extends Dumper
         'private'   => '38;5;160',
         'meta'      => '38;5;27',
     );
+
+    public static
+
+    $defaultOutputStream = 'php://stderr';
 
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
