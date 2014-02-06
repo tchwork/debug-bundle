@@ -19,7 +19,15 @@ class HtmlDumper extends CliDumper
 
     $dumpPrefix,
     $dumpSuffix,
-    $maxStringWidth = 240,
+    $maxStringWidth = 240;
+
+    public static
+
+    $defaultOutputStream = 'php://output';
+
+    protected
+
+    $lastDepth = -1,
     $styles = array(
         'num'       => 'color:#0087FF',
         'const'     => 'color:#0087FF',
@@ -33,28 +41,26 @@ class HtmlDumper extends CliDumper
         'meta'      => 'color:#005FFF',
     );
 
-    public static
-
-    $defaultOutputStream = 'php://output';
-
-    protected $lastDepth = -1;
-
 
     function __construct($outputStream = null, array $defaultCasters = null)
     {
         parent::__construct($outputStream, $defaultCasters);
 
-        if (! isset($this->dumpPrefix, $this->dumpSuffix))
-        {
-            $s = '';
-            $p = 'patchwork-dumper';
+        $this->setStyles($this->styles);
+    }
 
-            foreach ($this->styles as $class => $style)
-                $s .= ".$p-$class{{$style}}";
+    public function setStyles(array $styles)
+    {
+        $this->styles = $styles + $this->styles;
 
-            $this->dumpPrefix = "<style>$s</style><pre class=$p>";
-            $this->dumpSuffix = '</pre>';
-        }
+        $s = '';
+        $p = 'patchwork-dumper';
+
+        foreach ($styles as $class => $style)
+            $s .= ".$p-$class{{$style}}";
+
+        $this->dumpPrefix = "<style>$s</style><pre class=$p>";
+        $this->dumpSuffix = '</pre>';
     }
 
     protected function style($style, $a)
