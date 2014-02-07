@@ -176,8 +176,8 @@ class CliDumper extends Dumper
             $a = explode("\n", $a, $this->maxLength + 1);
             if (isset($a[$this->maxLength]))
             {
-                $cutBy += 1 + iconv_strlen($a[$this->maxLength], 'UTF-8');
-                unset($a[$this->maxLength]);
+                $cutBy += iconv_strlen($a[$this->maxLength], 'UTF-8');
+                $a[$this->maxLength] = '';
             }
         }
         else $a = explode("\n", $a);

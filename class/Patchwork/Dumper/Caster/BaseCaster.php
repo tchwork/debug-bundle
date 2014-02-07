@@ -44,4 +44,21 @@ class BaseCaster
     {
         return stream_get_meta_data($stream);
     }
+
+    static function castGd($gd, array $a)
+    {
+        $a['size'] = imagesx($gd) . 'x' . imagesy($gd);
+        $a['trueColor'] = imageistruecolor($gd);
+
+        return $a;
+    }
+
+    static function castMysqlLink($h, array $a)
+    {
+        $a['host'] = mysql_get_host_info($h);
+        $a['protocol'] = mysql_get_proto_info($h);
+        $a['server'] = mysql_get_server_info($h);
+
+        return $a;
+    }
 }

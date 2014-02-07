@@ -29,9 +29,9 @@ class HtmlDumper extends CliDumper
 
     $lastDepth = -1,
     $styles = array(
-        'num'       => 'color:#0087FF',
-        'const'     => 'color:#0087FF',
-        'str'       => 'color:#00D7FF',
+        'num'       => 'font-weight:bold;color:#0087FF',
+        'const'     => 'font-weight:bold;color:#0087FF',
+        'str'       => 'font-weight:bold;color:#00D7FF',
         'cchr'      => 'font-style: italic',
         'note'      => 'color:#D7AF00',
         'ref'       => 'color:#444444',
