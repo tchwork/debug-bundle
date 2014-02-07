@@ -32,8 +32,12 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $v['snobj'] =& $v['nobj'][0];
         $v['snobj2'] = $v['nobj'][0];
 
-        $json = new JsonDumper;
-        $json = $json->walk($v);
+        $json = array();
+        $dumper = new JsonDumper(function ($line, $depth) use (&$json) {
+            $json[] = str_repeat('  ', $depth) . $line;
+        });
+        $dumper->walk($v);
+        $json = implode(PHP_EOL, $json);
 
         $this->assertSame(
 '{"_":"1:array:23",
@@ -76,7 +80,8 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "snobj": {"_":"34:stdClass"},
   "snobj2": "r`35:29",
   "__refs": {"3":[-32],"30":[-31],"24":[33],"29":[-34,35]}
-}',
+}
+',
             $json
         );
     }

@@ -16,6 +16,7 @@ class ExceptionCaster
 {
     static public
 
+    $traceArgs = true,
     $errorTypes = array(
         E_DEPRECATED => 'E_DEPRECATED',
         E_USER_DEPRECATED => 'E_USER_DEPRECATED',
@@ -39,7 +40,7 @@ class ExceptionCaster
         $trace = $a["\0Exception\0trace"];
         unset($a["\0Exception\0trace"]); // Ensures the trace is always last
 
-        static::filterTrace($trace, $e instanceof InDepthException ? $e->traceOffset : 0, 1);
+        static::filterTrace($trace, $e instanceof InDepthException ? $e->traceOffset : 0, static::$traceArgs);
 
         if (isset($trace)) $a["\0Exception\0trace"] = $trace;
         if (empty($a["\0Exception\0previous"])) unset($a["\0Exception\0previous"]);
@@ -82,14 +83,13 @@ class ExceptionCaster
 
         foreach ($trace as &$t)
         {
-            $offset = (isset($t['class']) ? $t['class'] . $t['type'] : '')
-                . $t['function'] . '()'
-                . (isset($t['line']) ? " {$t['file']}:{$t['line']}" : '');
+            $t = array(
+                'call' => (isset($t['class']) ? $t['class'] . $t['type'] : '') . $t['function'] . '()',
+                'file' => isset($t['line']) ? "{$t['file']}:{$t['line']}" : '',
+                'args' => &$t['args'],
+            );
 
-            if (! isset($t['args']) || ! $dumpArgs) $t = array();
-            else $t = array('args' => $t['args']);
-
-            $t = array('call' => $offset) + $t;
+            if (! isset($t['args']) || ! $dumpArgs) unset($t['args']);
         }
     }
 }

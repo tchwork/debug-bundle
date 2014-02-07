@@ -130,7 +130,14 @@ abstract class Dumper extends Walker
             else unset($this->objectsDepth[$hash]);
         }
 
-        $a = (array) $obj;
+        if (method_exists($obj, '__debugInfo'))
+        {
+            $a = array();
+            if (! $this->callCast(array($this, '__debugInfo'), $obj, $a))
+                $a = (array) $obj;
+        }
+        else $a = (array) $obj;
+
         $c = get_class($obj);
         $p = array($c => $c)
             + class_parents($obj)
@@ -143,8 +150,7 @@ abstract class Dumper extends Walker
             {
                 foreach ($this->casters[$p] as $p)
                 {
-                    try {$a = call_user_func($p, $obj, $a);}
-                    catch (\Exception $e) {}
+                    $this->callCast($p, $obj, $a);
                 }
             }
         }
@@ -162,14 +168,34 @@ abstract class Dumper extends Walker
         {
             foreach ($this->casters['r:' . $type] as $c)
             {
-                try {$b = call_user_func($c, $res, $b);}
-                catch (\Exception $e) {}
+                $this->callCast($c, $res, $b);
             }
         }
 
-        foreach ($b as $b => $c) $a["\0~\0$b"] = $c;
+        foreach ($b as $b => $c)
+            $a[strncmp($b, "\0~\0", 3) ? "\0~\0$b" : $b] = $c;
 
         $this->walkHash("resource:{$type}", $a, count($a));
+    }
+
+    protected function callCast($callback, $obj, &$a)
+    {
+        try
+        {
+            // Ignore invalid $callback
+            $this->lastErrorMessage = true;
+            $callback = call_user_func($callback, $obj, $a);
+
+            if (is_array($callback))
+            {
+                $a = $callback;
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $a["\0~\0⚠"] = $obj instanceof \Exception ? get_class($e) : $e;
+        }
     }
 
     protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)

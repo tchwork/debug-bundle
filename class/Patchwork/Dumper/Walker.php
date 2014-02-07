@@ -236,8 +236,12 @@ abstract class Walker
     {
         if (true !== $this->lastErrorMessage)
         {
+            if (E_RECOVERABLE_ERROR === $type || E_USER_ERROR === $type) // Dumper never dies
+                throw new \ErrorException($msg, 0, $type, $file, $line);
+
             if (null === $this->prevErrorHandler) return false;
-            else return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$context));
+
+            return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$context));
         }
 
         $this->lastErrorMessage = $msg;
