@@ -39,7 +39,6 @@ class PatchworkDumperExtension extends Extension
             ->setProperty('checkInternalRefs', $config['check_internal_refs']);
 
         $container->getDefinition('patchwork.dumper.cli')
-            ->setProperty('colors',            $config['colors'])
             ->setProperty('maxLength',         $config['max_length'])
             ->setProperty('maxDepth',          $config['max_depth'])
             ->setProperty('maxString',         $config['max_string'])

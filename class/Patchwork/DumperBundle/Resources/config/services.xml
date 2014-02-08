@@ -6,6 +6,8 @@
 
     <parameters>
         <parameter key="patchwork.twig.dumper_extension.class">Patchwork\DumperBundle\Twig\PatchworkDumperExtension</parameter>
+        <parameter key="patchwork.dumper.dataCollector.class">Patchwork\DumperBundle\DataCollector</parameter>
+        <parameter key="patchwork.dumper.dataCollector.dumperServiceName">patchwork.dumper.json</parameter>
         <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\JsonDumper</parameter>
         <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\HtmlDumper</parameter>
         <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\CliDumper</parameter>
@@ -17,7 +19,11 @@
             <tag name="twig.extension" />
         </service>
 
-        <service id="patchwork.dumper" alias="patchwork.dumper.cli" />
+        <service id="patchwork.dumper.dataCollector" class="%patchwork.dumper.dataCollector.class%">
+            <argument type="service" id="service_container" />
+            <argument>%patchwork.dumper.dataCollector.dumperServiceName%</argument>
+            <tag name="data_collector" />
+        </service>
 
         <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%">
             <property name="maxLength" />
@@ -35,7 +41,6 @@
         </service>
 
         <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%">
-            <property name="colors" />
             <property name="maxLength" />
             <property name="maxDepth" />
             <property name="maxString" />

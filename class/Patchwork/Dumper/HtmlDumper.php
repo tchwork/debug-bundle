@@ -17,6 +17,7 @@ class HtmlDumper extends CliDumper
 {
     public
 
+    $colors = true,
     $dumpPrefix,
     $dumpSuffix,
     $maxStringWidth = 240;

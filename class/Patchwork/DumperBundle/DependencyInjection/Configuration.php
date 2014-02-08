@@ -46,10 +46,6 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(true)
                     ->info('Enable/disable detecting non-recursive internal references into arrays/objects')
                 ->end()
-                ->booleanNode('colors')
-                    ->defaultValue(true)
-                    ->info('Enable/disable colors on command line output')
-                ->end()
             ->end();
 
         return $treeBuilder;

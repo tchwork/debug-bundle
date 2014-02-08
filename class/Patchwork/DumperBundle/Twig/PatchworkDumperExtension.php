@@ -53,15 +53,15 @@ class PatchworkDumperExtension extends \Twig_Extension
             $vars = array_slice(func_get_args(), 2);
         }
 
-        $lines = array();
+        $lines = '';
         $prevDumper = $this->dumper->setLineDumper(function ($line, $depth) use (&$lines) {
-            $lines[] = str_repeat('  ', $depth) . $line . "\n";
+            $lines .= str_repeat('  ', $depth) . $line . "\n";
 
         });
 
         $this->dumper->walk($vars);
         $this->dumper->setLineDumper($prevDumper);
 
-        return implode('', $lines);
+        return $lines;
     }
 }

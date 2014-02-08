@@ -193,6 +193,7 @@ abstract class Dumper extends Walker
             // Ignore invalid $callback
             $this->lastErrorMessage = true;
             $callback = call_user_func($callback, $obj, $a);
+            $this->lastErrorMessage = false;
 
             if (is_array($callback))
             {

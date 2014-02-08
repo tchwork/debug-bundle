@@ -17,12 +17,13 @@ class CliDumper extends Dumper
 {
     public
 
-    $colors = true,
+    $colors = null,
     $maxString = 100000,
     $maxStringWidth = 120;
 
     public static
 
+    $defaultColors = null,
     $defaultOutputStream = 'php://stderr';
 
     protected
@@ -41,6 +42,17 @@ class CliDumper extends Dumper
         'meta'      => '38;5;27',
     );
 
+
+    function __construct($outputStream = null, array $defaultCasters = null)
+    {
+        parent::__construct($outputStream, $defaultCasters);
+
+        if (! isset($this->colors) && ! isset($outputStream))
+        {
+            isset(static::$defaultColors) or static::$defaultColors = $this->supportColors();
+            $this->colors = static::$defaultColors;
+        }
+    }
 
     public function setStyles(array $styles)
     {
@@ -309,6 +321,8 @@ class CliDumper extends Dumper
 
     protected function style($style, $a)
     {
+        isset($this->colors) or $this->colors = $this->supportsColors();
+
         if (! $this->colors) return $a;
 
         switch ($style)
@@ -336,5 +350,47 @@ class CliDumper extends Dumper
         }
 
         return sprintf("\e[%sm%s\e[m", $this->styles[$style], $a);
+    }
+
+    protected function supportsColors()
+    {
+        if (isset($_SERVER['argv'][1]))
+        {
+            $colors = $_SERVER['argv'];
+            $i = count($colors);
+            while (--$i > 0)
+            {
+                if (isset($colors[$i][5]))
+                switch ($colors[$i])
+                {
+                case '--ansi':
+                case '--color':
+                case '--color=yes':
+                case '--color=force':
+                case '--color=always':
+                    return true;
+
+                case '--no-ansi':
+                case '--color=no':
+                case '--color=none':
+                case '--color=never':
+                    return false;
+                }
+            }
+        }
+
+        if (null !== static::$defaultColors) return static::$defaultColors;
+
+        if (empty($this->outputStream)) return false;
+
+        $this->lastErrorMessage = true;
+
+        $colors = DIRECTORY_SEPARATOR === '\\'
+            ? (false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
+            : (function_exists('posix_isatty') && posix_isatty($this->outputStream));
+
+        $this->lastErrorMessage = false;
+
+        return $colors;
     }
 }
