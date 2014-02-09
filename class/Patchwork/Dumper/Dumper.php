@@ -39,6 +39,8 @@ abstract class Dumper extends Walker
         'o:Exception'      => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castException'),
         'o:Patchwork\Debug\InDepthRecoverableErrorException'
                            => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castInDepthException'),
+        'o:Patchwork\Dumper\ThrowingCasterException'
+                           => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castThrowingCasterException'),
         'o:PDO'            => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdo'),
         'o:PDOStatement'   => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdoStatement'),
         'o:Reflector'      => array('Patchwork\Dumper\Caster\BaseCaster', 'castReflector'),
@@ -203,7 +205,7 @@ abstract class Dumper extends Walker
         }
         catch (\Exception $e)
         {
-            $a["\0~\0⚠"] = $obj instanceof \Exception ? get_class($e) : $e;
+            $a["\0~\0⚠"] = new ThrowingCasterException($callback, $e);
         }
     }
 
@@ -343,5 +345,16 @@ abstract class Dumper extends Walker
     protected function echoLine($line, $depth)
     {
         fwrite($this->outputStream, str_repeat('  ', $depth) . $line . "\n");
+    }
+}
+
+class ThrowingCasterException extends \Exception
+{
+    private $caster;
+
+    function __construct($caster, \Exception $prev)
+    {
+        $this->caster = $caster;
+        parent::__construct(null, 0, $prev);
     }
 }

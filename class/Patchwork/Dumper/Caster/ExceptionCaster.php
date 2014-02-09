@@ -11,6 +11,7 @@
 namespace Patchwork\Dumper\Caster;
 
 use Patchwork\Debug\InDepthRecoverableErrorException as InDepthException;
+use Patchwork\Dumper\ThrowingCasterException;
 
 class ExceptionCaster
 {
@@ -65,6 +66,30 @@ class ExceptionCaster
         {
             $a['context'] = $a["\0Exception\0trace"];
         }
+
+        return $a;
+    }
+
+    static function castThrowingCasterException(ThrowingCasterException $e, array $a)
+    {
+        $b = (array) $a["\0Exception\0previous"];
+
+        array_splice($b["\0Exception\0trace"], count($a["\0Exception\0trace"]));
+
+        $t = static::$traceArgs;
+        static::$traceArgs = false;
+        $b = static::castException($a["\0Exception\0previous"], $b);
+        static::$traceArgs = $t;
+
+        empty($a["\0*\0message"]) and $a["\0*\0message"] = "Unexpected exception thrown from a caster: " . get_class($a["\0Exception\0previous"]);
+
+        isset($b["\0*\0message"]) and $a["\0~\0message"] = $b["\0*\0message"];
+        isset($b["\0*\0file"]) and $a["\0~\0file"] = $b["\0*\0file"];
+        isset($b["\0*\0line"]) and $a["\0~\0line"] = $b["\0*\0line"];
+        isset($b["\0Exception\0trace"]) and $a["\0~\0trace"] = $b["\0Exception\0trace"];
+
+        unset($a["\0Exception\0trace"], $a["\0Exception\0previous"], $a["\0*\0code"], $a["\0*\0file"], $a["\0*\0line"]);
+
 
         return $a;
     }
