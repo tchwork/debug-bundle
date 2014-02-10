@@ -8,15 +8,16 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-namespace Patchwork\DumperBundle\Twig;
+namespace Patchwork\DumperBundle;
 
-use Patchwork\Dumper\Dumper\HtmlDumper;
+use Patchwork\Dumper\HtmlDumper;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class PatchworkDumperExtension extends \Twig_Extension
+class TwigExtension extends \Twig_Extension
 {
     private $dumper;
 
-    public function __construct(HtmlDumper $dumper)
+    public function __construct(HtmlDumper $dumper = null)
     {
         $this->dumper = $dumper;
     }
@@ -35,7 +36,7 @@ class PatchworkDumperExtension extends \Twig_Extension
 
     public function dump(\Twig_Environment $env, $context)
     {
-        if (!$env->isDebug()) {
+        if (! $env->isDebug()) {
             return;
         }
 
@@ -53,15 +54,21 @@ class PatchworkDumperExtension extends \Twig_Extension
             $vars = array_slice(func_get_args(), 2);
         }
 
-        $lines = '';
-        $prevDumper = $this->dumper->setLineDumper(function ($line, $depth) use (&$lines) {
-            $lines .= str_repeat('  ', $depth) . $line . "\n";
+        if ($this->dumper) {
+            $lines = '';
+            $prevDumper = $this->dumper->setLineDumper(function ($line, $depth) use (&$lines) {
+                $lines .= str_repeat('  ', $depth) . $line . "\n";
 
-        });
+            });
 
-        $this->dumper->walk($vars);
-        $this->dumper->setLineDumper($prevDumper);
+            $this->dumper->walk($vars);
+            $this->dumper->setLineDumper($prevDumper);
 
-        return $lines;
+            return $lines;
+        } else {
+            dump($vars);
+
+            return '';
+        }
     }
 }

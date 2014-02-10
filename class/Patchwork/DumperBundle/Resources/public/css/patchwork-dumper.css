@@ -1,0 +1,106 @@
+.event br /* Hide Chrome inserted BR */
+{
+    display: none;
+}
+
+.event
+{
+    color: gray;
+    margin: 0;
+    padding: 0;
+    font-style: italic;
+    font-family: inherit;
+    white-space: pre;
+}
+
+.array-compact
+{
+    white-space: nowrap; /* This rule makes IE slow as hell */
+}
+
+.arrow,
+.const,
+.class,
+.alias,
+.handle,
+.string
+{
+    color: black;
+    font-style: normal;
+    font-family: sans-serif;
+}
+
+.event a
+{
+    display: inline-block;
+    position: relative;
+    right: 15px;
+    width: 0;
+    font-style: normal;
+    font-family: sans-serif;
+    color: blue;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.const
+{
+    color: blue;
+}
+
+.string
+{
+    color: purple;
+    background-color: #F9F9F9;
+}
+
+.empty.string
+{
+    width: 3px;
+    height: 1em;
+    display: inline-block;
+}
+
+.key
+{
+    font-family: monospace;
+    background-color: white;
+}
+
+.public
+{
+    color: green;
+}
+
+.protected
+{
+    color: orange;
+}
+
+.private
+{
+    color: red;
+}
+
+.arrow
+{
+    color: gray;
+    background-color: white;
+}
+
+.event.silenced>.array-compact span
+{
+    color: silver;
+    background-color: white;
+}
+
+.array-compact a,
+.array-compact .key
+{
+    display: none;
+}
+
+.key.string
+{
+    display: inline;
+}

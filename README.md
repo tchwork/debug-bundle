@@ -49,6 +49,27 @@ Then enjoy debugging with `dump($var)`.
 More advanced usages are possible. Please check the source code or open issues on
 GitHub to get *how-to* answers.
 
+Symfony2 bundle
+---------------
+
+For Symfony2 users, a bundle is also available. The bundle creates a `dump()`
+function that is available both in your PHP code and in your Twig templates.
+
+In console mode, variables are dumped on *stderr*. In web mode, variables are
+dumped in a new `Dumps` tab in the debug toolbar.
+
+Enabling only needs a line in your `app/AppKernel.php`:
+
+```php
+public function registerBundles()
+{
+    $bundles = array(
+        // ...
+        new Patchwork\DumperBundle\PatchworkDumperBundle(),
+    );
+}
+```
+
 Example
 -------
 

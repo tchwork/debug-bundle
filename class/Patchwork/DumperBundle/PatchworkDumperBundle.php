@@ -23,7 +23,7 @@ class PatchworkDumperBundle extends Bundle
 
         set_dump_handler(function ($v) use ($container, $dumper)
         {
-            return $container->get("patchwork.dumper.$dumper")->walk($v);
+            $container->get("patchwork.dumper.$dumper")->walk($v);
         });
     }
 }

@@ -24,6 +24,7 @@ class DataCollector extends BaseDataCollector
     {
         $this->container = $container;
         $this->dumperServiceName = $dumperServiceName;
+        $this->data['dumps'] = array();
     }
 
     public function walk(&$var)
@@ -46,6 +47,11 @@ class DataCollector extends BaseDataCollector
 
     public function collect(Request $request, Response $response, \Exception $exception = null)
     {
+    }
+
+    public function getDumps()
+    {
+        return $this->data['dumps'];
     }
 
     public function getName()
