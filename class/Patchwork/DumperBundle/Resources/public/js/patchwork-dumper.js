@@ -237,7 +237,7 @@ function htmlizeEvent(data, refs, filter)
 
 function arrayToggle(a)
 {
-    var s = a.nextSibling.nextSibling;
+    var s = a.nextElementSibling.nextElementSibling;
 
     if ('array-compact' == s.className)
     {

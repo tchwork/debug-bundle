@@ -36,7 +36,7 @@ abstract class Walker
     $objPool = array(),
     $arrayPool = array(),
     $lastErrorMessage = false,
-    $prevErrorHandler;
+    $prevErrorHandler = null;
 
     protected static
 
@@ -239,7 +239,7 @@ abstract class Walker
             if (E_RECOVERABLE_ERROR === $type || E_USER_ERROR === $type) // Dumper never dies
                 throw new \ErrorException($msg, 0, $type, $file, $line);
 
-            if (null === $this->prevErrorHandler) return false;
+            if (! $this->prevErrorHandler) return false;
 
             return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, &$context));
         }

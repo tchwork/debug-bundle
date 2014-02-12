@@ -1,3 +1,22 @@
+li.dump
+{
+    list-style-type: disc;
+    border: none;
+}
+
+.dump>pre
+{
+    margin: 15px 0;
+    padding-left: 11px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.dump ol>li
+{
+    padding: 0;
+}
+
 .event br /* Hide Chrome inserted BR */
 {
     display: none;
@@ -30,7 +49,7 @@
     font-family: sans-serif;
 }
 
-.event a
+.dump a
 {
     display: inline-block;
     position: relative;
@@ -38,14 +57,21 @@
     width: 0;
     font-style: normal;
     font-family: sans-serif;
-    color: blue;
+    color: lightblue;
     cursor: pointer;
     text-decoration: none;
 }
 
-.const
+.dump>a
+{
+    right: 0;
+}
+
+.const,
+.dump a:hover
 {
     color: blue;
+    text-decoration: none;
 }
 
 .string
@@ -103,4 +129,9 @@
 .key.string
 {
     display: inline;
+}
+
+.array-compact>ol
+{
+    display: none;
 }

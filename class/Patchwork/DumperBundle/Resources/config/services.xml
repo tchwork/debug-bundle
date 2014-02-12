@@ -7,7 +7,6 @@
     <parameters>
         <parameter key="patchwork.twig.dumper_extension.class">Patchwork\DumperBundle\TwigExtension</parameter>
         <parameter key="patchwork.dumper.dataCollector.class">Patchwork\DumperBundle\DataCollector</parameter>
-        <parameter key="patchwork.dumper.dataCollector.dumperServiceName">patchwork.dumper.json</parameter>
         <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\JsonDumper</parameter>
         <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\HtmlDumper</parameter>
         <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\CliDumper</parameter>
@@ -21,7 +20,7 @@
 
         <service id="patchwork.dumper.dataCollector" class="%patchwork.dumper.dataCollector.class%">
             <argument type="service" id="service_container" />
-            <argument>%patchwork.dumper.dataCollector.dumperServiceName%</argument>
+            <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
             <tag name="data_collector" template="PatchworkDumperBundle:Collector:patchwork.dumper" id="patchwork.dumper" />
         </service>
 

@@ -109,6 +109,7 @@ abstract class Dumper extends Walker
     {
         $this->line = '';
         $this->lastHash = 0;
+        $this->dumpLength = 0;
 
         try {parent::walk($a);}
         catch (\Exception $e) {}
