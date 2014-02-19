@@ -28,21 +28,18 @@ class PatchworkDumperExtension extends Extension
         $container->getDefinition('patchwork.dumper.json')
             ->setProperty('maxLength',         $config['max_length'])
             ->setProperty('maxDepth',          $config['max_depth'])
-            ->setProperty('maxString',         $config['max_string'])
-            ->setProperty('checkInternalRefs', $config['check_internal_refs']);
+            ->setProperty('maxString',         $config['max_string']);
 
         $container->getDefinition('patchwork.dumper.html')
             ->setProperty('maxLength',         $config['max_length'])
             ->setProperty('maxDepth',          $config['max_depth'])
             ->setProperty('maxString',         $config['max_string'])
-            ->setProperty('maxStringWidth',    $config['max_string_width'])
-            ->setProperty('checkInternalRefs', $config['check_internal_refs']);
+            ->setProperty('maxStringWidth',    $config['max_string_width']);
 
         $container->getDefinition('patchwork.dumper.cli')
             ->setProperty('maxLength',         $config['max_length'])
             ->setProperty('maxDepth',          $config['max_depth'])
             ->setProperty('maxString',         $config['max_string'])
-            ->setProperty('maxStringWidth',    $config['max_string_width'])
-            ->setProperty('checkInternalRefs', $config['check_internal_refs']);
+            ->setProperty('maxStringWidth',    $config['max_string_width']);
     }
 }

@@ -43,7 +43,7 @@ class HtmlDumper extends CliDumper
     );
 
 
-    function __construct($outputStream = null, array $defaultCasters = null)
+    public function __construct($outputStream = null, array $defaultCasters = null)
     {
         parent::__construct($outputStream, $defaultCasters);
 
@@ -64,9 +64,9 @@ class HtmlDumper extends CliDumper
         $this->dumpSuffix = '</pre>';
     }
 
-    protected function style($style, $a)
+    protected function style($style, $val)
     {
-        $a = htmlspecialchars($a, ENT_NOQUOTES, 'UTF-8');
+        $val = htmlspecialchars($val, ENT_NOQUOTES, 'UTF-8');
 
         switch ($style)
         {
@@ -82,20 +82,20 @@ class HtmlDumper extends CliDumper
 
             foreach ($cchr as $c)
             {
-                if (false !== strpos($a, $c))
+                if (false !== strpos($val, $c))
                 {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
-                    $a = str_replace($c, "<span class=patchwork-dumper-cchr>$r</span>", $a);
+                    $val = str_replace($c, "<span class=patchwork-dumper-cchr>$r</span>", $val);
                 }
             }
         }
 
-        return "<span class=patchwork-dumper-$style>$a</span>";
+        return "<span class=patchwork-dumper-$style>$val</span>";
     }
 
-    protected function dumpLine($depth_offset)
+    protected function dumpLine($depthOffset)
     {
-        $depth = $this->depth + $depth_offset;
+        $depth = $this->depth + $depthOffset;
 
         switch ($this->lastDepth - $depth)
         {
@@ -105,13 +105,13 @@ class HtmlDumper extends CliDumper
 
         if (-1 === $this->lastDepth) $this->line = $this->dumpPrefix . $this->line;
 
-        if (false === $depth_offset)
+        if (false === $depthOffset)
         {
             $this->lastDepth = -1;
             $this->line .= $this->dumpSuffix;
         }
         else $this->lastDepth = $depth;
 
-        parent::dumpLine($depth_offset);
+        parent::dumpLine($depthOffset);
     }
 }

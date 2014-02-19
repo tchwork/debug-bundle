@@ -22,59 +22,59 @@ class JsonDumper extends Dumper
     $maxString = 100000;
 
 
-    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
+    protected function dumpRef($isSoft, $position, $hash)
     {
-        if (parent::dumpRef($is_soft, $ref_counter, $ref_value, $ref_type)) return true;
+        if (parent::dumpRef($isSoft, $position, $hash)) return true;
 
-        $is_soft = $is_soft ? 'r' : 'R';
-        $this->line .= "\"{$is_soft}`{$this->counter}:{$ref_counter}\"";
+        $isSoft = $isSoft ? 'r' : 'R';
+        $this->line .= "\"{$isSoft}`{$this->position}:{$position}\"";
 
         return false;
     }
 
-    protected function dumpScalar($a)
+    protected function dumpScalar($val)
     {
         switch (true)
         {
-        case null === $a: $this->line .= 'null'; break;
-        case true === $a: $this->line .= 'true'; break;
-        case false === $a: $this->line .= 'false'; break;
-        case INF === $a: $this->line .= '"n`INF"'; break;
-        case -INF === $a: $this->line .= '"n`-INF"'; break;
-        case is_nan($a): $this->line .= '"n`NAN"'; break;
-        case $a > 9007199254740992 && is_int($a): $a = '"n`' . $a . '"'; // JavaScript max integer is 2^53
-        default: $this->line .= (string) $a; break;
+        case null === $val: $this->line .= 'null'; break;
+        case true === $val: $this->line .= 'true'; break;
+        case false === $val: $this->line .= 'false'; break;
+        case INF === $val: $this->line .= '"n`INF"'; break;
+        case -INF === $val: $this->line .= '"n`-INF"'; break;
+        case is_nan($val): $this->line .= '"n`NAN"'; break;
+        case $val > 9007199254740992 && is_int($val): $val = '"n`' . $val . '"'; // JavaScript max integer is 2^53
+        default: $this->line .= (string) $val; break;
         }
     }
 
-    protected function dumpString($a, $is_key)
+    protected function dumpString($str, $isKey)
     {
-        if ($is_key)
+        if ($isKey)
         {
             $this->line .= ',';
-            $is_key = $this->lastHash === $this->counter;
+            $isKey = $this->hashPosition === $this->position;
 
-            if ('__cutBy' === $a)
+            if ('__cutBy' === $str)
             {
-                if (! $is_key) $this->dumpLine(0);
+                if (! $isKey) $this->dumpLine(0);
             }
             else
             {
-                $is_key = $is_key && ! isset($this->depthLimited[$this->counter]);
-                $this->dumpLine(-$is_key);
+                $isKey = $isKey && ! isset($this->depthLimited[$this->position]);
+                $this->dumpLine(-$isKey);
             }
 
-            $is_key = ': ';
+            $isKey = ': ';
         }
-        else $is_key = '';
+        else $isKey = '';
 
-        if ('' === $a) return $this->line .= '""' . $is_key;
+        if ('' === $str) return $this->line .= '""' . $isKey;
 
-        if (! preg_match('//u', $a)) $a = 'b`' . utf8_encode($a);
-        else if (false !== strpos($a, '`')) $a = 'u`' . $a;
+        if (! preg_match('//u', $str)) $str = 'b`' . utf8_encode($str);
+        else if (false !== strpos($str, '`')) $str = 'u`' . $str;
 
-        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($a, 'UTF-8') - 1)
-            $a = $len . ('`' !== substr($a, 1, 1) ? 'u`' : '') . iconv_substr($a, 0, $this->maxString + 1, 'UTF-8');
+        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($str, 'UTF-8') - 1)
+            $str = $len . ('`' !== substr($str, 1, 1) ? 'u`' : '') . iconv_substr($str, 0, $this->maxString + 1, 'UTF-8');
 
         static $map = array(
             array(
@@ -93,20 +93,22 @@ class JsonDumper extends Dumper
             ),
         );
 
-        $this->line .= '"' . str_replace($map[0], $map[1], $a) . '"' . $is_key;
+        $this->line .= '"' . str_replace($map[0], $map[1], $str) . '"' . $isKey;
     }
 
-    protected function walkHash($type, &$a, $len)
+    protected function dumpHash($type, $array)
     {
+        if ('array' === $type) $type .= ':' . count($array);
+
         if ('array:0' === $type) $this->line .= '[]';
         else
         {
             $this->line .= '{"_":';
-            $this->dumpString($this->counter . ':' . $type, false);
+            $this->dumpString($this->position . ':' . $type, false);
 
-            $startCounter = $this->counter;
+            $startPosition = $this->position;
 
-            if ($type = parent::walkHash($type, $a, $len))
+            if ($type = parent::dumpHash($type, $array))
             {
                 ++$this->depth;
                 $this->dumpString('__refs', true);
@@ -115,7 +117,7 @@ class JsonDumper extends Dumper
                 --$this->depth;
             }
 
-            if ($this->counter !== $startCounter) $this->dumpLine(1);
+            if ($this->position !== $startPosition) $this->dumpLine(1);
 
             $this->line .= '}';
         }

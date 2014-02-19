@@ -43,13 +43,13 @@ class CliDumper extends Dumper
     );
 
 
-    function __construct($outputStream = null, array $defaultCasters = null)
+    public function __construct($outputStream = null, array $defaultCasters = null)
     {
         parent::__construct($outputStream, $defaultCasters);
 
         if (! isset($this->colors) && ! isset($outputStream))
         {
-            isset(static::$defaultColors) or static::$defaultColors = $this->supportColors();
+            isset(static::$defaultColors) or static::$defaultColors = $this->supportsColors();
             $this->colors = static::$defaultColors;
         }
     }
@@ -59,52 +59,49 @@ class CliDumper extends Dumper
         $this->styles = $styles + $this->styles;
     }
 
-    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null, $ref_type = null)
+    protected function dumpRef($isSoft, $position, $hash)
     {
-        if (parent::dumpRef($is_soft, $ref_counter, $ref_value, $ref_type)) return true;
+        if (parent::dumpRef($isSoft, $position, $hash)) return true;
 
-        $is_soft = $is_soft ? '@' : '#';
+        $isSoft = $isSoft ? '@' : '#';
 
-        if (! $ref_counter)
+        if (! $position)
         {
-            $this->line .= $this->style('ref', $is_soft . $this->counter);
+            $this->line .= $this->style('ref', $isSoft . $this->position);
         }
         else
         {
-            if (! isset($ref_type)) $note = '';
-            else switch ($ref_type)
-            {
-            default: $note = $ref_type . ' '; break;
-            case 'object': $note = get_class($ref_value) . ' '; break;
-            case 'resource': $note = 'resource:' . get_resource_type($ref_value) . ' '; break;
-            }
+            if (null === $hash) $note = '';
+            else if (isset($hash[0])) $note = get_class($this->valPool[$position]) . ' ';
+            else if ($hash) $note = 'resource:' . get_resource_type($this->valPool[$position]) . ' ';
+            else $note = 'array ';
 
-            $this->line .= $this->style('note', $note . $is_soft . $ref_counter);
+            $this->line .= $this->style('note', $note . $isSoft . $position);
         }
 
         return false;
     }
 
-    protected function dumpScalar($a)
+    protected function dumpScalar($val)
     {
-        if (is_int($a))
+        if (is_int($val))
         {
             $s = 'num';
-            $b = $a;
+            $v = $val;
         }
-        else if (is_float($a))
+        else if (is_float($val))
         {
             $s = 'num';
 
             switch (true)
             {
-            case INF === $a:  $b = 'INF';  break;
-            case -INF === $a: $b = '-INF'; break;
-            case is_nan($a):  $b = 'NAN';  break;
+            case INF === $val:  $v = 'INF';  break;
+            case -INF === $val: $v = '-INF'; break;
+            case is_nan($val):  $v = 'NAN';  break;
             default:
-                $b = sprintf('%.14E', $a);
-                $a = sprintf('%.17E', $a);
-                $b = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $b === (float) $a ? $b : $a);
+                $v = sprintf('%.14E', $val);
+                $val = sprintf('%.17E', $val);
+                $v = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $v === (float) $val ? $v : $val);
                 break;
             }
         }
@@ -114,41 +111,42 @@ class CliDumper extends Dumper
 
             switch (true)
             {
-            case null === $a:  $b = 'null';  break;
-            case true === $a:  $b = 'true';  break;
-            case false === $a: $b = 'false'; break;
-            default: $b = (string) $a; break;
+            case null === $val:  $v = 'null';  break;
+            case true === $val:  $v = 'true';  break;
+            case false === $val: $v = 'false'; break;
+            default: $v = (string) $val; break;
             }
         }
 
-        $this->line .= $this->style($s, $b);
+        $this->line .= $this->style($s, $v);
     }
 
-    protected function dumpString($a, $is_key, $style = null)
+    protected function dumpString($str, $isKey, $style = null)
     {
-        if ($is_key)
+        if ($isKey)
         {
-            $is_key = $this->lastHash === $this->counter;
+            $isKey = $this->hashPosition === $this->position;
 
-            if ('__cutBy' === $a)
+            if ('__cutBy' === $str)
             {
-                if (! $is_key) $this->dumpLine(0);
+                if (! $isKey) $this->dumpLine(0);
                 else $this->line .= ' ';
                 $this->line .= '…';
+
                 return;
             }
 
-            $is_key = $is_key && ! isset($this->depthLimited[$this->counter]);
-            $this->dumpLine(-$is_key);
-            $is_key = ': ';
+            $isKey = $isKey && ! isset($this->depthLimited[$this->position]);
+            $this->dumpLine(-$isKey);
+            $isKey = ': ';
 
-            $a = explode(':', $a, 2);
+            $str = explode(':', $str, 2);
 
-            if (isset($a[1]))
+            if (isset($str[1]))
             {
                 if (! isset($style))
                 {
-                    switch ($a[0])
+                    switch ($str[0])
                     {
                     case '':  $style = 'public';    break;
                     case '*': $style = 'protected'; break;
@@ -157,79 +155,79 @@ class CliDumper extends Dumper
                     }
                 }
 
-                $a = $a[1];
+                $str = $str[1];
             }
             else
             {
-                $a = $a[0];
+                $str = $str[0];
                 isset($style) or $style = 'public';
             }
         }
-        else $is_key = '';
+        else $isKey = '';
 
-        if ('' === $a) return $this->line .= "''" . $is_key;
+        if ('' === $str) return $this->line .= "''" . $isKey;
 
         isset($style) or $style = 'str';
 
-        if ($bin = ! preg_match('//u', $a))
+        if ($bin = ! preg_match('//u', $str))
         {
-            $a = utf8_encode($a);
+            $str = utf8_encode($str);
         }
 
-        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($a, 'UTF-8'))
+        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($str, 'UTF-8'))
         {
-            $a = iconv_substr($a, 0, $this->maxString - 1, 'UTF-8');
+            $str = iconv_substr($str, 0, $this->maxString - 1, 'UTF-8');
             $cutBy = $len - $this->maxString + 1;
         }
         else $cutBy = 0;
 
         if ($this->maxLength > 0)
         {
-            $a = explode("\n", $a, $this->maxLength + 1);
-            if (isset($a[$this->maxLength]))
+            $str = explode("\n", $str, $this->maxLength + 1);
+            if (isset($str[$this->maxLength]))
             {
-                $cutBy += iconv_strlen($a[$this->maxLength], 'UTF-8');
-                $a[$this->maxLength] = '';
+                $cutBy += iconv_strlen($str[$this->maxLength], 'UTF-8');
+                $str[$this->maxLength] = '';
             }
         }
-        else $a = explode("\n", $a);
+        else $str = explode("\n", $str);
 
-        $x = isset($a[1]);
+        $x = isset($str[1]);
         $i = $len = 0;
 
-        foreach ($a as $a)
+        foreach ($str as $str)
         {
-            if ($is_key ? $i++ : $x)
+            if ($isKey ? $i++ : $x)
             {
                 $this->dumpLine(0);
-                $is_key or $this->line .= '  ';
+                $isKey or $this->line .= '  ';
             }
 
-            $len = iconv_strlen($a, 'UTF-8');
+            $len = iconv_strlen($str, 'UTF-8');
 
             if (0 < $this->maxStringWidth && $this->maxStringWidth < $len)
             {
-                $a = iconv_substr($a, 0, $this->maxStringWidth - 1, 'UTF-8');
-                $a = $this->style($style, $a) . '…';
+                $str = iconv_substr($str, 0, $this->maxStringWidth - 1, 'UTF-8');
+                $str = $this->style($style, $str) . '…';
                 $cutBy += $len - $this->maxStringWidth + 1;
             }
             else
             {
-                $a = $this->style($style, $a);
+                $str = $this->style($style, $str);
             }
 
             if ($bin)
             {
                 if (' ' === substr($this->line, -1))
                 {
-                    $this->line = substr_replace($this->line, 'b' . $a, -1);
+                    $this->line = substr_replace($this->line, 'b' . $str, -1);
                 }
                 else
                 {
-                    $this->line .= 'b' . $a;
+                    $this->line .= 'b' . $str;
                 }
             }
-            else $this->line .= $a;
+            else $this->line .= $str;
         }
 
         if ($cutBy)
@@ -242,20 +240,20 @@ class CliDumper extends Dumper
             $this->dumpScalar($cutBy);
         }
 
-        $this->line .= $is_key;
+        $this->line .= $isKey;
     }
 
-    protected function walkHash($type, &$a, $len)
+    protected function dumpHash($type, $array)
     {
-        if ('array:0' === $type) $this->line .= '[]';
+        $isArray = 'array' === $type;
+
+        if (empty($array) && $isArray) $this->line .= '[]';
         else
         {
-            $is_array = 0 === strncmp($type, 'array:', 6);
-
-            if ($is_array)
+            if ($isArray)
             {
                 $this->line .= '[';
-                //$this->dumpString(substr($type, 6), false, 'note');
+                //$this->dumpString(count($array), false, 'note');
             }
             else
             {
@@ -263,13 +261,13 @@ class CliDumper extends Dumper
                 $this->line .= '{';
             }
 
-            $this->line .= ' ' . $this->style('ref', "#$this->counter");
+            $this->line .= ' ' . $this->style('ref', "#$this->position");
 
-            $startCounter = $this->counter;
-            $refs = parent::walkHash($type, $a, $len);
-            if ($this->counter !== $startCounter) $this->dumpLine(1);
+            $startPosition = $this->position;
+            $refs = parent::dumpHash($type, $array);
+            if ($this->position !== $startPosition) $this->dumpLine(1);
 
-            $this->line .= $is_array ? ']' : '}';
+            $this->line .= $isArray ? ']' : '}';
 
             if ($refs)
             {
@@ -294,7 +292,7 @@ class CliDumper extends Dumper
                     }
                 }
 
-                $col2 = strlen($this->counter);
+                $col2 = strlen($this->position);
 
                 foreach ($refs as $k => $v)
                 {
@@ -319,11 +317,11 @@ class CliDumper extends Dumper
         }
     }
 
-    protected function style($style, $a)
+    protected function style($style, $val)
     {
         isset($this->colors) or $this->colors = $this->supportsColors();
 
-        if (! $this->colors) return $a;
+        if (! $this->colors) return $val;
 
         switch ($style)
         {
@@ -339,17 +337,17 @@ class CliDumper extends Dumper
 
             foreach ($cchr as $c)
             {
-                if (false !== strpos($a, $c))
+                if (false !== strpos($val, $c))
                 {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
                     $r = "\e[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\e[m";
                     $r = "\e[m{$r}\e[{$this->styles[$style]}m";
-                    $a = str_replace($c, $r, $a);
+                    $val = str_replace($c, $r, $val);
                 }
             }
         }
 
-        return sprintf("\e[%sm%s\e[m", $this->styles[$style], $a);
+        return sprintf("\e[%sm%s\e[m", $this->styles[$style], $val);
     }
 
     protected function supportsColors()

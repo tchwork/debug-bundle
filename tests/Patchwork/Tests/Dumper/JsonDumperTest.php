@@ -73,9 +73,9 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "0": "r`29:29"
   },
   "recurs": {"_":"30:array:1",
-    "0": "R`31:30"
+    "0": "R`31:0"
   },
-  "9": "R`32:",
+  "9": "R`32:0",
   "sobj": "r`33:24",
   "snobj": {"_":"34:stdClass"},
   "snobj2": "r`35:29",

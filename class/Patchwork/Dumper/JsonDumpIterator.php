@@ -31,39 +31,39 @@ class JsonDumpIterator implements \Iterator
     );
 
 
-    function __construct($stream)
+    public function __construct($stream)
     {
         $this->stream = $stream;
     }
 
-    function getStream()
+    public function getStream()
     {
         return $this->stream;
     }
 
-    function rewind()
+    public function rewind()
     {
         // Not rewindable iterator
         if (false === $this->nextLine) $this->nextLine = fgets($this->stream);
         $this->next();
     }
 
-    function valid()
+    public function valid()
     {
         return false !== $this->currentJson;
     }
 
-    function current()
+    public function current()
     {
         return $this->currentJson;
     }
 
-    function key()
+    public function key()
     {
         return $this->currentKey;
     }
 
-    function next()
+    public function next()
     {
         if (false === $this->nextLine)
         {
@@ -110,7 +110,7 @@ class JsonDumpIterator implements \Iterator
         throw new JsonDumpIteratorException; // The JSON is only partial
     }
 
-    function jsonStr($s)
+    public function jsonStr($s)
     {
         if (false !== $r = @json_encode($s)) return $r;
         return json_encode(utf8_encode($s));
