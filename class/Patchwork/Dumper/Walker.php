@@ -54,7 +54,7 @@ abstract class Walker
         {
             $val= $ref;
             $type = gettype($val);
-            $this->walkRef($ref, $val, $type);
+            $this->walkRef($ref, $val, $type, null);
         }
         catch (\Exception $e) {}
 
@@ -69,20 +69,20 @@ abstract class Walker
         if (isset($e)) throw $e;
     }
 
-    protected function walkRef(&$ref, $val, $type)
+    protected function walkRef(&$ref, $val, $type, $key)
     {
         ++$this->position;
 
-        if ($ref instanceof WalkerRefTag && $ref->tag === self::$tag)
+        if ($val instanceof WalkerRefTag && $val->tag === self::$tag)
         {
-            if ($ref->position)
+            if ($val->position)
             {
-                $this->refMap[-$this->position] = $ref->position;
-                $this->dumpRef(false, $ref->position, $ref->hash);
+                $this->refMap[-$this->position] = $val->position;
+                $this->dumpRef(false, $val->position, $val->hash);
             }
             else
             {
-                if ($ref === self::$tag) $ref = clone $ref;
+                if ($val === self::$tag) $ref = clone self::$tag;
                 $ref->refs[] = -$this->position;
                 $this->dumpRef(false, 0, null);
             }
@@ -91,7 +91,7 @@ abstract class Walker
         {
             $this->refPool[$this->position] =& $ref;
             $this->valPool[$this->position] = $val;
-            $ref = self::$tag;
+            if (! $ref instanceof WalkerRefTag || $ref->tag !== self::$tag) $ref = self::$tag;
 
             switch ($type)
             {
@@ -134,7 +134,9 @@ abstract class Walker
         }
         $this->refPool = array();
 
+        unset($this->refMap[0]);
         foreach ($this->refMap as $p => $position) $refs[$position][] = $p;
+        unset($refs[0]);
 
         return $refs;
     }

@@ -11,20 +11,19 @@
 namespace Patchwork\Dumper;
 
 /**
- * Dumper extends Walker and adds managing depth and length limits, alongside with
- * a callback mechanism for getting detailed information about objects and resources.
+ * PHP structure traversal, with length limits and a callback mechanism for getting detailed
+ * information about objects and resources.
  *
  * For example and by default, resources of type stream are expanded by stream_get_meta_data,
  * those of type process by proc_get_status, and closures are associated with a method that
  * uses reflection to provide detailed information about anonymous functions. This class is
  * designed to implement these mechanisms in a way independent of the final representation.
  */
-abstract class Dumper extends Walker
+abstract class AbstractDumper extends Walker
 {
     public
 
-    $maxLength = 1000,
-    $maxDepth = 10;
+    $maxLength = 5000;
 
     static
 
@@ -64,8 +63,6 @@ abstract class Dumper extends Walker
     $depth = 0,
     $dumpLength = 0,
     $hashPosition = 0,
-    $depthLimited = array(),
-    $objectsDepth = array(),
     $reserved = array('_' => 1, '__cutBy' => 1, '__refs' => 1, '__proto__' => 1),
     $lineDumper = array(__CLASS__, 'echoLine'),
     $casters = array(),
@@ -109,14 +106,12 @@ abstract class Dumper extends Walker
     public function walk(&$ref)
     {
         $this->line = '';
-        $this->depth =
-            $this->dumpLength =
+        $this->dumpLength =
             $this->hashPosition = 0;
 
         try {parent::walk($ref);}
         catch (\Exception $e) {}
 
-        $this->depthLimited = $this->objectsDepth = array();
         '' !== $this->line && $this->dumpLine(0);
         $this->dumpLine(false); // Notifies end of dump
 
@@ -132,26 +127,10 @@ abstract class Dumper extends Walker
 
     protected function dumpObject($obj, $hash)
     {
-        if (isset($this->objectsDepth[$hash]))
-        {
-            if ($this->objectsDepth[$hash] < $this->depth)
-            {
-                if (self::$tag === $obj = $this->refPool[$this->position])
-                    $this->refPool[$this->position] = $obj = clone self::$tag;
-
-                $obj->position = $this->position;
-                $obj->hash = $hash;
-                $this->dumpRef(true, $this->position, $hash);
-
-                return;
-            }
-            else unset($this->objectsDepth[$hash]);
-        }
-
         if (method_exists($obj, '__debugInfo'))
         {
             $a = array();
-            if (! $this->callCast(array($this, '__debugInfo'), $obj, $a))
+            if (! $this->callCaster(array($this, '__debugInfo'), $obj, $a))
                 $a = (array) $obj;
         }
         else $a = (array) $obj;
@@ -165,7 +144,7 @@ abstract class Dumper extends Walker
         foreach (array_reverse($p) as $p)
             if (! empty($this->casters[$p = 'o:' . strtolower($p)]))
                 foreach ($this->casters[$p] as $p)
-                    $this->callCast($p, $obj, $a);
+                    $this->callCaster($p, $obj, $a);
 
         $this->dumpHash($c, $a);
     }
@@ -180,7 +159,7 @@ abstract class Dumper extends Walker
         {
             foreach ($this->casters['r:' . $type] as $c)
             {
-                $this->callCast($c, $res, $b);
+                $this->callCaster($c, $res, $b);
             }
         }
 
@@ -190,7 +169,7 @@ abstract class Dumper extends Walker
         $this->dumpHash("resource:{$type}", $a);
     }
 
-    protected function callCast($callback, $obj, &$a)
+    protected function callCaster($callback, $obj, &$a)
     {
         try
         {
@@ -211,57 +190,11 @@ abstract class Dumper extends Walker
         }
     }
 
-    protected function dumpRef($isSoft, $position, $hash)
-    {
-        if (! $position) return false;
-
-        if (isset($hash[0]))
-        {
-            if (isset($this->objectsDepth[$hash]) && $this->objectsDepth[$hash] === $this->depth)
-            {
-                $this->dumpObject($this->valPool[$position], $hash);
-                return true;
-            }
-        }
-
-        if (isset($this->depthLimited[$position]) && $this->depth < $this->maxDepth)
-        {
-            unset($this->depthLimited[$position]);
-
-            if (null === $hash) return false;
-
-            if (isset($hash[0])) $this->dumpObject($this->valPool[$position], $hash);
-            else if ($hash) $this->dumpResource($this->valPool[$position]);
-            else $this->dumpHash('array', $this->valPool[$position]);
-
-            return true;
-        }
-
-        return false;
-    }
-
     protected function dumpHash($type, $array)
     {
         $len = count($array);
 
         if (! $len) return array();
-
-        if ($this->depth >= $this->maxDepth && 0 < $this->maxDepth)
-        {
-            $this->depthLimited[$this->position] = 1;
-
-            if ($this->refPool[$this->position] === self::$tag)
-            {
-                $this->refPool[$this->position] = clone self::$tag;
-                $this->refPool[$this->position]->position = $this->position;
-                $this->refPool[$this->position]->type = $this->position;
-            }
-
-            $this->dumpString('__cutBy', true);
-            $this->dumpScalar($len);
-
-            return array();
-        }
 
         $hashPosition = $this->hashPosition;
         $this->hashPosition = $this->position;
@@ -277,28 +210,6 @@ abstract class Dumper extends Walker
             $max = $this->maxLength;
             $this->dumpLength += $len;
             $len += $i - $max;
-        }
-
-        if ($len < 0)
-        {
-            // Breadth-first for objects
-
-            foreach ($array as $val)
-            {
-                switch (gettype($val))
-                {
-                case 'object':
-                    if (! $len)
-                    {
-                        $h = pack('H*', spl_object_hash($val));
-                        isset($this->objPool[$h]) or $this->objectsDepth += array($h => $this->depth);
-                    }
-                    // No break;
-                case 'array': $len = 0;
-                }
-            }
-
-            $len = -1;
         }
 
         foreach ($array as $k => &$ref)
@@ -319,15 +230,13 @@ abstract class Dumper extends Walker
             $val = $ref;
             $type = gettype($val);
             $this->dumpString($k, true);
-            $this->walkRef($ref, $val, $type);
+            $this->walkRef($ref, $val, $type, $k);
         }
-
-        while (end($this->objectsDepth) === $this->depth) array_pop($this->objectsDepth);
 
         $this->hashPosition = $hashPosition;
 
         if (--$this->depth) return array();
-        $this->depthLimited = array();
+
         return $this->cleanRefPools();
     }
 

@@ -15,7 +15,7 @@ namespace Patchwork\Dumper;
  *
  * See https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md
  */
-class JsonDumper extends Dumper
+class JsonDumper extends BreadthFirstDumper
 {
     public
 
@@ -62,13 +62,24 @@ class JsonDumper extends Dumper
             {
                 $isKey = $isKey && ! isset($this->depthLimited[$this->position]);
                 $this->dumpLine(-$isKey);
+
+                if (is_int($str))
+                {
+                    $this->line .= '"n`' . $str . '": ';
+
+                    return;
+                }
             }
 
             $isKey = ': ';
         }
         else $isKey = '';
 
-        if ('' === $str) return $this->line .= '""' . $isKey;
+        if ('' === $str) {
+            $this->line .= '""' . $isKey;
+
+            return;
+        }
 
         if (! preg_match('//u', $str)) $str = 'b`' . utf8_encode($str);
         else if (false !== strpos($str, '`')) $str = 'u`' . $str;

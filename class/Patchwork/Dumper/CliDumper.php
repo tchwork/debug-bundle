@@ -13,7 +13,7 @@ namespace Patchwork\Dumper;
 /**
  * CliDumper dumps variable for command line output.
  */
-class CliDumper extends Dumper
+class CliDumper extends DepthFirstDumper
 {
     public
 
@@ -63,11 +63,9 @@ class CliDumper extends Dumper
     {
         if (parent::dumpRef($isSoft, $position, $hash)) return true;
 
-        $isSoft = $isSoft ? '@' : '#';
-
-        if (! $position)
+        if (! $position || $position === $this->position)
         {
-            $this->line .= $this->style('ref', $isSoft . $this->position);
+            $this->line .= $this->style('ref', ($isSoft ? '@' : '#') . $this->position);
         }
         else
         {
@@ -76,7 +74,7 @@ class CliDumper extends Dumper
             else if ($hash) $note = 'resource:' . get_resource_type($this->valPool[$position]) . ' ';
             else $note = 'array ';
 
-            $this->line .= $this->style('note', $note . $isSoft . $position);
+            $this->line .= $this->style('note', $note . ($isSoft ? '@' : '&') . $position);
         }
 
         return false;
@@ -140,6 +138,13 @@ class CliDumper extends Dumper
             $this->dumpLine(-$isKey);
             $isKey = ': ';
 
+            if (is_int($str))
+            {
+                $this->line .= $this->style('num', $str) . $isKey;
+
+                return;
+            }
+
             $str = explode(':', $str, 2);
 
             if (isset($str[1]))
@@ -165,7 +170,11 @@ class CliDumper extends Dumper
         }
         else $isKey = '';
 
-        if ('' === $str) return $this->line .= "''" . $isKey;
+        if ('' === $str) {
+            $this->line .= "''" . $isKey;
+
+            return;
+        }
 
         isset($style) or $style = 'str';
 
@@ -310,7 +319,7 @@ class CliDumper extends Dumper
 
                     foreach ($v as $v)
                     {
-                        $this->line .= ' ' . $this->style('note', $v < 0 ? '#' . -$v : "@$v");
+                        $this->line .= ' ' . $this->style('note', $v < 0 ? '&' . -$v : "@$v");
                     }
                 }
             }
