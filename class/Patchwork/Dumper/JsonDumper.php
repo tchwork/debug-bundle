@@ -26,6 +26,8 @@ class JsonDumper extends BreadthFirstDumper
     {
         if (parent::dumpRef($isSoft, $position, $hash)) return true;
 
+        if (empty($position) || $this->position == $position) $position = '';
+
         $isSoft = $isSoft ? 'r' : 'R';
         $this->line .= "\"{$isSoft}`{$this->position}:{$position}\"";
 

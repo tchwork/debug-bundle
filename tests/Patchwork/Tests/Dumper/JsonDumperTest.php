@@ -54,17 +54,17 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "str": "déjà",
     "n`7": "b`é",
     "[]": [],
-    "res": "R`15:0",
-    "n`8": "R`16:0",
-    "obj": "R`17:0",
-    "closure": "R`18:0",
+    "res": "R`15:",
+    "n`8": "R`16:",
+    "obj": "R`17:",
+    "closure": "R`18:",
     "line": ' . $v['line'] . ',
-    "nobj": "R`20:0",
-    "recurs": "R`21:0",
-    "n`9": "R`22:0",
-    "sobj": "R`23:0",
-    "snobj": "R`24:0",
-    "snobj2": "R`25:0"
+    "nobj": "R`20:",
+    "recurs": "R`21:",
+    "n`9": "R`22:",
+    "sobj": "R`23:",
+    "snobj": "R`24:",
+    "snobj2": "R`25:"
   },
   "n`15": {"_":"26:resource:stream",
     "~:wrapper_type": "plainfile",
@@ -82,10 +82,10 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\Dumper\\\\{closure} ] {\n  @@ ' . __FILE__ . ' 22 - 22\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
   },
   "n`20": {"_":"39:array:1",
-    "n`0": "R`40:0"
+    "n`0": "R`40:"
   },
   "n`21": {"_":"41:array:1",
-    "n`0": "R`42:0"
+    "n`0": "R`42:"
   },
   "n`23": "r`43:36",
   "n`24": {"_":"44:stdClass"},
