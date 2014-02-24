@@ -38,8 +38,8 @@ class ReflectionController extends Controller
 
         $dumper->addCasters(
             array(
-                'o:ReflectionClass' => array('Patchwork\Dumper\Caster\ReflectionCaster', 'castReflectionClass'),
-                'o:ReflectionFunctionAbstract' => array('Patchwork\Dumper\Caster\ReflectionCaster', 'castReflectionFunctionAbstract'),
+                'o:ReflectionClass' => 'Patchwork\Dumper\Caster\ReflectionCaster::castReflectionClass',
+                'o:ReflectionFunctionAbstract' => 'Patchwork\Dumper\Caster\ReflectionCaster::castReflectionFunctionAbstract',
                 'o:ReflectionMethod' => array($this, 'castReflectionMethod'),
             )
         );

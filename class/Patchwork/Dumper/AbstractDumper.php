@@ -29,32 +29,32 @@ abstract class AbstractDumper extends Walker
 
     $defaultOutputStream = 'php://output',
     $defaultCasters = array(
-        'o:Closure'        => array('Patchwork\Dumper\Caster\BaseCaster', 'castClosure'),
+        'o:Closure'        => 'Patchwork\Dumper\Caster\BaseCaster::castClosure',
         'o:Doctrine\Common\Proxy\Proxy'
-                           => array('Patchwork\Dumper\Caster\DoctrineCaster', 'castCommonProxy'),
+                           => 'Patchwork\Dumper\Caster\DoctrineCaster::castCommonProxy',
         'o:Doctrine\ORM\Proxy\Proxy'
-                           => array('Patchwork\Dumper\Caster\DoctrineCaster', 'castOrmProxy'),
-        'o:ErrorException' => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castErrorException'),
-        'o:Exception'      => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castException'),
+                           => 'Patchwork\Dumper\Caster\DoctrineCaster::castOrmProxy',
+        'o:ErrorException' => 'Patchwork\Dumper\Caster\ExceptionCaster::castErrorException',
+        'o:Exception'      => 'Patchwork\Dumper\Caster\ExceptionCaster::castException',
         'o:Patchwork\Debug\InDepthRecoverableErrorException'
-                           => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castInDepthException'),
+                           => 'Patchwork\Dumper\Caster\ExceptionCaster::castInDepthException',
         'o:Patchwork\Dumper\ThrowingCasterException'
-                           => array('Patchwork\Dumper\Caster\ExceptionCaster', 'castThrowingCasterException'),
-        'o:PDO'            => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdo'),
-        'o:PDOStatement'   => array('Patchwork\Dumper\Caster\PdoCaster', 'castPdoStatement'),
-        'o:Reflector'      => array('Patchwork\Dumper\Caster\BaseCaster', 'castReflector'),
-        'o:SplDoublyLinkedList' => array('Patchwork\Dumper\Caster\SplCaster', 'castSplDoublyLinkedList'),
-        'o:SplFixedArray'       => array('Patchwork\Dumper\Caster\SplCaster', 'castSplFixedArray'),
-        'o:SplHeap'             => array('Patchwork\Dumper\Caster\SplCaster', 'castIterator'),
-        'o:SplObjectStorage'    => array('Patchwork\Dumper\Caster\SplCaster', 'castSplObjectStorage'),
-        'o:SplPriorityQueue'    => array('Patchwork\Dumper\Caster\SplCaster', 'castIterator'),
+                           => 'Patchwork\Dumper\Caster\ExceptionCaster::castThrowingCasterException',
+        'o:PDO'            => 'Patchwork\Dumper\Caster\PdoCaster::castPdo',
+        'o:PDOStatement'   => 'Patchwork\Dumper\Caster\PdoCaster::castPdoStatement',
+        'o:Reflector'      => 'Patchwork\Dumper\Caster\BaseCaster::castReflector',
+        'o:SplDoublyLinkedList' => 'Patchwork\Dumper\Caster\SplCaster::castSplDoublyLinkedList',
+        'o:SplFixedArray'       => 'Patchwork\Dumper\Caster\SplCaster::castSplFixedArray',
+        'o:SplHeap'             => 'Patchwork\Dumper\Caster\SplCaster::castIterator',
+        'o:SplObjectStorage'    => 'Patchwork\Dumper\Caster\SplCaster::castSplObjectStorage',
+        'o:SplPriorityQueue'    => 'Patchwork\Dumper\Caster\SplCaster::castIterator',
 
-        'r:dba'            => array('Patchwork\Dumper\Caster\BaseCaster', 'castDba'),
-        'r:dba persistent' => array('Patchwork\Dumper\Caster\BaseCaster', 'castDba'),
-        'r:gd'             => array('Patchwork\Dumper\Caster\BaseCaster', 'castGd'),
-        'r:mysql link'     => array('Patchwork\Dumper\Caster\BaseCaster', 'castMysqlLink'),
-        'r:process'        => array('Patchwork\Dumper\Caster\BaseCaster', 'castProcess'),
-        'r:stream'         => array('Patchwork\Dumper\Caster\BaseCaster', 'castStream'),
+        'r:dba'            => 'Patchwork\Dumper\Caster\BaseCaster::castDba',
+        'r:dba persistent' => 'Patchwork\Dumper\Caster\BaseCaster::castDba',
+        'r:gd'             => 'Patchwork\Dumper\Caster\BaseCaster::castGd',
+        'r:mysql link'     => 'Patchwork\Dumper\Caster\BaseCaster::castMysqlLink',
+        'r:process'        => 'Patchwork\Dumper\Caster\BaseCaster::castProcess',
+        'r:stream'         => 'Patchwork\Dumper\Caster\BaseCaster::castStream',
     );
 
     protected

@@ -17,24 +17,21 @@ use ReflectionMethod;
 
 class ReflectionCaster
 {
-    const META_PREFIX = "\0~\0";
-
     static function castReflectionClass(ReflectionClass $c, array $a)
     {
         $a = array();
-        $m = self::META_PREFIX;
 
-        if ($c->getModifiers()) {
-            $a[$m . 'modifiers'] = implode(' ', Reflection::getModifierNames($c->getModifiers()));
+        if ($m = $c->getModifiers()) {
+            $a["\0~\0modifiers"] = implode(' ', Reflection::getModifierNames($m));
         }
 
-        if (false === $a[$m . 'file'] = $c->getFileName()) {
-            unset($a[$m . 'file']);
+        if (false === $a["\0~\0file"] = $c->getFileName()) {
+            unset($a["\0~\0file"]);
         } else {
-            $a[$m . 'lines'] = $c->getStartLine() . '-' . $c->getEndLine();
+            $a["\0~\0lines"] = $c->getStartLine() . '-' . $c->getEndLine();
         }
 
-        $a[$m . 'methods'] = $c->getMethods();
+        $a["\0~\0methods"] = $c->getMethods();
 
         return $a;
     }
@@ -61,28 +58,25 @@ class ReflectionCaster
             }
         }
 
-        $m = self::META_PREFIX;
         $a = (array) $c + array(
-            $m . 'returnsRef' => true,
-            $m . 'args' => $a,
+            "\0~\0returnsRef" => true,
+            "\0~\0args" => $a,
         );
-        if (!$c->returnsReference()) unset($a[$m . 'returnsRef']);
-        $a[$m . 'use'] = array();
+        if (!$c->returnsReference()) unset($a["\0~\0returnsRef"]);
+        $a["\0~\0use"] = array();
 
-        if (false === $a[$m . 'file'] = $c->getFileName()) unset($a[$m . 'file']);
-        else $a[$m . 'lines'] = $c->getStartLine() . '-' . $c->getEndLine();
+        if (false === $a["\0~\0file"] = $c->getFileName()) unset($a["\0~\0file"]);
+        else $a["\0~\0lines"] = $c->getStartLine() . '-' . $c->getEndLine();
 
-        if (!$c = $c->getStaticVariables()) unset($a[$m . 'use']);
-        else foreach ($c as $p => &$c) $a[$m . 'use']['$' . $p] =& $c;
+        if (!$c = $c->getStaticVariables()) unset($a["\0~\0use"]);
+        else foreach ($c as $p => &$c) $a["\0~\0use"]['$' . $p] =& $c;
 
         return $a;
     }
 
     static function castReflectionMethod(ReflectionMethod $c, array $a)
     {
-        $m = self::META_PREFIX;
-
-        $a[$m . 'modifiers'] = implode(' ', Reflection::getModifierNames($c->getModifiers()));
+        $a["\0~\0modifiers"] = implode(' ', Reflection::getModifierNames($c->getModifiers()));
 
         return $a;
     }
