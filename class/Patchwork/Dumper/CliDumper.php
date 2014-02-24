@@ -18,7 +18,7 @@ class CliDumper extends DepthFirstDumper
     public
 
     $colors = null,
-    $maxString = 100000,
+    $maxString = 10000,
     $maxStringWidth = 120;
 
     public static

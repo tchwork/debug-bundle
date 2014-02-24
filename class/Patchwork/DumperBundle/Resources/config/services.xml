@@ -26,7 +26,6 @@
 
         <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%">
             <property name="maxLength" />
-            <property name="maxDepth" />
             <property name="maxString" />
         </service>
 

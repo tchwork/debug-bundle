@@ -19,7 +19,7 @@ class JsonDumper extends BreadthFirstDumper
 {
     public
 
-    $maxString = 100000;
+    $maxString = 10000;
 
 
     protected function dumpRef($isSoft, $position, $hash)

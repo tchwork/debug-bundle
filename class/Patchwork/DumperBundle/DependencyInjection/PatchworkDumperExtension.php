@@ -27,7 +27,6 @@ class PatchworkDumperExtension extends Extension
 
         $container->getDefinition('patchwork.dumper.json')
             ->setProperty('maxLength',         $config['max_length'])
-            ->setProperty('maxDepth',          $config['max_depth'])
             ->setProperty('maxString',         $config['max_string']);
 
         $container->getDefinition('patchwork.dumper.html')

@@ -23,7 +23,7 @@ abstract class AbstractDumper extends Walker
 {
     public
 
-    $maxLength = 5000;
+    $maxLength = 500;
 
     static
 
