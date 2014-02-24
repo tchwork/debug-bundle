@@ -9,7 +9,7 @@ This package provides a better `dump()` function, that you can use instead of
   `stream_get_meta_data()`. Add your own dedicated `Dumper\Caster` and get the
   view *you* need.
 - configurable output format: HTML, command line with colors or [a dedicated high
-  accuracy JSON format](https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md).
+  accuracy JSON format](doc/json-spec-en.md).
   More to come / add your own.
 - ablilty to dump internal references, either soft ones (objects or resources)
   or hard ones (`=&` on arrays or objects properties). Repeated occurences of
@@ -101,7 +101,7 @@ $var[1] =& $var[0];
 dump($var);
 ```
 
-![Example output](tests/example.png)
+![Example output](doc/cli-example.png)
 
 License
 -------

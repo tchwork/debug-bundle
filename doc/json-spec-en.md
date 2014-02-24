@@ -3,12 +3,9 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Last updated on aug. 22, 2012
+October 4, 2011 - Last updated on feb. 24, 2014
 
-English version: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md  
-Version française : https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-fr.md  
-
-See also: https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/README.md
+[English version](json-spec-en.md) - [Version française](json-spec-fr.md)
 
 Introduction
 ============
@@ -416,178 +413,7 @@ Examples
 
 Example visualisation:
 
-![Patchwork debug console](https://github.com/nicolas-grekas/Patchwork-Doc/raw/master/Dumping-PHP-Data-debug-console.png)
-
-Implementation
-==============
-
-The [`JsonDumper`](https://github.com/nicolas-grekas/Patchwork-Error-Logger/blob/master/class/Patchwork/PHP/JsonDumper.php)
-class extracted from the [Patchwork](https://github.com/nicolas-grekas/Patchwork)
-framework provides JSON representations that follow the format described above.
-
-This class inherits from the `Dumper` class, itself inheriting from the `Walker`
-class, all three distributed under the Apache 2.0 / GPLv2.0 terms.
-
-`Walker` is an abstract class that implements the mechanism to generically
-traverse any PHP variable, taking internal references into account, recursive
-or non-recursive, without preempting any special use of the discovered data.
-It exposes only one public method `->walk()`, which triggers the traversal. It
-also has a public property `->checkInternalRefs` set to `true` by default, to
-disable the check for internal references if the mechanism is considered too
-expensive. Checking recursive references and object/resource can not be disabled
-but is much lighter.
-
-`Dumper` adds to `Walker` managing both depth and length limits. It also adds a
-callback mechanism for getting detailed information about objects and resources.
-For example and by default, resources of type `stream` are expanded by
-`stream_get_meta_data`, those of type `process` by `proc_get_status`, and
-object instances of the `Closure` class are associated with a method that uses
-reflection to provide detailed information about anonymous functions. This class
-is designed to implement these mechanisms in a way independent of the final
-representation.
-
-Finally, `JsonDumper` implements the specifics needed to generate a JSON based
-on previous classes. It adds the ability to limit the length of strings and is
-able to generate the result line by line, by calling a special callback when a
-new JSON line is ready.
-
-Here is its consolidated interface, including its protected methods:
-
-```php
-<?php
-
-namespace Patchwork\PHP;
-
-class JsonDumper extends Dumper // which extends Walker
-{
-    public
-
-    $maxString = 100000,
-
-    $maxLength = 100,         // inherited from Dumper
-    $maxDepth = 10,            // inherited from Dumper
-
-    $checkInternalRefs = true; // inherited from Walker
-
-
-    function setCallback($type, $callback)
-    {
-        // inherited from Dumper
-        // registers callbacks for getting resources meta-data or casting objets to arrays
-    }
-
-    function walk(&$a)
-    {
-        // entry point to walk through any variable
-    }
-
-    static function dump(&$a)
-    {
-        // echoes a JSON representation of $a
-        // instanciating a JsonDumper object,
-        // registering echo as a line by line callback,
-        // then walking throught $a
-    }
-
-    static function get($a)
-    {
-        // returns a JSON representation of $a as a multiline indented string
-        // instanciating a JsonDumper object,
-        // registering a line by line stack callback,
-        // then walking throught $a
-    }
-
-
-    protected function walkRef(&$a)
-    {
-        // dispatches types and count positions
-    }
-
-    protected function dumpRef($is_soft, $ref_counter = null, &$ref_value = null)
-    {
-        // specializes dumpRef() from Dumper
-        // which is able to reinject depth limited data seen at a lower depth
-        // otherwise, inserts "r`" and "R`" tags
-    }
-
-    protected function dumpScalar($a)
-    {
-        // builds JSON for scalars but strings
-    }
-
-    protected function dumpString($a, $is_key)
-    {
-        // builds JSON representation for strings
-    }
-
-    protected function dumpObject($obj)
-    {
-        // inherited from Dumper
-        // casts objet to array using callbacks
-    }
-
-    protected function dumpResource($res)
-    {
-        // inherited from Dumper
-        // builds resources meta-data using callbacks
-    }
-
-    protected function walkArray(&$a)
-    {
-        // inherited from Walker
-        // checks references for arrays and scalars
-    }
-
-    protected function walkHash($type, &$a)
-    {
-        // specializes walkHash() from Dumper
-        // which itselfs replaces walkHash() in Walker
-        // builds JSON for associative structures
-        // by looping over $key => $values in associative structures
-        // taking length and depth limit into account
-        // returns a map of internal references at the lowest depth
-    }
-
-    protected function cleanRefPools()
-    {
-        // inherited from Walker
-        // cleans pools used for references tracking
-        // builds the return value of walkHash
-    }
-
-    protected function catchRecursionWarning()
-    {
-        // inherited from Walker
-        // catches recursion warnings emitted by count($array, COUNT_RECURSIVE)
-        // as a trick to quickly detect recursice arrays
-    }
-
-    static function castClosure($c)
-    {
-        // inherited from Dumper
-        // uses reflection to dump meta-data for closures
-        // registered as default callback for instances of the Closure class
-    }
-
-    protected function dumpLine($depth_offset)
-    {
-        // calls the line by line callback
-    }
-
-    static function echoLine($line, $depth)
-    {
-        // callback registered by JsonDumper::dump()
-        // echoes the newly build line
-    }
-
-    protected function stackLine($line, $depth)
-    {
-        // callback registered by JsonDumper::get()
-        // stacks the newly build line
-    }
-}
-
-```
+![Patchwork debug console](json-spec.png)
 
 Conclusion
 ==========
@@ -596,21 +422,9 @@ The convention described here can be used to represent accurately any PHP
 variable as complex as it is. The JSON format on which it rests guarantees
 maximum interoperability while ensuring good readability.
 
-The implementation done in the `JsonDumper` class operates all potentialities of
-the representation while providing maximum latitude to the developer to exploit
-its ability as desired, both in term of exposure of internal class mechanism
-for specialization and in terms of custom use, thanks to the callbacks that
-allow to intercept the JSON line by line and to adjust the dumping of objects or
-resources according to their type.
-
-This convention and its implementation are extracted from the Patchwork
-framework, in which they serve as a foundation for the events logging mechanism,
-especially errors and displays for debugging. Patchwork also adds a JavaScript
-client that allows keen visual display of this specific kind of JSON.
-
-If other frameworks wish to exploit this convention, they are welcomed reusing
-the current implementation under the Apache 2.0 / GPLv2.0 terms.
-
-On the other hand, there is still work to be done to enhance the displaying
-of the JSON. Many other clients could also be made: integrated to an IDE,
-with firebug, etc.
+The implementation done in the [`JsonDumper`](../class/Patchwork/Dumper/JsonDumper)
+class operates all potentialities of the representation while providing maximum
+latitude to the developer to exploit its ability as desired, both in term of
+exposure of internal class mechanism for specialization and in terms of custom
+use, thanks to the callbacks that allow to intercept the JSON line by line and to
+adjust the dumping of objects or resources according to their type.
