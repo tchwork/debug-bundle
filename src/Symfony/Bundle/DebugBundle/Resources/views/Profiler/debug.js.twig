@@ -1,245 +1,760 @@
-function htmlizeEvent(data, refs, filter)
-{
-    "use strict";
+"use strict";
 
-    var iRefs = {},
-        depth,
-        counter,
-        buffer = [],
-        span = document.createElement('SPAN');
+(function(window) {
+    window.VarDebug = window.VarDebug || {};
 
-    refs = refs || data.__refs || {};
-    for (counter in refs)
-        for (depth in refs[counter])
-            iRefs[refs[counter][depth]] = counter;
-
-    depth = 1;
-    counter = data && data._ ? parseInt(data._) - 1 : 0;
-
-    filter = filter || htmlEncode;
-
-    function htmlEncode(s)
+    VarDebug.BuildMetaData = function (parser, offset)
     {
-        span.innerText = span.textContent = s;
-        return span.innerHTML;
-    }
+        this.offset = offset;
+        this.parser = parser;
+        this.counter = offset;
+    };
 
-    function push(data, tags, title)
+    VarDebug.Parser = function()
     {
-        if (title && title.length) tags += '" title="' + title.join(', ');
-        buffer.push('<span class="' + tags + '">' + filter(data, htmlEncode) + '</span>');
-    }
+        var __self = this;
 
-    function htmlizeData(data, tags, title)
-    {
-        var i, e, t, b;
+        __self.references = [];
+        __self.ampersands = [];
+        __self.storage = [];
 
-        ++counter;
-        title = title || [];
-        tags = tags || '';
+        __self.buildReferences = function (data) {
+            for (var i in data.__refs) {
+                for (var j in data.__refs[i]) {
+                    var position = data.__refs[i][j];
+                    if (position < 0) {
+                        __self.ampersands[Math.abs(position)] = parseInt(i) - 1;
+                    }
+                    __self.references[Math.abs(position)] = parseInt(i) - 1;
+                }
+            }
+        };
 
-        if (refs[counter]) push('#' + counter, 'ref target');
-        else if (iRefs[counter]) push('r' + iRefs[counter], 'ref handle');
-        else if (iRefs[-counter]) push('R' + iRefs[-counter], 'ref alias');
+        __self.getEntryPoint = function () {
+            return __self.storage[0];
+        }
 
-        switch (true)
+        __self.getAmpersand = function (key) {
+            return __self.ampersands[key];
+        };
+
+        __self.isAmpersanded = function (key) {
+            for (var i in __self.ampersands) {
+                if (__self.ampersands[i] === key) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        __self.getReference = function (key) {
+            return __self.storage[__self.references[key]];
+        };
+
+        __self.parse = function (json) {
+            var preparedJson = __self.prepareJson(json);
+            __self.buildReferences(preparedJson[0]);
+            __self.storage = __self.parseAll(preparedJson);
+        };
+
+        __self.parseOne = function (data, buildData, ignoreCount)
         {
-        case null === data: data = 'null';
-        case true === data:
-        case false === data:
-        default:
-            push(data, 'const' + tags, title);
-            break;
+            var index = buildData.counter;
+            var output;
 
-        case 'string' === typeof data:
-            if ('' === data)
-            {
-                title.push('Empty string');
-                push('', 'string empty' + tags, title);
-                return;
+            if (!ignoreCount) {
+                buildData.counter++;
             }
 
-            i = data.indexOf('`');
-            if (-1 == i) data = ['u', data];
-            else data = [data.substr(0, i), data.substr(i+1)];
-            i = data[0].charAt(data[0].length - 1);
-
-            switch (i)
-            {
-                case 'R':
-                case 'r': return;
-                case 'n': push(data[1], 'const' + tags, title); return;
-                case 'b': tags += ' bin'; title.push('Binary');
-                case 'u': tags = 'string' + tags;
+            if (data === null) {
+                output = new VarDebug.PhpUndefined(buildData);
+            } else if (data instanceof Array) {
+                output = new VarDebug.PhpArray(data, buildData);
+            } else if (typeof(data) == "string") {
+                if (data.indexOf('R`') == 0) {
+                    var position = data.replace('R`', '');
+                    position = position.split(':')[0];
+                    output = new VarDebug.PhpReference(position, buildData.parser.getAmpersand(position), buildData);
+                } else if (data.indexOf('r`') == 0) {
+                    var position = data.replace('r`', '');
+                    position = parseInt(position.split(':')[0]);
+                    output = new VarDebug.PhpReference(position, false, buildData);
+                } else {
+                    output = new VarDebug.PhpScalar(data, buildData);
+                }
+            } else if (data.length == 0) {
+                output = new VarDebug.PhpArray(data, buildData);
+            } else if (typeof(data) == 'object' && data.hasOwnProperty('_')) { // @todo check for virtualobjects
+                var identifier = data._.split(':');
+                if (identifier[1] == 'array') {
+                    output = new VarDebug.PhpArray(data, buildData);
+                } else if (identifier[1] == 'resource') {
+                    output = new VarDebug.PhpResource(data, buildData);
+                } else {
+                    output = new VarDebug.PhpObject(data, buildData);
+                }
+            } else {
+                output = new VarDebug.PhpScalar(data, buildData);
             }
 
-            i = parseInt(data[0]);
+            if (!ignoreCount) {
+                output.index = index;
+            }
 
-            title.push('Length: ' + (0 < i ? i : data[1].length));
+            return output;
+        };
 
-            data = data[1].split(/\r?\n/g);
+        __self.parseAll = function (raws, callback)
+        {
+            var parsed = [];
 
-            if (data.length > 1)
-            {
-                for (e = 0; e < data.length; ++e)
-                {
-                    buffer.push('\n' + new Array(depth + 2).join(' '));
-                    push(data[e], tags + ('' === data[e] ? ' empty' : ''), title);
+            for (var i in raws) {
+                var buildData = new VarDebug.BuildMetaData(__self, parseInt(i));
+                parsed.push(__self.parseOne(raws[i], buildData));
+            }
+            return parsed;
+        };
+
+        __self.prepareJson = function (json)
+        {
+            var tokens = [];
+
+            tokens.push(json);
+
+            if (typeof(json) != 'object') {
+                return tokens;
+            }
+
+            for (var i in json) {
+                if (i != "_" && i != "__proto__" && i != '__refs' && i != "__cutBy") {
+                    tokens = tokens.concat(__self.prepareJson(json[i]));
                 }
             }
-            else push(data[0], tags, title);
 
-            if (0 < i) push('...', 'cut');
+            return tokens;
+        };
+    };
 
+    VarDebug.PhpObject = function (data, buildData)
+    {
+        var __self = this;
+        var meta = data._.split(':');
+        __self.traversable = true;
+        __self.classId = VarDebug.untickString(meta[1]);
+        __self.cutBy = data.__cutBy;
+
+        if (typeof(value) == "string" && value.indexOf('u`') != -1) {
+            var position = value.indexOf('u`');
+            if (position !== 0) {
+                __self.cut = parseInt(value.substr(0, position));
+            }
+            value = value.substr(position + 2, value.length);
+        }
+
+        __self.attrs = new VarDebug.ChildrenContainer(data, buildData);
+
+        __self.count = function() {
+            return __self.attrs.count();
+        }
+    };
+
+    VarDebug.PhpResource = function (data, buildData)
+    {
+        var __self = this;
+
+        var meta = data._.split(':');
+        __self.traversable = true;
+        __self.type = meta[2];
+        __self.cutBy = data.__cutBy;
+        __self.attrs = new VarDebug.ChildrenContainer(data, buildData, 'resource');
+    }
+
+    VarDebug.PhpAttribute = function (key, value)
+    {
+        var __self = this;
+        __self.traversable = false;
+
+        if (key.indexOf(':') === -1) {
+            __self.visibility = 'public';
+            __self.name = key;
+        } else {
+            var properties = key.split(':');
+
+            if (properties[0] === '*') {
+                __self.visibility = 'protected';
+            } else if (properties[0] === '~') {
+                __self.visibility = 'meta';
+            } else if (properties[0].length > 1) {
+                __self.visibility = 'private';
+            } else {
+                __self.visibility = 'public';
+            }
+
+            __self.name = properties[1];
+        }
+        __self.value = value;
+    };
+
+    VarDebug.PhpArray = function (data, buildData)
+    {
+        var __self = this;
+        __self.cutBy = data.__cutBy;
+
+        __self.attrs = new VarDebug.ChildrenContainer(data, buildData, 'array');
+
+        __self.traversable = __self.attrs.count() > 0;
+
+        __self.isEmpty = function() {
+            return __self.attrs.count() === 0;
+        };
+
+        __self.isShort = function() {
+            return (__self.attrs.storage.join().length + Object.keys(__self.attrs.storage).join().length) < 50;
+        };
+
+        __self.isFullyTruncated = function() {
+            return __self.attrs.count() === 0 && __self.cutBy;
+        }
+
+        __self.count = function() {
+            return __self.attrs.count() + (isNaN(__self.cutBy) ? 0 : __self.cutBy);
+        }
+
+        __self.containsScalarsOnly = function() {
+            for (var i in __self.attrs.storage) {
+                if(!(__self.attrs.storage[i] instanceof VarDebug.PhpScalar)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    };
+
+    VarDebug.PhpScalar = function (value)
+    {
+        var __self = this;
+
+        __self.traversable = false;
+        __self.utf8 = true;
+        __self.cut = 0;
+
+        if (typeof(value) == "string" && value.indexOf('b`') != -1) {
+            var position = value.indexOf('b`');
+            if (position !== 0) {
+                __self.cut = parseInt(value.substr(0, position));
+            }
+            __self.utf8 = false;
+            value = value.substr(position+2, value.length);
+        }
+
+        if (typeof(value) == "string" && value.indexOf('u`') != -1) {
+            var position = value.indexOf('u`');
+            if (position !== 0) {
+                __self.cut = parseInt(value.substr(0, position));
+            }
+            value = value.substr(position + 2, value.length);
+        }
+
+        switch (value) {
+            case 'n`NAN':
+                __self.value = 'NAN';
+                __self.type = "double";
             break;
+            case 'n`INF':
+                __self.value = 'INF';
+                __self.type = "double";
+            break;
+            case 'n`-INF':
+                __self.value = '-INF';
+                __self.type = "double";
+            break;
+            default:
+                if (typeof(value) == "string" && value.indexOf('n`') === 0) {
+                    __self.value = value.replace('n`', '');
+                    __self.type = "int";
+                } else if (typeof(value) === "boolean") {
+                    __self.value = value ? 'true' : 'false';
+                    __self.type = 'bool';
+                } else {
+                    __self.value = value;
+                    __self.type = typeof(value);
+                }
+        }
 
-        case 'object' === typeof data:
+        __self.getValue = function(){
+            return __self.value;
+        };
+    };
 
-            if (1 === depth)
-            {
-                buffer.push('<a onclick="arrayToggle(this)"> ⊟ </a><span class="key"></span>');
-                buffer.push('<span class="array-expanded">');
+    VarDebug.PhpReference = function (target, ampersand)
+    {
+        var __self = this;
+        __self.traversable = true;
+        __self.target = target;
+        __self.ampersand = ampersand || false;
+
+        __self.resolve = function(parser) {
+            return parser.getReference(__self.target);
+        };
+    };
+
+    VarDebug.PhpUndefined = function ()
+    {
+        this.traversable = false;
+    };
+
+    VarDebug.ChildrenContainer = function(data, buildData, mode, ignoreCount)
+    {
+        var __self = this;
+
+        __self.storage = [];
+        __self.keys = [];
+        __self.mode = mode || 'object';
+        ignoreCount = ignoreCount || false;
+
+        for (var i in data) {
+            if (i != "_" && i != "__proto__" && i != '__refs' && i != "__cutBy") {
+                var value = buildData.parser.parseOne(data[i], buildData);
+                if (__self.mode === 'object') {
+                    var attribute = new VarDebug.PhpAttribute(i, value);
+                    __self.storage[attribute.name] = attribute;
+                    __self.keys[attribute.name] = attribute.name;
+                } else {
+                    var key = buildData.parser.parseOne(i, buildData, true);
+                    __self.storage[key.value] = value;
+                    __self.keys[key.value] = key;
+                }
+            }
+        }
+
+        __self.count = function () {
+            return Object.keys(__self.storage).length;
+        }
+
+        __self.iterate = function(callback) {
+            var count = __self.count();
+            var counter = 0;
+            for (var i in __self.storage) {
+                callback(__self.keys[i], __self.storage[i], counter++ == count - 1);
+            }
+        };
+    };
+
+    VarDebug.untickString = function (value) {
+        return (value.indexOf('b`') === 0 || value.indexOf('u`') === 0) ? value.substr(2, value.length) : value;
+    };
+
+    window.VarDebug = VarDebug;
+})(window);
+
+
+(function (window) {
+    var VarDebug = window.VarDebug || {};
+
+    VarDebug.maxStringSize = 128;
+
+    VarDebug.Renderer = function (parser)
+    {
+        var __self = this;
+        __self.parser = parser;
+        var node;
+
+        __self.renderScalar = function(entity, mode) {
+            if (mode === 'short' && entity.type === 'string' && entity.value.length > VarDebug.maxStringSize) {
+                var node = document.createElement('span');
+                node.setAttribute('data-helper', 'Length : ' + entity.value.length);
+                node.innerHTML = ('"' + entity.value.substr(0, VarDebug.maxStringSize) + '..."');
+                if (entity.cut > 0) {
+                    node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
+                }
+                node.className += ' string';
+
+                return node;
             }
 
-            b = ['[', ']'];
-            t = data['_'] ? data['_'].split(':') : [0];
-
-            if (undefined === t[1]) {}
-            else if (undefined === t[2])
-            {
-                t.isObject = 1;
-                if ('stdClass' !== t[1]) push(t[1], 'class');
-                b = ['{', '}'];
+            var node = document.createElement('span');
+            node.className = 'occurence-' + entity.index;
+            if (entity.type == 'string') {
+                if((entity.value.length > VarDebug.maxStringSize) && !entity.expanded) {
+                    node.appendChild(__self.renderNode(entity));
+                    return node;
+                }
+                node.setAttribute('data-helper', 'Length : ' + entity.value.length);
+                node.innerHTML = __self.htmlEncode('"' + entity.value + '"');
+                if (entity.cut > 0) {
+                    node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
+                }
+                node.className += ' string';
+            } else {
+                if(typeof(entity.value) == 'boolean') {
+                    node.innerHTML = entity.value ? 'true' : 'false';
+                    node.className += ' const';
+                } else {
+                    node.innerHTML = entity.value;
+                    node.className += ' const';
+                }
             }
-            else if ('resource' === t[1])
-            {
-                t.isResource = 1;
-                push('resource:' + t[2], 'class');
-            }
-            else if ('array' === t[1])
-            {
-                t.isArray = 1;
-            }
+            return node;
+        };
 
-            e = 0;
-            for (i in data) if ('_' !== i && '__cutBy' !== i && '__refs' !== i && 2 === ++e) break;
+        __self.renderObject = function(entity, mode) {
 
-            if (!e)
-            {
-                buffer.push(b[0]);
-                if (data.__cutBy) push('...', 'cut', ['Cut by ' + data.__cutBy]);
-                buffer.push(b[1]);
-                return;
+            if (mode === 'short') {
+                var element = document.createElement('span');
+                element.innerHTML = entity.classId;
+                return element;
             }
 
-            depth += 2;
-            buffer.push(b[0]);
-            b[2] = 1 === e ? 'expanded' : 'compact';
+            var node = document.createElement('span');
+            node.className = 'occurence-' + entity.index;
 
-            for (i in data)
-            {
-                if ('_' === i || '__cutBy' === i || '__refs' === i) continue;
-                if (undefined === data[i] && ++counter) continue;
+            var prefix = document.createElement('span');
+            var suffix = document.createElement('span');
+            var ul = __self.renderChildrenContainer(entity);
 
-                title = [];
-                tags = ' key';
-                buffer.push('\n' + new Array(depth).join(' '));
-                e = parseInt(i);
+            prefix.innerHTML = entity.classId + ' { <br />';
+            suffix.innerHTML = '}';
 
-                if ('' + e !== i)
-                {
-                    e = i.indexOf(':');
-                    e = -1 === e ? ['', i] : [i.substr(0, e), i.substr(e+1)];
+            node.appendChild(prefix);
+            node.appendChild(ul);
+            node.appendChild(suffix);
 
-                    if (t.isObject)
-                    {
-                        if ('' === e[0])
-                        {
-                            title.push('Public property');
-                            tags += ' public';
-                        }
-                        else switch (e[0].charAt(e[0].length - 1))
-                        {
-                        case '`': title.push('Public property'); tags += ' public'; break;
-                        case '*': title.push('Protected property'); tags += ' protected'; break;
-                        case '~': title.push('Meta property'); tags += ' meta'; break;
-                        default:
-                            title.push('Private property from class ' + e[0].replace(/^[^`]*`/, ''));
-                            tags += ' private';
-                            break;
-                        }
+            return node;
+        };
+
+        __self.renderArray = function(entity, mode) {
+
+            if (mode === 'short') {
+                return __self.renderArrayShort(entity);
+            }
+
+            var node = document.createElement('span');
+            node.className = 'occurence-' + entity.index;
+            var ul = __self.renderChildrenContainer(entity);
+
+            var prefix = document.createElement('span');
+            var suffix = document.createElement('span');
+
+            prefix.innerHTML = '[ ';
+            suffix.innerHTML = ' ]';
+
+            node.appendChild(prefix);
+            node.appendChild(ul);
+            node.appendChild(suffix);
+
+            return node;
+        };
+
+        __self.renderArrayShort = function (entity) {
+            if (entity.isShort() && entity.containsScalarsOnly()) {
+                var node = document.createElement('span');
+                var ul = document.createElement('ul');
+                ul.style.paddingLeft = '20px';
+                ul.style.display = 'inline';
+                ul.style.padding = 0;
+
+                entity.attrs.iterate(function(i, child, last){
+                    var li = document.createElement('li');
+                    var key = document.createElement('span');
+                    var arrow = document.createElement('span');
+                    key.appendChild(__self.render(i));
+                    key.className = 'key';
+                    arrow.innerHTML = ': ';
+                    li.appendChild(key);
+                    li.appendChild(arrow);
+                    li.appendChild(__self.render(child));
+                    li.style.display = 'inline';
+
+                    if (!last) {
+                        var separator = document.createElement('span');
+                        separator.innerHTML = ', ';
+                        li.appendChild(separator);
                     }
-                    else if (t.isResource)
-                    {
-                        title.push('Meta property');
-                        tags += ' meta';
+                    ul.appendChild(li);
+                });
+
+                if (entity.cutBy) {
+                    var li = document.createElement('li');
+                    li.innerHTML = '...';
+                    li.style.display = 'inline';
+                    ul.appendChild(li);
+                }
+
+                var prefix = document.createElement('span');
+                var suffix = document.createElement('span');
+
+                prefix.innerHTML = '[ ';
+                suffix.innerHTML = ' ]';
+
+                node.appendChild(prefix);
+                node.appendChild(ul);
+                node.appendChild(suffix);
+
+                return node;
+            } else {
+                var element = document.createElement('span');
+                var text = entity.count() > 0 ? '...' : '';
+                element.innerHTML = '[ ' + text + ' ]';
+                return element;
+            }
+        };
+
+        __self.renderResource = function(entity, mode) {
+
+            if (mode === 'short') {
+                var element = document.createElement('span');
+                element.innerHTML = entity.type;
+                return element;
+            }
+
+            var node = document.createElement('span');
+            node.className = 'occurence-' + entity.index;
+
+            var prefix = document.createElement('span');
+            var suffix = document.createElement('span');
+            var ul = __self.renderChildrenContainer(entity);
+
+            prefix.innerHTML = entity.type + ' { <br />';
+            suffix.innerHTML = '}';
+
+            node.appendChild(prefix);
+            node.appendChild(ul);
+            node.appendChild(suffix);
+
+            return node;
+        };
+
+        __self.renderReference = function(entity, mode) {
+            var node = document.createElement('span');
+            node.appendChild(__self.renderNode(entity.resolve(__self.parser)));
+            return node;
+        };
+
+        __self.renderUndefined = function(entity, mode) {
+            var node = document.createElement('span');
+            node.innerHTML = 'null';
+            node.className = 'undefined';
+            return node;
+        };
+
+        __self.renderAttribute = function(entity, mode) {
+            if (mode === 'short') {
+                throw "Class attributes have no short representation.";
+            }
+
+            var node = document.createElement('div');
+            var visibility = document.createElement('span');
+            var link = document.createElement('a');
+            var content = document.createElement('span');
+
+            visibility.innerHTML = entity.name + '<span class="colon">:</span> ';
+            visibility.className = entity.visibility;
+            node.appendChild(visibility);
+            node.appendChild(__self.renderNode(entity.value));
+            return node;
+        };
+
+        __self.render = function (entity, mode) {
+            entity = entity || parser.getEntryPoint();
+            mode = mode || "full";
+
+            if (entity instanceof VarDebug.PhpScalar) {
+                node = __self.renderScalar(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpObject) {
+                node = __self.renderObject(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpResource) {
+                node = __self.renderResource(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpArray) {
+                node = __self.renderArray(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpReference) {
+                node = __self.renderReference(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpUndefined) {
+                node = __self.renderUndefined(entity, mode);
+            }
+            if (entity instanceof VarDebug.PhpAttribute) {
+                node = __self.renderAttribute(entity, mode);
+            }
+
+            if (__self.parser.isAmpersanded(entity.index)) {
+                var refPrefix = document.createElement('span');
+                refPrefix.className = 'reference-marker';
+                refPrefix.innerHTML = '&';
+                node.insertBefore(refPrefix, node.firstChild);
+            }
+            if (!entity.ampersand && __self.parser.isAmpersanded(entity.index) && entity.target) {
+                node.className += ' reference occurence-' + entity.target;
+                node.hoverTarget = 'occurence-' + entity.target;
+            } else if (!entity.ampersand && __self.parser.isAmpersanded(entity.index)) {
+                node.className += ' reference occurence-' + entity.index;
+                node.hoverTarget = 'occurence-' + entity.index;
+            }
+            if (entity.ampersand) {
+                node.className += ' reference occurence-' + entity.ampersand;
+                node.hoverTarget = 'occurence-' + entity.ampersand;
+            }
+
+            return node;
+        }
+
+        __self.renderChildrenContainer = function (entity) {
+            var ul = document.createElement('ul');
+            ul.style.paddingLeft = '20px';
+
+            if (typeof entity.isEmpty === 'function' && entity.isEmpty()) {
+                ul.style.display = 'inline';
+                ul.style.padding = 0;
+            }
+
+            entity.attrs.iterate(function(i, child){
+                var li = document.createElement('li');
+                if(child instanceof VarDebug.PhpAttribute) {
+                    li.appendChild(__self.render(child));
+                    ul.appendChild(li);
+                } else {
+                    var key = document.createElement('span');
+                    var arrow = document.createElement('span');
+                    key.appendChild(__self.render(i));
+                    key.className = 'key';
+                    arrow.innerHTML = ': ';
+                    li.appendChild(key);
+                    li.appendChild(arrow);
+                    li.appendChild(__self.renderNode(child));
+
+                    ul.appendChild(li);
+                }
+            });
+
+            if (entity.cutBy) {
+                var li = document.createElement('li');
+                var elementLabel = entity instanceof VarDebug.PhpArray ? 'elements' : 'attributes';
+                li.innerHTML = '<span class="truncated">' + entity.cutBy + ' truncated ' + elementLabel + '</span>'
+                ul.appendChild(li);
+            }
+
+            return ul;
+        }
+
+        __self.renderNode = function (entity) {
+            var forceTraversable = entity instanceof VarDebug.PhpScalar && entity.type === "string" && entity.value.length > VarDebug.maxStringSize;
+
+            var span = document.createElement('span');
+            if ((forceTraversable || entity.traversable) && !(entity instanceof VarDebug.PhpReference)) {
+                var link = document.createElement('a');
+                var content = document.createElement('span');
+                content.appendChild(__self.render(entity, 'short'));
+                link.innerHTML = ' ⊞ ';
+                link.style.cursor = 'pointer';
+                var count = typeof entity.count == 'function' ? entity.count() : 0;
+                var elementLabel = entity instanceof VarDebug.PhpArray ? 'element' : 'attribute';
+                if(entity.cutBy) {
+                    if(count) {
+                        link.setAttribute('data-helper', ' ' + entity.cutBy + '/' + count + ' truncated ' + elementLabel + (entity.count() > 1 ? 's' : ''));
+                    } else {
+                        link.setAttribute('data-helper', ' ' + entity.cutBy + ' truncated ' + elementLabel + (entity.count() > 1 ? 's' : ''));
                     }
-
-                    e = e[0].replace(/[^`]+$/, '') + e[1];
+                } else if (count > 0) {
+                    link.setAttribute('data-helper', ' ' + count + ' ' + elementLabel + (count > 1 ? 's' : ''));
                 }
-
-                if ('object' === typeof data[i] && null !== data[i] && 'compact' === b[2])
-                {
-                    buffer.push('<a onclick="arrayToggle(this)"> ⊞ </a>');
-                }
-
-                t[0] = counter;
-                counter = -1;
-                htmlizeData(e, tags, title);
-                counter = t[0];
-                e = buffer[buffer.length-1];
-                buffer[buffer.length-1] = e.substr(0, e.length-7);
-                push(' ⇨ ', 'arrow');
-                buffer.push('</span>');
-
-                if ('object' === typeof data[i] && null !== data[i])
-                {
-                    buffer.push('<span class="array-' + b[2] + '">');
-                    htmlizeData(data[i], '', []);
-                    buffer.push('</span>');
-                }
-                else htmlizeData(data[i], '', []);
-
-                buffer.push(', ');
+                var identifier = 'element' + (Math.random() + '').replace('0.', '');
+                link.onclick = function(e) {
+                    var target, content;
+                    e.preventDefault();
+                    link.opened = typeof(link.opened) == 'undefined' ? false : !link.opened;
+                    if (link.opened) {
+                        link.innerHTML = ' ⊞ ';
+                        entity.expanded = false;
+                        content = __self.render(entity, 'short');
+                    } else {
+                        link.innerHTML = ' ⊟ ';
+                        entity.expanded = true;
+                        content = __self.render(entity, 'full');
+                    }
+                    target = document.getElementById(identifier);
+                    target.innerHTML = '';
+                    target.appendChild(content);
+                    VarDebug.bindHover();
+                };
+                content.setAttribute('id', identifier);
+                span.appendChild(link);
+                span.appendChild(content);
+            } else if (entity instanceof VarDebug.PhpScalar) {
+                span.appendChild(__self.render(entity, 'short'));
+            } else {
+                span.appendChild(__self.render(entity, 'full'));
             }
+            return span;
+        };
 
-            if (data.__cutBy)
-            {
-                buffer.push('\n' + new Array(depth).join(' '));
-                push('...', 'cut', ['Cut by ' + data.__cutBy]);
-                buffer.push(', ');
+        __self.htmlEncode = function (s) {
+            var span = document.createElement('span');
+            span.innerText = span.textContent = s;
+            return span.innerHTML;
+        }
+    };
+
+    VarDebug.bindHover = function() {
+        var elements = document.getElementsByClassName('reference');
+        [].forEach.call(elements, function (element) {
+            element.onmouseover = function() {
+                var targets = document.getElementsByClassName(element.hoverTarget);
+                [].forEach.call(targets, function (target) {
+                    target.className += ' hovered';
+                });
             }
+            element.onmouseout = function() {
+                var targets = document.getElementsByClassName(element.hoverTarget);
+                [].forEach.call(targets, function (target) {
+                    target.className = target.className.replace('hovered', '');
+                });
+            }
+        });
+    };
 
-            depth -= 2;
-            buffer[buffer.length - 1] = '';
-            buffer.push('\n' + new Array(depth).join(' '));
-            buffer.push(b[1]);
+    window.VarDebug = VarDebug;
+})(window);
 
-            if (1 === depth) buffer.push('</span>');
 
-            break;
+(function (window) {
+    var VarDebug = window.VarDebug || {};
+
+    VarDebug.run = function (json) {
+        var parser = new VarDebug.Parser();
+        parser.parse(json);
+
+        var renderer = new VarDebug.Renderer(parser);
+        var html = document.getElementById('dumper-content');
+        var node = document.createElement('div');
+
+        node.className = 'dump-blackbox';
+        node.appendChild(renderer.render());
+        html.appendChild(node);
+        VarDebug.bindHover();
+    }
+
+    window.VarDebug = VarDebug;
+
+    window.arrayToggle = function (a)
+    {
+
+        var s = a.nextElementSibling.nextElementSibling;
+
+        if ('array-compact' == s.className)
+        {
+            a.innerHTML = ' ⊟ ';
+            s.className = 'array-expanded';
+        }
+        else
+        {
+            a.innerHTML = ' ⊞ ';
+            s.className = 'array-compact';
         }
     }
 
-    htmlizeData(data);
-
-    return buffer.join('');
-}
-
-function arrayToggle(a)
-{
-    "use strict";
-
-    var s = a.nextElementSibling.nextElementSibling;
-
-    if ('array-compact' == s.className)
-    {
-        a.innerHTML = ' ⊟ ';
-        s.className = 'array-expanded';
-    }
-    else
-    {
-        a.innerHTML = ' ⊞ ';
-        s.className = 'array-compact';
-    }
-}
+})(window);

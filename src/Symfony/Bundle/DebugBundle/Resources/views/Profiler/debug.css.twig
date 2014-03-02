@@ -81,7 +81,6 @@ li.dump
 .string
 {
     color: purple;
-    background-color: #F9F9F9;
 }
 
 .empty.string
@@ -91,10 +90,10 @@ li.dump
     display: inline-block;
 }
 
-.key
+.key, .key *
 {
-    font-family: monospace;
-    background-color: white;
+    color: gray;
+    font-style: italic;
 }
 
 .public
@@ -138,4 +137,61 @@ li.dump
 .array-compact>ol
 {
     display: none;
+}
+
+.undefined {
+    color: gray;
+    font-style: italic;
+}
+
+.dump-blackbox {
+    background-color: black;
+    margin: 20px 0;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    word-wrap: break-word;
+}
+
+.dump-blackbox * {
+    font-family: Arial;
+}
+
+.dump-blackbox li{
+    padding-bottom: 0;
+}
+
+.colon {
+    color: white;
+}
+
+.truncated {
+    font-style: italic;
+    color: #CCC;
+}
+
+.reference-marker {
+    color: gray;
+    padding: 0 2px;
+    margin-right: 1px;
+}
+
+.hovered {
+    cursor: help;
+}
+
+.hovered .reference-marker {
+    color: yellow;
+    background-color: #333;
+    border-radius: 2px;
+}
+
+a[data-helper]:hover:after, span.string[data-helper]:hover:after {
+  content: attr(data-helper);
+  position: absolute;
+  background-color: white;
+  color: #333;
+  padding: 5px;
+  border-radius: 3px;
+  margin-left: 10px;
 }

@@ -47,18 +47,15 @@
         {% include '@Debug/Profiler/debug.js.twig' %}
     </script>
 
-    <ul id="var_debug" class="alt">
+    <div id="dumper-content">
         {% for dump in collector.dumps(true) %}
-        <li class="dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
-            <a onclick="arrayToggle(this)"> ⊞ </a><span class="key"></span>
+            <a href="#" onclick="arrayToggle(this); return false"> ⊞ </a><span class="key"></span>
             <span class="array-compact">
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>
-
-            <pre class="event"><script>document.write(htmlizeEvent({{ dump.data|raw }}))</script></pre>
-        </li>
+            <script>VarDebug.run({{ dump.data|raw }})</script>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}
