@@ -1,7 +1,7 @@
 High accuracy and flexible dumping for PHP variables
 ====================================================
 
-This package provides a better `dump()` function, that you can use instead of
+This package provides a better `debug()` function, that you can use instead of
 `var_dump()`, *better* being for:
 
 - per object and resource types specialized view: e.g. filter out Doctrine noise
@@ -35,16 +35,16 @@ command to install it:
 Then, early in your bootstrap sequence, enable e.g. CLI output with colors:
 
 ```php
-set_dump_handler(function ($var) {\Patchwork\Dumper\CliDumper::dump($var);});
+set_debug_handler(function ($var) {\Patchwork\Dumper\CliDumper::dump($var);});
 ```
 
 or HTML mode with:
 
 ```php
-set_dump_handler(function ($var) {\Patchwork\Dumper\HtmlDumper::dump($var);});
+set_debug_handler(function ($var) {\Patchwork\Dumper\HtmlDumper::dump($var);});
 ```
 
-Then enjoy debugging with `dump($var)`.
+Then enjoy debugging with `debug($var)`.
 
 More advanced usages are possible. Please check the source code or open issues on
 GitHub to get *how-to* answers.
@@ -52,7 +52,7 @@ GitHub to get *how-to* answers.
 Symfony2 bundle
 ---------------
 
-For Symfony2 users, a bundle is also available. The bundle creates a `dump()`
+For Symfony2 users, a bundle is also available. The bundle creates a `debug()`
 function that is available both in your PHP code and in your Twig templates.
 
 In console mode, variables are dumped on *stderr*. In web mode, variables are
@@ -77,13 +77,13 @@ Example
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
-set_dump_handler(function ($var) {Patchwork\Dumper\CliDumper::dump($var); echo "---\n";});
+set_debug_handler(function ($var) {Patchwork\Dumper\CliDumper::dump($var); echo "---\n";});
 
 $var = 1.0;
-dump($var);
+debug($var);
 
 $var = fopen(__FILE__, 'rb');
-dump($var);
+debug($var);
 
 class foo
 {
@@ -94,11 +94,11 @@ class foo
 
 $foo = new foo;
 $var = array($foo, $foo);
-dump($var);
+debug($var);
 
 $var = array($foo);
 $var[1] =& $var[0];
-dump($var);
+debug($var);
 ```
 
 ![Example output](doc/cli-example.png)

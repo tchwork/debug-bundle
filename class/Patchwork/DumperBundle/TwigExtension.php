@@ -25,7 +25,7 @@ class TwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('dump', array($this, 'dump'), array('is_safe' => array('html'), 'needs_context' => true, 'needs_environment' => true)),
+            new \Twig_SimpleFunction('debug', array($this, 'debug'), array('is_safe' => array('html'), 'needs_context' => true, 'needs_environment' => true)),
         );
     }
 
@@ -34,7 +34,7 @@ class TwigExtension extends \Twig_Extension
         return 'patchwork_dumper';
     }
 
-    public function dump(\Twig_Environment $env, $context)
+    public function debug(\Twig_Environment $env, $context)
     {
         if (! $env->isDebug()) {
             return;

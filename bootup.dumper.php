@@ -8,15 +8,32 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-if (! function_exists('dump'))
+if (!function_exists('debug'))
 {
-    function dump($var)
+    function debug($var)
     {
-        Patchwork\Dumper::dump($var);
+        static $reflector;
+
+        if (!isset($reflector)) {
+            $reflector = new ReflectionFunction('set_debug_handler');
+        }
+
+        $h = $reflector->getStaticVariables();
+
+        if (isset($h['handler'])) {
+            return $h['handler']($var);
+        } else {
+            var_dump($var);
+        }
     }
 
-    function set_dump_handler(\Closure $handler)
+    function set_debug_handler(\Closure $closure)
     {
-        return Patchwork\Dumper::setHandler($handler);
+        static $handler = null;
+
+        $h = $handler;
+        $handler = $closure;
+
+        return $h;
     }
 }

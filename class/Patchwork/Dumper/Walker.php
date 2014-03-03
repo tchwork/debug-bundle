@@ -52,7 +52,7 @@ abstract class Walker
 
         try
         {
-            $val= $ref;
+            $val = $ref;
             $type = gettype($val);
             $this->walkRef($ref, $val, $type, null);
         }
