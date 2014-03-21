@@ -21,7 +21,7 @@ class PatchworkDumperBundle extends Bundle
         $container = $this->container;
         $dumper = in_array(PHP_SAPI, array('cli', 'cli-server')) ? 'cli' : 'dataCollector';
 
-        set_dump_handler(function ($v) use ($container, $dumper)
+        set_debug_handler(function ($v) use ($container, $dumper)
         {
             $container->get("patchwork.dumper.$dumper")->walk($v);
         });
