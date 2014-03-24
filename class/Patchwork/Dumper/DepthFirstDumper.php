@@ -42,12 +42,12 @@ abstract class DepthFirstDumper extends AbstractDumper
         {
             if ($this->objectsDepth[$hash] < $this->depth)
             {
-                if (self::$tag === $obj = $this->refPool[$this->position])
-                    $this->refPool[$this->position] = $obj = clone self::$tag;
+                if (self::$tag === $tag = $this->refPool[$this->position])
+                    $this->refPool[$this->position] = $tag = clone self::$tag;
 
-                $obj->position = $this->position;
-                $obj->hash = $hash;
-                $this->dumpRef(true, $this->position, $hash);
+                $tag->position = $this->position;
+                $tag->hash = $hash;
+                $this->dumpRef(true, $this->position, $hash, $obj);
 
                 return;
             }
@@ -57,7 +57,7 @@ abstract class DepthFirstDumper extends AbstractDumper
         parent::dumpObject($obj, $hash);
     }
 
-    protected function dumpRef($isSoft, $position, $hash)
+    protected function dumpRef($isSoft, $position, $hash, $val)
     {
         if (! $position) return false;
 
@@ -65,7 +65,7 @@ abstract class DepthFirstDumper extends AbstractDumper
         {
             if (isset($this->objectsDepth[$hash]) && $this->objectsDepth[$hash] === $this->depth)
             {
-                $this->dumpObject($this->valPool[$position], $hash);
+                $this->dumpObject($val, $hash);
                 return true;
             }
         }
@@ -76,9 +76,9 @@ abstract class DepthFirstDumper extends AbstractDumper
 
             if (null === $hash) return false;
 
-            if (isset($hash[0])) $this->dumpObject($this->valPool[$position], $hash);
-            else if ($hash) $this->dumpResource($this->valPool[$position]);
-            else $this->dumpHash('array', $this->valPool[$position]);
+            if (isset($hash[0])) $this->dumpObject($val, $hash);
+            else if ($hash) $this->dumpResource($val);
+            else $this->dumpHash('array', $val);
 
             return true;
         }

@@ -59,9 +59,9 @@ class CliDumper extends DepthFirstDumper
         $this->styles = $styles + $this->styles;
     }
 
-    protected function dumpRef($isSoft, $position, $hash)
+    protected function dumpRef($isSoft, $position, $hash, $val)
     {
-        if (parent::dumpRef($isSoft, $position, $hash)) return true;
+        if (parent::dumpRef($isSoft, $position, $hash, $val)) return true;
 
         if (! $position || $position === $this->position)
         {
@@ -70,8 +70,8 @@ class CliDumper extends DepthFirstDumper
         else
         {
             if (null === $hash) $note = '';
-            else if (isset($hash[0])) $note = get_class($this->valPool[$position]) . ' ';
-            else if ($hash) $note = 'resource:' . get_resource_type($this->valPool[$position]) . ' ';
+            else if (isset($hash[0])) $note = get_class($val) . ' ';
+            else if ($hash) $note = 'resource:' . get_resource_type($val) . ' ';
             else $note = 'array ';
 
             $this->line .= $this->style('note', $note . ($isSoft ? '@' : '&') . $position);

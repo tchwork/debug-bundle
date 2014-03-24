@@ -22,9 +22,9 @@ class JsonDumper extends BreadthFirstDumper
     $maxString = 10000;
 
 
-    protected function dumpRef($isSoft, $position, $hash)
+    protected function dumpRef($isSoft, $position, $hash, $val)
     {
-        if (parent::dumpRef($isSoft, $position, $hash)) return true;
+        if (parent::dumpRef($isSoft, $position, $hash, $val)) return true;
 
         if (empty($position) || $this->position == $position) $position = '';
 

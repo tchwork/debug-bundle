@@ -36,7 +36,7 @@ abstract class Walker
     abstract protected function dumpScalar($val);
     abstract protected function dumpString($str, $isKey);
     abstract protected function dumpHash($type, $array);
-    abstract protected function dumpRef($isSoft, $position, $hash);
+    abstract protected function dumpRef($isSoft, $position, $hash, $val);
 
 
     public function walk(&$ref)
@@ -78,13 +78,13 @@ abstract class Walker
             if ($val->position)
             {
                 $this->refMap[-$this->position] = $val->position;
-                $this->dumpRef(false, $val->position, $val->hash);
+                $this->dumpRef(false, $val->position, $val->hash, $this->valPool[$val->position]);
             }
             else
             {
                 if ($val === self::$tag) $ref = clone self::$tag;
                 $ref->refs[] = -$this->position;
-                $this->dumpRef(false, 0, null);
+                $this->dumpRef(false, 0, null, null);
             }
         }
         else
@@ -106,7 +106,7 @@ abstract class Walker
 
                 if (isset($this->objPool[$h]))
                 {
-                    $this->dumpRef(true, $this->refMap[$this->position] = $this->objPool[$h], $h);
+                    $this->dumpRef(true, $this->refMap[$this->position] = $this->objPool[$h], $h, $val);
 
                     break;
                 }

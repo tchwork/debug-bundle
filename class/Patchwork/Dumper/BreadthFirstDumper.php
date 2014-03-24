@@ -51,12 +51,12 @@ abstract class BreadthFirstDumper extends AbstractDumper
 
             if (isset($this->objPool[$h]))
             {
-                $this->dumpRef(true, $this->refMap[$key] = $this->objPool[$h], $h);
+                $this->dumpRef(true, $this->refMap[$key] = $this->objPool[$h], $h, $val);
             }
             else
             {
                 $this->breadthQueue[$key] = $type;
-                $this->dumpRef(false, 0, null);
+                $this->dumpRef(false, 0, null, null);
             }
         }
         else if (1 === $this->depth)
@@ -73,7 +73,7 @@ abstract class BreadthFirstDumper extends AbstractDumper
         }
     }
 
-    protected function dumpRef($isSoft, $position, $hash)
+    protected function dumpRef($isSoft, $position, $hash, $val)
     {
         return false;
     }
