@@ -29,52 +29,69 @@ abstract class BreadthFirstDumper extends AbstractDumper
         if (isset($e)) throw $e;
     }
 
-    protected function walkRef(&$ref, $val, $type, $key)
+    protected function walkRef(&$ref, $info, $key)
     {
-        if (1 < $this->depth) switch (true)
+        if (1 < $this->depth)
         {
-        default:
-        case 'string' === $type:
-        case 'integer' === $type:
-        case 'array' === $type && empty($val):
-        case $val instanceof WalkerRefTag && $val->tag === self::$tag:
-            return parent::walkRef($ref, $val, $type, $key);
-
-        case 'object' === $type: $h = pack('H*', spl_object_hash($val)); // No break;
-        case 'unknown type' === $type:
-        case 'resource' === $type: isset($h) or $h = (int) substr((string) $val, 13);
-        case 'array' === $type: isset($h) or $h = null;
-            $key = ++$this->position;
-            $this->refPool[$key] =& $ref;
-            $this->valPool[$key] = $val;
-            $ref = self::$tag;
-
-            if (isset($this->objPool[$h]))
+            if ($info instanceof WalkerRefTag)
             {
-                $this->dumpRef(true, $this->refMap[$key] = $this->objPool[$h], $h, $val);
+                return parent::walkRef($ref, $info, $key);
+            }
+            elseif (isset($info['object_hash']))
+            {
+                $h = $info['object_hash'];
+            }
+            else if (isset($info['resource_id']))
+            {
+                $h = $info['resource_id'];
+            }
+            else if (empty($info['array_count']))
+            {
+                return parent::walkRef($ref, $info, $key);
             }
             else
             {
-                $this->breadthQueue[$key] = $type;
-                $this->dumpRef(false, 0, null, null);
+                $h = null;
+            }
+
+            $key = ++$this->position;
+            $this->refPool[$key] =& $ref;
+            $this->valPool[$key] = $info['value'];
+            ($ref instanceof WalkerRefTag and $ref->tag === self::$tag) or $ref = self::$tag;
+
+            if (isset($this->objPool[$h]))
+            {
+                $this->dumpRef(true, $this->refMap[$key] = $this->objPool[$h], $info);
+            }
+            else
+            {
+                $this->breadthQueue[$key] = $info;
+                $this->dumpRef(false, 0, null);
             }
         }
         else if (1 === $this->depth)
         {
-            parent::walkRef($this->refPool[$key], $this->valPool[$key], $val, $key);
+            parent::walkRef($this->refPool[$key], $info, $key);
         }
         else
         {
             $key = ++$this->position + 1;
-            $this->breadthQueue[$key] = $type;
+            $this->breadthQueue[$key] = $info;
             $this->refPool[$key] =& $ref;
-            $this->valPool[$key] = $val;
-            $this->dumpHash('breadthQueue:', $this->breadthQueue);
+            $this->valPool[$key] = $info['value'];
+            $this->dumpHash(':', $this->breadthQueue, -1);
         }
     }
 
-    protected function dumpRef($isSoft, $position, $hash, $val)
+    protected function dumpRef($isSoft, $position, $info)
     {
         return false;
+    }
+
+    protected function getInfo(&$ref, $val)
+    {
+        if (1 === $this->depth) return $val;
+
+        return parent::getInfo($ref, $val);
     }
 }

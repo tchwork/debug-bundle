@@ -22,9 +22,9 @@ class JsonDumper extends BreadthFirstDumper
     $maxString = 10000;
 
 
-    protected function dumpRef($isSoft, $position, $hash, $val)
+    protected function dumpRef($isSoft, $position, $info)
     {
-        if (parent::dumpRef($isSoft, $position, $hash, $val)) return true;
+        if (parent::dumpRef($isSoft, $position, $info)) return true;
 
         if (empty($position) || $this->position == $position) $position = '';
 
@@ -109,9 +109,9 @@ class JsonDumper extends BreadthFirstDumper
         $this->line .= '"' . str_replace($map[0], $map[1], $str) . '"' . $isKey;
     }
 
-    protected function dumpHash($type, $array)
+    protected function dumpHash($type, &$array, $len)
     {
-        if ('array' === $type) $type .= ':' . count($array);
+        if ('array' === $type) $type .= ':' . $len;
 
         if ('array:0' === $type) $this->line .= '[]';
         else
@@ -121,7 +121,7 @@ class JsonDumper extends BreadthFirstDumper
 
             $startPosition = $this->position;
 
-            if ($type = parent::dumpHash($type, $array))
+            if ($type = parent::dumpHash($type, $array, $len))
             {
                 ++$this->depth;
                 $this->dumpString('__refs', true);

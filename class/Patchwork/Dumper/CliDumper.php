@@ -59,9 +59,9 @@ class CliDumper extends DepthFirstDumper
         $this->styles = $styles + $this->styles;
     }
 
-    protected function dumpRef($isSoft, $position, $hash, $val)
+    protected function dumpRef($isSoft, $position, $info)
     {
-        if (parent::dumpRef($isSoft, $position, $hash, $val)) return true;
+        if (parent::dumpRef($isSoft, $position, $info)) return true;
 
         if (! $position || $position === $this->position)
         {
@@ -69,9 +69,9 @@ class CliDumper extends DepthFirstDumper
         }
         else
         {
-            if (null === $hash) $note = '';
-            else if (isset($hash[0])) $note = get_class($val) . ' ';
-            else if ($hash) $note = 'resource:' . get_resource_type($val) . ' ';
+            if (null === $info) $note = '';
+            else if (isset($info['object_hash'])) $note = $info['object_class'] . ' ';
+            else if (isset($info['resource_id'])) $note = 'resource:' . $info['resource_type'] . ' ';
             else $note = 'array ';
 
             $this->line .= $this->style('note', $note . ($isSoft ? '@' : '&') . $position);
@@ -252,7 +252,7 @@ class CliDumper extends DepthFirstDumper
         $this->line .= $isKey;
     }
 
-    protected function dumpHash($type, $array)
+    protected function dumpHash($type, &$array, $len)
     {
         $isArray = 'array' === $type;
 
@@ -262,7 +262,7 @@ class CliDumper extends DepthFirstDumper
             if ($isArray)
             {
                 $this->line .= '[';
-                //$this->dumpString(count($array), false, 'note');
+                //$this->dumpString($len, false, 'note');
             }
             else
             {
@@ -273,7 +273,7 @@ class CliDumper extends DepthFirstDumper
             $this->line .= ' ' . $this->style('ref', "#$this->position");
 
             $startPosition = $this->position;
-            $refs = parent::dumpHash($type, $array);
+            $refs = parent::dumpHash($type, $array, $len);
             if ($this->position !== $startPosition) $this->dumpLine(1);
 
             $this->line .= $isArray ? ']' : '}';

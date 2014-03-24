@@ -27,16 +27,17 @@ abstract class Walker
     $valPool = array(),
     $objPool = array(),
     $ignoreError = false,
-    $prevErrorHandler = null;
+    $prevErrorHandler = null,
+    $hasSymfonyZvalInfo;
 
     protected static $tag;
 
-    abstract protected function dumpObject($obj, $hash);
-    abstract protected function dumpResource($res);
+    abstract protected function dumpObject($info);
+    abstract protected function dumpResource($info);
     abstract protected function dumpScalar($val);
     abstract protected function dumpString($str, $isKey);
-    abstract protected function dumpHash($type, $array);
-    abstract protected function dumpRef($isSoft, $position, $hash, $val);
+    abstract protected function dumpHash($type, &$array, $len);
+    abstract protected function dumpRef($isSoft, $position, $info);
 
 
     public function walk(&$ref)
@@ -49,12 +50,11 @@ abstract class Walker
 
         $this->position = 0;
         $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
+        function_exists('symfony_zval_info') and $this->hasSymfonyZvalInfo = true;
 
         try
         {
-            $val = $ref;
-            $type = gettype($val);
-            $this->walkRef($ref, $val, $type, null);
+            $this->walkRef($ref, $this->getInfo($ref, $ref), null);
         }
         catch (\Exception $e) {}
 
@@ -69,52 +69,51 @@ abstract class Walker
         if (isset($e)) throw $e;
     }
 
-    protected function walkRef(&$ref, $val, $type, $key)
+    protected function walkRef(&$ref, $info, $key)
     {
         ++$this->position;
 
-        if ($val instanceof WalkerRefTag && $val->tag === self::$tag)
+        if ($info instanceof WalkerRefTag)
         {
-            if ($val->position)
+            if ($ref->position)
             {
-                $this->refMap[-$this->position] = $val->position;
-                $this->dumpRef(false, $val->position, $val->hash, $this->valPool[$val->position]);
+                $this->refMap[-$this->position] = $ref->position;
+                $this->dumpRef(false, $ref->position, $ref->info);
             }
             else
             {
-                if ($val === self::$tag) $ref = clone self::$tag;
+                if ($ref === self::$tag) $ref = clone self::$tag;
                 $ref->refs[] = -$this->position;
-                $this->dumpRef(false, 0, null, null);
+                $this->dumpRef(false, 0, null);
             }
         }
         else
         {
             $this->refPool[$this->position] =& $ref;
-            $this->valPool[$this->position] = $val;
-            if (! $ref instanceof WalkerRefTag || $ref->tag !== self::$tag) $ref = self::$tag;
+            $this->valPool[$this->position] = $info['value'];
+            ($ref instanceof WalkerRefTag and $ref->tag === self::$tag) or $ref = self::$tag;
 
-            switch ($type)
+            switch ($info['type'])
             {
             default:
-            case 'integer': $this->dumpScalar($val); break;
-            case 'string': $this->dumpString($val, false); break;
-            case 'array': $this->dumpHash($type, $val); break;
+            case 'integer': $this->dumpScalar($info['value']); break;
+            case 'string': $this->dumpString($info['value'], false); break;
+            case 'array': $this->dumpHash('array', $info['value'], $info['array_count']); break;
 
-            case 'object': $h = pack('H*', spl_object_hash($val)); // No break;
-            case 'unknown type':
-            case 'resource': isset($h) or $h = (int) substr((string) $val, 13);
+            case 'object': $h = $info['object_hash']; // No break;
+            case 'resource': isset($h) or $h = $info['resource_id'];
 
                 if (isset($this->objPool[$h]))
                 {
-                    $this->dumpRef(true, $this->refMap[$this->position] = $this->objPool[$h], $h, $val);
+                    $this->dumpRef(true, $this->refMap[$this->position] = $this->objPool[$h], $info);
 
                     break;
                 }
 
                 $this->objPool[$h] = $this->position;
 
-                if (isset($h[0])) $this->dumpObject($val, $h);
-                else $this->dumpResource($val);
+                if (isset($h[0])) $this->dumpObject($info);
+                else $this->dumpResource($info);
             }
         }
     }
@@ -157,6 +156,45 @@ abstract class Walker
         }
 
         $this->ignoreError = $msg;
+    }
+
+    protected function getInfo(&$ref, $val)
+    {
+        if ($val instanceof WalkerRefTag && $val->tag === self::$tag)
+        {
+            return $val;
+        }
+        else if (isset($this->hasSymfonyZvalInfo))
+        {
+            $info = symfony_zval_info(0, array(&$ref));
+        }
+        else
+        {
+            $info = array('type' => gettype($val));
+
+            switch ($ref['type'])
+            {
+            case 'array':
+                $ref['array_count'] = count($val);
+                break;
+
+            case 'object':
+                $ref['object_class'] = get_class($val);
+                $ref['object_hash'] = spl_object_hash($val);
+                break;
+
+            case 'unknown type':
+                $ref['type'] = 'resource'; // No break;
+            case 'resource':
+                $ref['resource_id'] = (int) substr((string) $val, 13);
+                $ref['resource_type'] = get_resource_type($val);
+                break;
+            }
+        }
+
+        $info['value'] = $val;
+
+        return $info;
     }
 }
 

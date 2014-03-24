@@ -125,8 +125,10 @@ abstract class AbstractDumper extends Walker
     }
 
 
-    protected function dumpObject($obj, $hash)
+    protected function dumpObject($info)
     {
+        $obj = $info['value'];
+
         if (method_exists($obj, '__debugInfo'))
         {
             $a = array();
@@ -135,7 +137,7 @@ abstract class AbstractDumper extends Walker
         }
         else $a = (array) $obj;
 
-        $c = get_class($obj);
+        $c = $info['object_class'];
         $p = array($c => $c)
             + class_parents($obj)
             + class_implements($obj)
@@ -146,12 +148,12 @@ abstract class AbstractDumper extends Walker
                 foreach ($this->casters[$p] as $p)
                     $this->callCaster($p, $obj, $a);
 
-        $this->dumpHash($c, $a);
+        $this->dumpHash($c, $a, count($a));
     }
 
-    protected function dumpResource($res)
+    protected function dumpResource($info)
     {
-        $type = get_resource_type($res);
+        $type = $info['resource_type'];
         $a = array();
         $b = array();
 
@@ -159,14 +161,14 @@ abstract class AbstractDumper extends Walker
         {
             foreach ($this->casters['r:' . $type] as $c)
             {
-                $this->callCaster($c, $res, $b);
+                $this->callCaster($c, $info['value'], $b);
             }
         }
 
         foreach ($b as $b => $c)
             $a[strncmp($b, "\0~\0", 3) ? "\0~\0$b" : $b] = $c;
 
-        $this->dumpHash("resource:{$type}", $a);
+        $this->dumpHash("resource:{$type}", $a, count($a));
     }
 
     protected function callCaster($callback, $obj, &$a)
@@ -190,10 +192,8 @@ abstract class AbstractDumper extends Walker
         }
     }
 
-    protected function dumpHash($type, $array)
+    protected function dumpHash($type, &$array, $len)
     {
-        $len = count($array);
-
         if (! $len) return array();
 
         $hashPosition = $this->hashPosition;
@@ -204,7 +204,7 @@ abstract class AbstractDumper extends Walker
 
         if (0 >= $this->maxLength) $len = -1;
         else if ($this->dumpLength >= $this->maxLength) $i = $max = $this->maxLength;
-        else
+        else if ($len > 0)
         {
             $i = $this->dumpLength;
             $max = $this->maxLength;
@@ -212,8 +212,10 @@ abstract class AbstractDumper extends Walker
             $len += $i - $max;
         }
 
-        foreach ($array as $k => &$ref)
+        foreach ($array as $key => &$ref)
         {
+            $k = $key;
+
             if ($len >= 0 && $i++ === $max)
             {
                 if ($len)
@@ -227,10 +229,8 @@ abstract class AbstractDumper extends Walker
             else if (isset($k[0]) && "\0" === $k[0] && ! $isArray) $k = implode(':', explode("\0", substr($k, 1), 2));
             else if (isset($this->reserved[$k]) || false !== strpos($k, ':')) $k = ':' . $k;
 
-            $val = $ref;
-            $type = gettype($val);
             $this->dumpString($k, true);
-            $this->walkRef($ref, $val, $type, $k);
+            $this->walkRef($ref, $this->getInfo($ref, $array[$key]), $key);
         }
 
         $this->hashPosition = $hashPosition;

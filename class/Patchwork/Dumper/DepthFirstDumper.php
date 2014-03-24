@@ -36,36 +36,36 @@ abstract class DepthFirstDumper extends AbstractDumper
     }
 
 
-    protected function dumpObject($obj, $hash)
+    protected function dumpObject($info)
     {
-        if (isset($this->objectsDepth[$hash]))
+        if (isset($this->objectsDepth[$info['object_hash']]))
         {
-            if ($this->objectsDepth[$hash] < $this->depth)
+            if ($this->objectsDepth[$info['object_hash']] < $this->depth)
             {
                 if (self::$tag === $tag = $this->refPool[$this->position])
                     $this->refPool[$this->position] = $tag = clone self::$tag;
 
                 $tag->position = $this->position;
-                $tag->hash = $hash;
-                $this->dumpRef(true, $this->position, $hash, $obj);
+                $tag->info = $info;
+                $this->dumpRef(true, $this->position, $info);
 
                 return;
             }
-            else unset($this->objectsDepth[$hash]);
+            else unset($this->objectsDepth[$info['object_hash']]);
         }
 
-        parent::dumpObject($obj, $hash);
+        parent::dumpObject($info);
     }
 
-    protected function dumpRef($isSoft, $position, $hash, $val)
+    protected function dumpRef($isSoft, $position, $info)
     {
         if (! $position) return false;
 
-        if (isset($hash[0]))
+        if (isset($info['object_hash']))
         {
-            if (isset($this->objectsDepth[$hash]) && $this->objectsDepth[$hash] === $this->depth)
+            if (isset($this->objectsDepth[$info['object_hash']]) && $this->objectsDepth[$info['object_hash']] === $this->depth)
             {
-                $this->dumpObject($val, $hash);
+                $this->dumpObject($info);
                 return true;
             }
         }
@@ -74,11 +74,11 @@ abstract class DepthFirstDumper extends AbstractDumper
         {
             unset($this->depthLimited[$position]);
 
-            if (null === $hash) return false;
+            if (null === $info) return false;
 
-            if (isset($hash[0])) $this->dumpObject($val, $hash);
-            else if ($hash) $this->dumpResource($val);
-            else $this->dumpHash('array', $val);
+            if (isset($info['object_hash'])) $this->dumpObject($info);
+            else if (isset($info['resource_id'])) $this->dumpResource($info);
+            else $this->dumpHash('array', $info['value'], $info['array_count']);
 
             return true;
         }
@@ -86,10 +86,8 @@ abstract class DepthFirstDumper extends AbstractDumper
         return false;
     }
 
-    protected function dumpHash($type, $array)
+    protected function dumpHash($type, &$array, $len)
     {
-        $len = count($array);
-
         if (! $len) return array();
 
         if ($this->depth >= $this->maxDepth && 0 < $this->maxDepth)
@@ -109,10 +107,11 @@ abstract class DepthFirstDumper extends AbstractDumper
             return array();
         }
 
-        if (0 >= $this->maxLength) $len = -1;
-        else $len += $this->dumpLength - $this->maxLength;
+        $l = $len;
+        if (0 >= $this->maxLength) $l = -1;
+        else if ($l > 0) $l += $this->dumpLength - $this->maxLength;
 
-        if ($len < 0)
+        if ($l < 0)
         {
             // Breadth-first for objects
 
@@ -121,18 +120,18 @@ abstract class DepthFirstDumper extends AbstractDumper
                 switch (gettype($val))
                 {
                 case 'object':
-                    if (! $len)
+                    if (! $l)
                     {
                         $h = pack('H*', spl_object_hash($val));
                         isset($this->objPool[$h]) or $this->objectsDepth += array($h => $this->depth+1);
                     }
                     // No break;
-                case 'array': $len = 0;
+                case 'array': $l = 0;
                 }
             }
         }
 
-        $type = parent::dumpHash($type, $array);
+        $type = parent::dumpHash($type, $array, $len);
 
         while (end($this->objectsDepth) === $this->depth+1) array_pop($this->objectsDepth);
 
