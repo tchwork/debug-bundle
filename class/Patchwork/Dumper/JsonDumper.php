@@ -15,27 +15,30 @@ namespace Patchwork\Dumper;
  *
  * See https://github.com/nicolas-grekas/Patchwork-Doc/blob/master/Dumping-PHP-Data-en.md
  */
-class JsonDumper extends BreadthFirstDumper
+class JsonDumper extends AbstractDumper implements DumperInterface
 {
-    public
+    protected static $reserved = array(
+        '_' => 1,
+        '__cutBy' => 1,
+        '__refs' => 1,
+        '__proto__' => 1,
+    );
 
-    $maxString = 10000;
+    protected $position = 0;
+    protected $refsPos = array();
+    protected $refs = array();
 
 
-    protected function dumpRef($isSoft, $position, $info)
+    public function dumpScalar(Cursor $cursor, $type, $val)
     {
-        if (parent::dumpRef($isSoft, $position, $info)) return true;
+        if ('string' === $type) {
+            return $this->dumpString($cursor, $val, false, 0);
+        }
 
-        if (empty($position) || $this->position == $position) $position = '';
+        if ($this->dumpKey($cursor)) {
+            return;
+        }
 
-        $isSoft = $isSoft ? 'r' : 'R';
-        $this->line .= "\"{$isSoft}`{$this->position}:{$position}\"";
-
-        return false;
-    }
-
-    protected function dumpScalar($val)
-    {
         switch (true)
         {
         case null === $val: $this->line .= 'null'; break;
@@ -44,51 +47,99 @@ class JsonDumper extends BreadthFirstDumper
         case INF === $val: $this->line .= '"n`INF"'; break;
         case -INF === $val: $this->line .= '"n`-INF"'; break;
         case is_nan($val): $this->line .= '"n`NAN"'; break;
-        case $val > 9007199254740992 && is_int($val): $val = '"n`' . $val . '"'; // JavaScript max integer is 2^53
+        case $val > 9007199254740992 && is_int($val): $val = '"n`'.$val.'"'; // JavaScript max integer is 2^53
         default: $this->line .= (string) $val; break;
+        }
+
+        $this->endLine($cursor);
+    }
+
+    public function dumpString(Cursor $cursor, $str, $bin, $cut)
+    {
+        if ($this->dumpKey($cursor)) {
+            return;
+        }
+        if ($bin) {
+            $str = 'b`'.$str;
+            if ($cut) {
+                $str = ($cut + iconv_strlen($str, 'UTF-8')).$str;
+            }
+        } elseif ($cut) {
+            $str = ($cut + iconv_strlen($str, 'UTF-8')).'u`'.$str;
+        } elseif (false !== strpos($str, '`')) {
+            $str = 'u`'.$str;
+        }
+        $this->line .= $this->encodeString($str);
+        $this->endLine($cursor);
+    }
+
+    public function enterArray(Cursor $cursor, $count, $cut, $indexed)
+    {
+        if ($indexed) {
+            if ($this->dumpKey($cursor)) {
+                return;
+            }
+            $this->line .= '[';
+            if ($cursor->dumpedChildren) {
+                $this->dumpLine($cursor->depth);
+            }
+        } else {
+            $this->enterHash($cursor, 'array:'.$count);
         }
     }
 
-    protected function dumpString($str, $isKey)
+    public function leaveArray(Cursor $cursor, $count, $cut, $indexed)
     {
-        if ($isKey)
-        {
-            $this->line .= ',';
-            $isKey = $this->hashPosition === $this->position;
+        $this->leaveHash($cursor, $cut, $indexed ? ']' : '}');
+    }
 
-            if ('__cutBy' === $str)
-            {
-                if (! $isKey) $this->dumpLine(0);
-            }
-            else
-            {
-                $isKey = $isKey && ! isset($this->depthLimited[$this->position]);
-                $this->dumpLine(-$isKey);
+    public function enterObject(Cursor $cursor, $class, $cut)
+    {
+        $this->enterHash($cursor, $class);
+    }
 
-                if (is_int($str))
-                {
-                    $this->line .= '"n`' . $str . '": ';
+    public function leaveObject(Cursor $cursor, $class, $cut)
+    {
+        $this->leaveHash($cursor, $cut, '}');
+    }
 
-                    return;
-                }
-            }
+    public function enterResource(Cursor $cursor, $res, $cut)
+    {
+        $this->enterHash($cursor, 'resource:'.$res);
+    }
 
-            $isKey = ': ';
-        }
-        else $isKey = '';
+    public function leaveResource(Cursor $cursor, $res, $cut)
+    {
+        $this->leaveHash($cursor, $cut, '}');
+    }
 
-        if ('' === $str) {
-            $this->line .= '""' . $isKey;
-
+    protected function enterHash(Cursor $cursor, $type)
+    {
+        if ($this->dumpKey($cursor)) {
             return;
         }
 
-        if (! preg_match('//u', $str)) $str = 'b`' . utf8_encode($str);
-        else if (false !== strpos($str, '`')) $str = 'u`' . $str;
+        $this->line .= '{"_":"'.$this->position.':'.$type;
+        if ($cursor->dumpedChildren) {
+            $this->line .= ',';
+            $this->dumpLine($cursor->depth);
+        }
+    }
 
-        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($str, 'UTF-8') - 1)
-            $str = $len . ('`' !== substr($str, 1, 1) ? 'u`' : '') . iconv_substr($str, 0, $this->maxString + 1, 'UTF-8');
+    protected function leaveHash(Cursor $cursor, $cut, $suffix)
+    {
+        if (false !== $cursor->refTo) {
+            return;
+        }
+        if ($cut) {
+            $this->line .= ',"_cutBy": '.$cut;
+        }
+        $this->line .= $suffix;
+        $this->endLine($cursor);
+    }
 
+    protected function encodeString($str)
+    {
         static $map = array(
             array(
                   '\\', '"', '</',
@@ -106,33 +157,72 @@ class JsonDumper extends BreadthFirstDumper
             ),
         );
 
-        $this->line .= '"' . str_replace($map[0], $map[1], $str) . '"' . $isKey;
+        $this->line .= '"'.str_replace($map[0], $map[1], $str).'"';
     }
 
-    protected function dumpHash($type, &$array, $len)
+    protected function dumpKey(Cursor $cursor)
     {
-        if ('array' === $type) $type .= ':' . $len;
+        ++$this->position;
+        $key = $cursor->hashKey;
 
-        if ('array:0' === $type) $this->line .= '[]';
-        else
-        {
-            $this->line .= '{"_":';
-            $this->dumpString($this->position . ':' . $type, false);
+        if ($cursor::HASH_INDEXED !== $cursor->hashType && null !== $key) {
+            if (is_int($key)) {
+                $key = 'n`'.$key;
+            } else {
+                if (!preg_match('//u', $key)) {
+                    $key = 'b`'.iconv('CP1252', 'UTF-8', $key);
+                } elseif (false !== strpos($key, '`')) {
+                    $key = 'u`'.$key;
+                }
 
-            $startPosition = $this->position;
-
-            if ($type = parent::dumpHash($type, $array, $len))
-            {
-                ++$this->depth;
-                $this->dumpString('__refs', true);
-                foreach ($type as $k => $v) $type[$k] = '"' . $k . '":[' . implode(',', $v) . ']';
-                $this->line .= '{' . implode(',', $type) . '}';
-                --$this->depth;
+                if (isset($key[0]) && "\0" === $key[0] && $cursor::HASH_ASSOC !== $cursor->hashType) {
+                    $key = implode(':', explode("\0", substr($key, 1), 2));
+                } elseif (isset(static::$reserved[$key]) || false !== strpos($key, ':')) {
+                    $key = ':'.$key;
+                }
             }
 
-            if ($this->position !== $startPosition) $this->dumpLine(1);
-
-            $this->line .= '}';
+            $this->line .= $this->encodeString($key).': ';
         }
+        if (false !== $cursor->refIndex) {
+            $this->refsPos[$cursor->refIndex] = $this->position;
+        }
+        if (false !== $cursor->refTo) {
+            $ref = $this->refsPos[$cursor->refTo];
+            if ($cursor->refIsHard) {
+                $this->refs[$ref][] = $this->position;
+                $ref = 'R`'.$this->position.':'.$ref;
+            } else {
+                $this->refs[$ref][] = -$this->position;
+                $ref = 'r`'.$this->position.':'.$ref;
+            }
+            $this->line .= $this->encodeString($ref);
+            $this->endLine($cursor);
+
+            return true;
+        }
+    }
+
+    protected function dumpLine($depth)
+    {
+        parent::dumpLine($depth);
+
+        if (false === $depth) {
+            $this->refsPos = array();
+            $this->refs = array();
+            $this->position = 0;
+        }
+    }
+
+    protected function endLine(Cursor $cursor)
+    {
+        if (1 < $cursor->hashLength - $cursor->hashIndex) {
+            $this->line .= ',';
+        } elseif (1 == $cursor->depth && $this->refs) {
+            $this->line .= ',';
+            $this->dumpLine($cursor->depth);
+            $this->line .= '"__refs": '.json_encode($this->refs);
+        }
+        $this->dumpLine($cursor->depth);
     }
 }

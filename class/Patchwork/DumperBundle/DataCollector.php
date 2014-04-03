@@ -28,7 +28,7 @@ class DataCollector extends BaseDataCollector
         $this->data['dumps'] = array();
     }
 
-    public function walk(&$var)
+    public function walk($var)
     {
         $this->stopwatch and $this->stopwatch->start('dump');
 

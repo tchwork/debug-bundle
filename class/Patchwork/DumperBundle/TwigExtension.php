@@ -66,7 +66,7 @@ class TwigExtension extends \Twig_Extension
 
             return $lines;
         } else {
-            dump($vars);
+            debug($vars);
 
             return '';
         }

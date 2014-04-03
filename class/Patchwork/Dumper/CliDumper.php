@@ -1,34 +1,19 @@
-<?php // vi: set fenc=utf-8 ts=4 sw=4 et:
-/*
- * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the (at your option):
- * Apache License v2.0 (http://apache.org/licenses/LICENSE-2.0.txt), or
- * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
- */
+<?php
 
 namespace Patchwork\Dumper;
 
 /**
  * CliDumper dumps variable for command line output.
  */
-class CliDumper extends DepthFirstDumper
+class CliDumper extends AbstractDumper implements DumperInterface
 {
-    public
+    public static $defaultColors = null;
+    public static $defaultOutputStream = 'php://stderr';
 
-    $colors = null,
-    $maxString = 10000,
-    $maxStringWidth = 120;
+    public $colors = null;
+    public $maxStringWidth = 0;
 
-    public static
-
-    $defaultColors = null,
-    $defaultOutputStream = 'php://stderr';
-
-    protected
-
-    $styles = array(
+    protected $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '1;38;5;33',
         'const'     => '1;38;5;33',
@@ -43,12 +28,11 @@ class CliDumper extends DepthFirstDumper
     );
 
 
-    public function __construct($outputStream = null, array $defaultCasters = null)
+    public function __construct($outputStream = null)
     {
-        parent::__construct($outputStream, $defaultCasters);
+        parent::__construct($outputStream);
 
-        if (! isset($this->colors) && ! isset($outputStream))
-        {
+        if (!isset($this->colors) && !isset($outputStream)) {
             isset(static::$defaultColors) or static::$defaultColors = $this->supportsColors();
             $this->colors = static::$defaultColors;
         }
@@ -59,270 +43,214 @@ class CliDumper extends DepthFirstDumper
         $this->styles = $styles + $this->styles;
     }
 
-    protected function dumpRef($isSoft, $position, $info)
+    public function dumpScalar(Cursor $cursor, $type, $val)
     {
-        if (parent::dumpRef($isSoft, $position, $info)) return true;
-
-        if (! $position || $position === $this->position)
-        {
-            $this->line .= $this->style('ref', ($isSoft ? '@' : '#') . $this->position);
-        }
-        else
-        {
-            if (null === $info) $note = '';
-            else if (isset($info['object_hash'])) $note = $info['object_class'] . ' ';
-            else if (isset($info['resource_id'])) $note = 'resource:' . $info['resource_type'] . ' ';
-            else $note = 'array ';
-
-            $this->line .= $this->style('note', $note . ($isSoft ? '@' : '&') . $position);
+        if ('string' === $type) {
+            return $this->dumpString($cursor, $val, false, 0);
         }
 
-        return false;
-    }
+        $this->dumpKey($cursor);
 
-    protected function dumpScalar($val)
-    {
-        if (is_int($val))
-        {
-            $s = 'num';
-            $v = $val;
+        if (false !== $cursor->refTo) {
+            $this->line .= $this->style('note', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
         }
-        else if (is_float($val))
-        {
-            $s = 'num';
 
-            switch (true)
-            {
-            case INF === $val:  $v = 'INF';  break;
-            case -INF === $val: $v = '-INF'; break;
-            case is_nan($val):  $v = 'NAN';  break;
-            default:
-                $v = sprintf('%.14E', $val);
-                $val = sprintf('%.17E', $val);
-                $v = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $v === (float) $val ? $v : $val);
+        $style = 'const';
+
+        switch ($type)
+        {
+            case 'int':
+                $style = 'num';
                 break;
-            }
-        }
-        else
-        {
-            $s = 'const';
 
-            switch (true)
-            {
-            case null === $val:  $v = 'null';  break;
-            case true === $val:  $v = 'true';  break;
-            case false === $val: $v = 'false'; break;
-            default: $v = (string) $val; break;
-            }
+            case 'float':
+                $style = 'num';
+
+                switch (true) {
+                    case INF === $val:  $val = 'INF';  break;
+                    case -INF === $val: $val = '-INF'; break;
+                    case is_nan($val):  $val = 'NAN';  break;
+                    default:
+                        $v = sprintf('%.14E', $val);
+                        $val = sprintf('%.17E', $val);
+                        $val = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $v === (float) $val ? $v : $val);
+                        break;
+                }
+                break;
+
+            case 'NULL':
+                $val = 'null';
+                break;
+
+            case 'boolean':
+                $val = $val ? 'true' : 'false';
+                break;
         }
 
-        $this->line .= $this->style($s, $v);
+        $this->line .= $this->style($style, $val);
+        if (false !== $cursor->refIndex) {
+            $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
+        }
+        $this->dumpLine($cursor->depth);
     }
 
-    protected function dumpString($str, $isKey, $style = null)
+    public function dumpString(Cursor $cursor, $str, $bin, $cut)
     {
-        if ($isKey)
-        {
-            $isKey = $this->hashPosition === $this->position;
+        $this->dumpKey($cursor);
 
-            if ('__cutBy' === $str)
-            {
-                if (! $isKey) $this->dumpLine(0);
-                else $this->line .= ' ';
-                $this->line .= '…';
-
-                return;
-            }
-
-            $isKey = $isKey && ! isset($this->depthLimited[$this->position]);
-            $this->dumpLine(-$isKey);
-            $isKey = ': ';
-
-            if (is_int($str))
-            {
-                $this->line .= $this->style('num', $str) . $isKey;
-
-                return;
-            }
-
-            $str = explode(':', $str, 2);
-
-            if (isset($str[1]))
-            {
-                if (! isset($style))
-                {
-                    switch ($str[0])
-                    {
-                    case '':  $style = 'public';    break;
-                    case '*': $style = 'protected'; break;
-                    case '~': $style = 'meta';      break;
-                    default:  $style = 'private';   break;
-                    }
-                }
-
-                $str = $str[1];
-            }
-            else
-            {
-                $str = $str[0];
-                isset($style) or $style = 'public';
-            }
+        if (false !== $cursor->refTo) {
+            $this->line .= $this->style('note', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
         }
-        else $isKey = '';
 
         if ('' === $str) {
-            $this->line .= "''" . $isKey;
-
-            return;
-        }
-
-        isset($style) or $style = 'str';
-
-        if ($bin = ! preg_match('//u', $str))
-        {
-            $str = utf8_encode($str);
-        }
-
-        if (0 < $this->maxString && $this->maxString < $len = iconv_strlen($str, 'UTF-8'))
-        {
-            $str = iconv_substr($str, 0, $this->maxString - 1, 'UTF-8');
-            $cutBy = $len - $this->maxString + 1;
-        }
-        else $cutBy = 0;
-
-        if ($this->maxLength > 0)
-        {
-            $str = explode("\n", $str, $this->maxLength + 1);
-            if (isset($str[$this->maxLength]))
-            {
-                $cutBy += iconv_strlen($str[$this->maxLength], 'UTF-8');
-                $str[$this->maxLength] = '';
+            $this->line .= "''";
+            if (false !== $cursor->refIndex) {
+                $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
             }
-        }
-        else $str = explode("\n", $str);
+            $this->dumpLine($cursor->depth);
+        } else {
+            $str = explode("\n", $str);
+            $m = count($str) - 1;
+            $i = 0;
 
-        $x = isset($str[1]);
-        $i = $len = 0;
-
-        foreach ($str as $str)
-        {
-            if ($isKey ? $i++ : $x)
-            {
-                $this->dumpLine(0);
-                $isKey or $this->line .= '  ';
-            }
-
-            $len = iconv_strlen($str, 'UTF-8');
-
-            if (0 < $this->maxStringWidth && $this->maxStringWidth < $len)
-            {
-                $str = iconv_substr($str, 0, $this->maxStringWidth - 1, 'UTF-8');
-                $str = $this->style($style, $str) . '…';
-                $cutBy += $len - $this->maxStringWidth + 1;
-            }
-            else
-            {
-                $str = $this->style($style, $str);
-            }
-
-            if ($bin)
-            {
-                if (' ' === substr($this->line, -1))
-                {
-                    $this->line = substr_replace($this->line, 'b' . $str, -1);
+            if ($m) {
+                if (false !== $cursor->refIndex) {
+                    $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
                 }
-                else
-                {
-                    $this->line .= 'b' . $str;
+                $this->dumpLine($cursor->depth);
+            }
+
+            foreach ($str as $str) {
+
+                if (0 < $this->maxStringWidth && $this->maxStringWidth < $len = iconv_strlen($str, 'UTF-8')) {
+                    $str = iconv_substr($str, 0, $this->maxStringWidth - 1, 'UTF-8');
+                    $str = $this->style('str', $str).'…';
+                } else {
+                    $str = $this->style('str', $str);
                 }
+
+                if ($bin) {
+                    if ($m) {
+                        $this->line .= ' b'.$str;
+                    } elseif (' ' === substr($this->line, -1)) {
+                        $this->line = substr_replace($this->line, 'b'.$str, -1);
+                    } else {
+                        $this->line .= 'b'.$str;
+                    }
+                } elseif ($m) {
+                    $this->line .= '  '.$str;
+                } else {
+                    $this->line .= $str;
+                }
+
+                if ($i == $m) {
+                    if ($cut) {
+                        if (0 >= $this->maxStringWidth || $this->maxStringWidth >= $len) {
+                            $this->line .= '…';
+                        }
+                        $this->line .= $cut;
+                    }
+                    if (false !== $cursor->refIndex) {
+                        $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
+                    }
+                }
+
+                $this->dumpLine($cursor->depth);
             }
-            else $this->line .= $str;
         }
-
-        if ($cutBy)
-        {
-            if (0 >= $this->maxStringWidth || $this->maxStringWidth >= $len)
-            {
-                $this->line .= '…';
-            }
-
-            $this->dumpScalar($cutBy);
-        }
-
-        $this->line .= $isKey;
     }
 
-    protected function dumpHash($type, &$array, $len)
+    public function enterArray(Cursor $cursor, $count, $cut, $indexed)
     {
-        $isArray = 'array' === $type;
+        $this->enterHash($cursor, '[');
+    }
 
-        if (empty($array) && $isArray) $this->line .= '[]';
-        else
-        {
-            if ($isArray)
-            {
-                $this->line .= '[';
-                //$this->dumpString($len, false, 'note');
+    public function leaveArray(Cursor $cursor, $count, $cut, $indexed)
+    {
+        $this->leaveHash($cursor, $cut, ']');
+    }
+
+    public function enterObject(Cursor $cursor, $class, $cut)
+    {
+        $this->enterHash($cursor, $this->style('note', $class).'{');
+    }
+
+    public function leaveObject(Cursor $cursor, $class, $cut)
+    {
+        $this->leaveHash($cursor, $cut, '}');
+    }
+
+    public function enterResource(Cursor $cursor, $res, $cut)
+    {
+        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{');
+    }
+
+    public function leaveResource(Cursor $cursor, $res, $cut)
+    {
+        $this->leaveHash($cursor, $cut, '}');
+    }
+
+    protected function enterHash(Cursor $cursor, $prefix)
+    {
+        $this->dumpKey($cursor);
+
+        $this->line .= $prefix;
+        if (false !== $cursor->refTo) {
+            $this->line .= $this->style('ref', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
+        } elseif ($cursor->dumpedChildren) {
+            if (false !== $cursor->refIndex) {
+                $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
             }
-            else
-            {
-                $this->dumpString($type, false, 'note');
-                $this->line .= '{';
+            $this->dumpLine($cursor->depth);
+        }
+    }
+
+    protected function leaveHash(Cursor $cursor, $cut, $suffix)
+    {
+        if ($cut) {
+            $this->line .= '…';
+            if (0 < $cut) {
+                $this->line .= $cut;
             }
+        }
+        $this->line .= $suffix;
+        if (false !== $cursor->refIndex && !$cursor->dumpedChildren) {
+            $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
+        }
+        $this->dumpLine($cursor->depth);
+    }
 
-            $this->line .= ' ' . $this->style('ref', "#$this->position");
+    protected function dumpKey(Cursor $cursor)
+    {
+        if (null !== $key = $cursor->hashKey) {
+            switch ($cursor->hashType) {
+                case $cursor::HASH_INDEXED:
+                    return;
 
-            $startPosition = $this->position;
-            $refs = parent::dumpHash($type, $array, $len);
-            if ($this->position !== $startPosition) $this->dumpLine(1);
+                case $cursor::HASH_ASSOC:
+                    $style = 'meta';
+                    break;
 
-            $this->line .= $isArray ? ']' : '}';
+                default:
+                case $cursor::HASH_OBJECT:
+                case $cursor::HASH_RESOURCE:
+                    if (!isset($key[0]) || "\0" !== $key[0]) {
+                        $style = 'public';
+                    } else {
+                        $key = explode("\0", substr($key, 1), 3);
 
-            if ($refs)
-            {
-                $col1 = 0;
-                $type = array();
-
-                foreach ($refs as $k => $v)
-                {
-                    if (isset($this->valPool[$k]))
-                    {
-                        $v = $this->valPool[$k];
-                        $type[$k] = gettype($v);
-
-                        switch ($type[$k])
-                        {
-                        case 'object': $type[$k] = get_class($v); break;
-                        case 'unknown type':
-                        case 'resource': $type[$k] = 'resource:' . get_resource_type($v); break;
+                        switch ($key[0]) {
+                            case '~': $style = 'meta';      break;
+                            case '*': $style = 'protected'; break;
+                            default:  $style = 'private';   break;
                         }
 
-                        $col1 = max($col1, strlen($type[$k]));
+                        $key = $key[1];
                     }
-                }
-
-                $col2 = strlen($this->position);
-
-                foreach ($refs as $k => $v)
-                {
-                    $this->dumpLine(0);
-
-                    $this->line .= str_repeat(' ', $col2 - strlen($k));
-                    $this->line .= $this->style('ref', "#$k");
-
-                    if ($col1)
-                    {
-                        $this->line .= sprintf(" % -{$col1}s", isset($type[$k]) ? $type[$k] : 'array');
-                    }
-
-                    $this->line .= ':';
-
-                    foreach ($v as $v)
-                    {
-                        $this->line .= ' ' . $this->style('note', $v < 0 ? '&' . -$v : "@$v");
-                    }
-                }
+                    break;
             }
+
+            $this->line .= $this->style($style, $key).': ';
         }
     }
 
@@ -330,12 +258,11 @@ class CliDumper extends DepthFirstDumper
     {
         isset($this->colors) or $this->colors = $this->supportsColors();
 
-        if (! $this->colors) return $val;
+        if (!$this->colors) {
+            return $val;
+        }
 
-        switch ($style)
-        {
-        case 'str':
-        case 'public':
+        if ('str' === $style || 'public' === $style) {
             static $cchr = array(
                 "\x1B", // ESC must be the first
                 "\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07",
@@ -344,10 +271,8 @@ class CliDumper extends DepthFirstDumper
                 "\x18", "\x19", "\x1A", "\x1C", "\x1D", "\x1E", "\x1F", "\x7F",
             );
 
-            foreach ($cchr as $c)
-            {
-                if (false !== strpos($val, $c))
-                {
+            foreach ($cchr as $c) {
+                if (false !== strpos($val, $c)) {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
                     $r = "\e[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\e[m";
                     $r = "\e[m{$r}\e[{$this->styles[$style]}m";
@@ -361,42 +286,40 @@ class CliDumper extends DepthFirstDumper
 
     protected function supportsColors()
     {
-        if (isset($_SERVER['argv'][1]))
-        {
+        if (isset($_SERVER['argv'][1])) {
             $colors = $_SERVER['argv'];
             $i = count($colors);
-            while (--$i > 0)
-            {
-                if (isset($colors[$i][5]))
-                switch ($colors[$i])
-                {
-                case '--ansi':
-                case '--color':
-                case '--color=yes':
-                case '--color=force':
-                case '--color=always':
-                    return true;
+            while (--$i > 0) {
+                if (isset($colors[$i][5])) {
+                    switch ($colors[$i]) {
+                        case '--ansi':
+                        case '--color':
+                        case '--color=yes':
+                        case '--color=force':
+                        case '--color=always':
+                            return true;
 
-                case '--no-ansi':
-                case '--color=no':
-                case '--color=none':
-                case '--color=never':
-                    return false;
+                        case '--no-ansi':
+                        case '--color=no':
+                        case '--color=none':
+                        case '--color=never':
+                            return false;
+                    }
                 }
             }
         }
 
-        if (null !== static::$defaultColors) return static::$defaultColors;
+        if (null !== static::$defaultColors) {
+            return static::$defaultColors;
+        }
 
-        if (empty($this->outputStream)) return false;
-
-        $this->lastErrorMessage = true;
+        if (empty($this->outputStream)) {
+            return false;
+        }
 
         $colors = DIRECTORY_SEPARATOR === '\\'
-            ? (false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
-            : (function_exists('posix_isatty') && posix_isatty($this->outputStream));
-
-        $this->lastErrorMessage = false;
+            ? @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
+            : @(function_exists('posix_isatty') && posix_isatty($this->outputStream));
 
         return $colors;
     }
