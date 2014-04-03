@@ -12,7 +12,7 @@ namespace Patchwork\Dumper\Caster;
 
 class DoctrineCaster
 {
-    static function castCommonProxy(\Doctrine\Common\Proxy\Proxy $p, array $a)
+    public static function castCommonProxy(\Doctrine\Common\Proxy\Proxy $p, array $a)
     {
         unset(
             $a['__cloner__'],
@@ -23,7 +23,7 @@ class DoctrineCaster
         return $a;
     }
 
-    static function castOrmProxy(\Doctrine\ORM\Proxy\Proxy $p, array $a)
+    public static function castOrmProxy(\Doctrine\ORM\Proxy\Proxy $p, array $a)
     {
         $p = "\0" . get_class($p) . "\0";
         unset(

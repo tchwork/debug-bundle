@@ -15,10 +15,8 @@ use Patchwork\Dumper\ThrowingCasterException;
 
 class ExceptionCaster
 {
-    static public
-
-    $traceArgs = true,
-    $errorTypes = array(
+    public static $traceArgs = true;
+    public static $errorTypes = array(
         E_DEPRECATED => 'E_DEPRECATED',
         E_USER_DEPRECATED => 'E_USER_DEPRECATED',
         E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
@@ -36,41 +34,47 @@ class ExceptionCaster
         E_STRICT => 'E_STRICT',
     );
 
-    static function castException(\Exception $e, array $a)
+    public static function castException(\Exception $e, array $a)
     {
         $trace = $a["\0Exception\0trace"];
         unset($a["\0Exception\0trace"]); // Ensures the trace is always last
 
         static::filterTrace($trace, $e instanceof InDepthException ? $e->traceOffset : 0, static::$traceArgs);
 
-        if (isset($trace)) $a["\0Exception\0trace"] = $trace;
-        if (empty($a["\0Exception\0previous"])) unset($a["\0Exception\0previous"]);
+        if (isset($trace)) {
+            $a["\0Exception\0trace"] = $trace;
+        }
+        if (empty($a["\0Exception\0previous"])) {
+            unset($a["\0Exception\0previous"]);
+        }
         unset($a["\0Exception\0string"], $a['xdebug_message'], $a['__destructorException']);
 
         return $a;
     }
 
-    static function castErrorException(\ErrorException $e, array $a)
+    public static function castErrorException(\ErrorException $e, array $a)
     {
-        if (isset($a[$s = "\0*\0severity"], self::$errorTypes[$a[$s]])) $a[$s] = self::$errorTypes[$a[$s]];
+        if (isset($a[$s = "\0*\0severity"], self::$errorTypes[$a[$s]])) {
+            $a[$s] = self::$errorTypes[$a[$s]];
+        }
 
         return $a;
     }
 
-    static function castInDepthException(InDepthException $e, array $a)
+    public static function castInDepthException(InDepthException $e, array $a)
     {
         unset($a['traceOffset']);
 
-        if (! isset($a['context'])) unset($a['context']);
-        else if (isset($a["\0Exception\0trace"]['seeHash']))
-        {
+        if (!isset($a['context'])) {
+            unset($a['context']);
+        } elseif (isset($a["\0Exception\0trace"]['seeHash'])) {
             $a['context'] = $a["\0Exception\0trace"];
         }
 
         return $a;
     }
 
-    static function castThrowingCasterException(ThrowingCasterException $e, array $a)
+    public static function castThrowingCasterException(ThrowingCasterException $e, array $a)
     {
         $b = (array) $a["\0Exception\0previous"];
 
@@ -90,31 +94,33 @@ class ExceptionCaster
 
         unset($a["\0Exception\0trace"], $a["\0Exception\0previous"], $a["\0*\0code"], $a["\0*\0file"], $a["\0*\0line"]);
 
-
         return $a;
     }
 
-    static function filterTrace(&$trace, $offset, $dumpArgs)
+    public static function filterTrace(&$trace, $offset, $dumpArgs)
     {
         if (0 > $offset || empty($trace[$offset])) return $trace = null;
 
         $t = $trace[$offset];
 
-        if (empty($t['class']) && isset($t['function']))
-            if ('user_error' === $t['function'] || 'trigger_error' === $t['function'])
+        if (empty($t['class']) && isset($t['function'])) {
+            if ('user_error' === $t['function'] || 'trigger_error' === $t['function']) {
                 ++$offset;
+            }
+        }
 
-        $offset && array_splice($trace, 0, $offset);
+        $offset and array_splice($trace, 0, $offset);
 
-        foreach ($trace as &$t)
-        {
+        foreach ($trace as &$t) {
             $t = array(
                 'call' => (isset($t['class']) ? $t['class'] . $t['type'] : '') . $t['function'] . '()',
                 'file' => isset($t['line']) ? "{$t['file']}:{$t['line']}" : '',
                 'args' => &$t['args'],
             );
 
-            if (! isset($t['args']) || ! $dumpArgs) unset($t['args']);
+            if (!isset($t['args']) || !$dumpArgs) {
+                unset($t['args']);
+            }
         }
     }
 }

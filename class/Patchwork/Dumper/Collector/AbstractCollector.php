@@ -6,9 +6,7 @@ use Patchwork\Dumper\Exception\ThrowingCasterException;
 
 abstract class AbstractCollector implements CollectorInterface
 {
-    static
-
-    $defaultCasters = array(
+    public static $defaultCasters = array(
         'o:Closure'        => 'Patchwork\Dumper\Caster\BaseCaster::castClosure',
         'o:Doctrine\Common\Proxy\Proxy'
                            => 'Patchwork\Dumper\Caster\DoctrineCaster::castCommonProxy',
@@ -37,8 +35,8 @@ abstract class AbstractCollector implements CollectorInterface
         'r:stream'         => 'Patchwork\Dumper\Caster\BaseCaster::castStream',
     );
 
-    protected $maxItems = 500;
-    protected $maxString = 5000;
+    public $maxItems = 500;
+    public $maxString = 5000;
 
     private $casters = array();
     private $data = array(array(null));

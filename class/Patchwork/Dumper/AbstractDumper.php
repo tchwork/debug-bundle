@@ -4,7 +4,10 @@ namespace Patchwork\Dumper;
 
 abstract class AbstractDumper
 {
-    static $defaultOutputStream = 'php://output';
+    public static $defaultOutputStream = 'php://output';
+
+    public $maxItems;
+    public $maxString;
 
     protected $line = '';
     protected $lineDumper = array(__CLASS__, 'echoLine');
@@ -26,6 +29,9 @@ abstract class AbstractDumper
         $this->collector = extension_loaded('symfony_debug')
             ? new Collector\SymfonyCollector()
             : new Collector\PhpCollector();
+
+        $this->maxItems =& $this->collector->maxItems;
+        $this->maxString =& $this->collector->maxString;
     }
 
     public function addCaster(array $casters)

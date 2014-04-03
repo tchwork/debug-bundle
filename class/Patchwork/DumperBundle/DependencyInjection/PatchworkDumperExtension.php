@@ -26,19 +26,15 @@ class PatchworkDumperExtension extends Extension
         $loader->load('services.xml');
 
         $container->getDefinition('patchwork.dumper.json')
-            ->setProperty('maxLength',         $config['max_length'])
-            ->setProperty('maxString',         $config['max_string']);
+            ->setProperty('maxItems',  $config['max_items'])
+            ->setProperty('maxString', $config['max_string']);
 
         $container->getDefinition('patchwork.dumper.html')
-            ->setProperty('maxLength',         $config['max_length'])
-            ->setProperty('maxDepth',          $config['max_depth'])
-            ->setProperty('maxString',         $config['max_string'])
-            ->setProperty('maxStringWidth',    $config['max_string_width']);
+            ->setProperty('maxItems',  $config['max_items'])
+            ->setProperty('maxString', $config['max_string']);
 
         $container->getDefinition('patchwork.dumper.cli')
-            ->setProperty('maxLength',         $config['max_length'])
-            ->setProperty('maxDepth',          $config['max_depth'])
-            ->setProperty('maxString',         $config['max_string'])
-            ->setProperty('maxStringWidth',    $config['max_string_width']);
+            ->setProperty('maxItems',  $config['max_items'])
+            ->setProperty('maxString', $config['max_string']);
     }
 }

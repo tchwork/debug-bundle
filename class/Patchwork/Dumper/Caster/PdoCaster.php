@@ -15,7 +15,7 @@ use PDOStatement;
 
 class PdoCaster
 {
-    static $pdoAttributes = array(
+    public static $pdoAttributes = array(
         'CASE' => array(
             PDO::CASE_LOWER => 'LOWER',
             PDO::CASE_NATURAL => 'NATURAL',
@@ -52,27 +52,24 @@ class PdoCaster
         ),
     );
 
-    static function castPdo(PDO $c, array $a)
+    public static function castPdo(PDO $c, array $a)
     {
         $a = array();
         $errmode = $c->getAttribute(PDO::ATTR_ERRMODE);
         $c->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        foreach (self::$pdoAttributes as $attr => $values)
-        {
-            if (! isset($attr[0]))
-            {
+        foreach (self::$pdoAttributes as $attr => $values) {
+            if (!isset($attr[0])) {
                 $attr = $values;
                 $values = array();
             }
 
-            try
-            {
+            try {
                 $a[$attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
-                if (isset($values[$a[$attr]])) $a[$attr] = $values[$a[$attr]];
-            }
-            catch (\Exception $m)
-            {
+                if (isset($values[$a[$attr]])) {
+                    $a[$attr] = $values[$a[$attr]];
+                }
+            } catch (\Exception $m) {
             }
         }
 
@@ -84,22 +81,29 @@ class PdoCaster
             $m . 'attributes' => $a,
         );
 
-        if ($a[$m . 'inTransaction']) $a[$m . 'inTransaction'] = $c->inTransaction();
-        else unset($a[$m . 'inTransaction']);
+        if ($a[$m . 'inTransaction']) {
+            $a[$m . 'inTransaction'] = $c->inTransaction();
+        } else {
+            unset($a[$m . 'inTransaction']);
+        }
 
-        if (! isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
+        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) {
+            unset($a[$m . 'errorInfo']);
+        }
 
         $c->setAttribute(PDO::ATTR_ERRMODE, $errmode);
 
         return $a;
     }
 
-    static function castPdoStatement(PDOStatement $c, array $a)
+    public static function castPdoStatement(PDOStatement $c, array $a)
     {
         $m = "\0~\0";
 
         $a[$m . 'errorInfo'] = $c->errorInfo();
-        if (! isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) unset($a[$m . 'errorInfo']);
+        if (!isset($a[$m . 'errorInfo'][1], $a[$m . 'errorInfo'][2])) {
+            unset($a[$m . 'errorInfo']);
+        }
 
         return $a;
     }

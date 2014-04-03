@@ -12,14 +12,14 @@ namespace Patchwork\Dumper\Caster;
 
 class SplCaster
 {
-    static function castIterator(\Iterator $c, array $a)
+    public static function castIterator(\Iterator $c, array $a)
     {
         $a = array_merge($a, iterator_to_array($c));
 
         return $a;
     }
 
-    static function castSplDoublyLinkedList(\SplDoublyLinkedList $c, array $a)
+    public static function castSplDoublyLinkedList(\SplDoublyLinkedList $c, array $a)
     {
         $mode = $c->getIteratorMode();
         $c->setIteratorMode(\SplDoublyLinkedList::IT_MODE_KEEP | $mode & ~\SplDoublyLinkedList::IT_MODE_DELETE);
@@ -29,17 +29,16 @@ class SplCaster
         return $a;
     }
 
-    static function castSplFixedArray(\SplFixedArray $c, array $a)
+    public static function castSplFixedArray(\SplFixedArray $c, array $a)
     {
         $a = array_merge($a, $c->toArray());
 
         return $a;
     }
 
-    static function castSplObjectStorage(\SplObjectStorage $c, array $a)
+    public static function castSplObjectStorage(\SplObjectStorage $c, array $a)
     {
-        foreach ($c as $k => $obj)
-        {
+        foreach ($c as $k => $obj) {
             $a[$k] = $obj;
             if (null !== $i = $c->getInfo()) $a["\0~\0$k"] = $i;
         }

@@ -17,7 +17,7 @@ use ReflectionMethod;
 
 class ReflectionCaster
 {
-    static function castReflectionClass(ReflectionClass $c, array $a)
+    public static function castReflectionClass(ReflectionClass $c, array $a)
     {
         $a = array();
 
@@ -36,23 +36,23 @@ class ReflectionCaster
         return $a;
     }
 
-    static function castReflectionFunctionAbstract(ReflectionFunctionAbstract $c, array $a)
+    public static function castReflectionFunctionAbstract(ReflectionFunctionAbstract $c, array $a)
     {
         $a = array();
 
-        foreach ($c->getParameters() as $p)
-        {
+        foreach ($c->getParameters() as $p) {
             $n = strstr($p->__toString(), '>');
             $n = substr($n, 2, strpos($n, ' = ') - 2);
 
-            try
-            {
-                if (strpos($n, ' or NULL ')) $a[str_replace(' or NULL', '', $n)] = null;
-                else if ($p->isDefaultValueAvailable()) $a[$n] = $p->getDefaultValue();
-                else $a[] = $n;
-            }
-            catch (\ReflectionException $p)
-            {
+            try {
+                if (strpos($n, ' or NULL ')) {
+                    $a[str_replace(' or NULL', '', $n)] = null;
+                } elseif ($p->isDefaultValueAvailable()) {
+                    $a[$n] = $p->getDefaultValue();
+                } else {
+                    $a[] = $n;
+                }
+            } catch (\ReflectionException $p) {
                 // This will be reached on PHP 5.3.16 because of https://bugs.php.net/62715
                 $a[] = $n;
             }
@@ -62,19 +62,29 @@ class ReflectionCaster
             "\0~\0returnsRef" => true,
             "\0~\0args" => $a,
         );
-        if (!$c->returnsReference()) unset($a["\0~\0returnsRef"]);
+        if (!$c->returnsReference()) {
+            unset($a["\0~\0returnsRef"]);
+        }
         $a["\0~\0use"] = array();
 
-        if (false === $a["\0~\0file"] = $c->getFileName()) unset($a["\0~\0file"]);
-        else $a["\0~\0lines"] = $c->getStartLine() . '-' . $c->getEndLine();
+        if (false === $a["\0~\0file"] = $c->getFileName()) {
+            unset($a["\0~\0file"]);
+        } else {
+            $a["\0~\0lines"] = $c->getStartLine() . '-' . $c->getEndLine();
+        }
 
-        if (!$c = $c->getStaticVariables()) unset($a["\0~\0use"]);
-        else foreach ($c as $p => &$c) $a["\0~\0use"]['$' . $p] =& $c;
+        if (!$c = $c->getStaticVariables()) {
+            unset($a["\0~\0use"]);
+        } else {
+            foreach ($c as $p => &$c) {
+                $a["\0~\0use"]['$' . $p] =& $c;
+            }
+        }
 
         return $a;
     }
 
-    static function castReflectionMethod(ReflectionMethod $c, array $a)
+    public static function castReflectionMethod(ReflectionMethod $c, array $a)
     {
         $a["\0~\0modifiers"] = implode(' ', Reflection::getModifierNames($c->getModifiers()));
 

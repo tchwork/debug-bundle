@@ -30,13 +30,16 @@ class DataCollector extends BaseDataCollector
 
     public function walk($var)
     {
-        $this->stopwatch and $this->stopwatch->start('dump');
+        $this->stopwatch and $this->stopwatch->start('debug');
 
         $dumper = $this->container->get('patchwork.dumper.json');
 
         $trace = PHP_VERSION_ID >= 50306 ? DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS : true;
-        if (PHP_VERSION_ID >= 50400) $trace = debug_backtrace($trace, 6);
-        else $trace = debug_backtrace($trace);
+        if (PHP_VERSION_ID >= 50400) {
+            $trace = debug_backtrace($trace, 6);
+        } else {
+            $trace = debug_backtrace($trace);
+        }
 
         $file = false;
         $excerpt = false;
@@ -59,7 +62,7 @@ class DataCollector extends BaseDataCollector
 
             $excerpt = '<ol start="' . max($line - 3, 1) . '">' . implode("\n", $excerpt) . '</ol>';
         } else {
-            if (isset($trace[3]['function']) && 'dump' === $trace[3]['function'] && empty($trace[3]['class'])) {
+            if (isset($trace[3]['function']) && 'debug' === $trace[3]['function'] && empty($trace[3]['class'])) {
                 $file = $trace[3]['file'];
                 $line = $trace[3]['line'];
             } else {
@@ -80,7 +83,7 @@ class DataCollector extends BaseDataCollector
 
         $this->data['dumps'][] = compact('json', 'name', 'file', 'line', 'excerpt');
 
-        $this->stopwatch and $this->stopwatch->stop('dump');
+        $this->stopwatch and $this->stopwatch->stop('debug');
     }
 
     public function setLineDumper()

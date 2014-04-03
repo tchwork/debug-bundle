@@ -12,14 +12,14 @@ namespace Patchwork\Dumper\Caster;
 
 class BaseCaster
 {
-    static function castReflector(\Reflector $c, array $a)
+    public static function castReflector(\Reflector $c, array $a)
     {
         $a["\0~\0reflection"] = $c->__toString();
 
         return $a;
     }
 
-    static function castClosure(\Closure $c, array $a)
+    public static function castClosure(\Closure $c, array $a)
     {
         $a = static::castReflector(new \ReflectionFunction($c), $a);
         unset($a[0], $a['name']);
@@ -27,7 +27,7 @@ class BaseCaster
         return $a;
     }
 
-    static function castDba($dba, array $a)
+    public static function castDba($dba, array $a)
     {
         $list = dba_list();
         $a['file'] = $list[substr((string) $dba, 13)];
@@ -35,17 +35,17 @@ class BaseCaster
         return $a;
     }
 
-    static function castProcess($process, array $a)
+    public static function castProcess($process, array $a)
     {
         return proc_get_status($process);
     }
 
-    static function castStream($stream, array $a)
+    public static function castStream($stream, array $a)
     {
         return stream_get_meta_data($stream);
     }
 
-    static function castGd($gd, array $a)
+    public static function castGd($gd, array $a)
     {
         $a['size'] = imagesx($gd) . 'x' . imagesy($gd);
         $a['trueColor'] = imageistruecolor($gd);
@@ -53,7 +53,7 @@ class BaseCaster
         return $a;
     }
 
-    static function castMysqlLink($h, array $a)
+    public static function castMysqlLink($h, array $a)
     {
         $a['host'] = mysql_get_host_info($h);
         $a['protocol'] = mysql_get_proto_info($h);

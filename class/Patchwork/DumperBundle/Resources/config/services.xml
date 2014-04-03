@@ -25,22 +25,18 @@
         </service>
 
         <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%">
-            <property name="maxLength" />
+            <property name="maxItems" />
             <property name="maxString" />
         </service>
 
         <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%">
-            <property name="maxLength" />
-            <property name="maxDepth" />
+            <property name="maxItems" />
             <property name="maxString" />
-            <property name="maxStringWidth" />
         </service>
 
         <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%">
-            <property name="maxLength" />
-            <property name="maxDepth" />
+            <property name="maxItems" />
             <property name="maxString" />
-            <property name="maxStringWidth" />
         </service>
     </services>
 
