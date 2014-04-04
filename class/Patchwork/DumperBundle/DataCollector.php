@@ -10,6 +10,8 @@
 
 namespace Patchwork\DumperBundle;
 
+use Patchwork\Dumper\Collector\Data;
+use Patchwork\Dumper\JsonDumper;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector as BaseDataCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,15 +30,13 @@ class DataCollector extends BaseDataCollector
         $this->data['dumps'] = array();
     }
 
-    public function walk($var)
+    public function dump(Data $data)
     {
         $this->stopwatch and $this->stopwatch->start('debug');
 
-        $dumper = $this->container->get('patchwork.dumper.json');
-
         $trace = PHP_VERSION_ID >= 50306 ? DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS : true;
         if (PHP_VERSION_ID >= 50400) {
-            $trace = debug_backtrace($trace, 6);
+            $trace = debug_backtrace($trace, 5);
         } else {
             $trace = debug_backtrace($trace);
         }
@@ -44,9 +44,9 @@ class DataCollector extends BaseDataCollector
         $file = false;
         $excerpt = false;
 
-        if (isset($trace[5]['object']) && $trace[5]['object'] instanceof \Twig_Template) {
-            $line = $trace[4]['line'];
-            $trace = $trace[5]['object'];
+        if (isset($trace[4]['object']) && $trace[4]['object'] instanceof \Twig_Template) {
+            $line = $trace[3]['line'];
+            $trace = $trace[4]['object'];
 
             $name = $trace->getTemplateName();
             $src = $trace->getEnvironment()->getLoader()->getSource($name);
@@ -62,9 +62,9 @@ class DataCollector extends BaseDataCollector
 
             $excerpt = '<ol start="' . max($line - 3, 1) . '">' . implode("\n", $excerpt) . '</ol>';
         } else {
-            if (isset($trace[3]['function']) && 'debug' === $trace[3]['function'] && empty($trace[3]['class'])) {
-                $file = $trace[3]['file'];
-                $line = $trace[3]['line'];
+            if (isset($trace[2]['function']) && 'debug' === $trace[2]['function'] && empty($trace[2]['class'])) {
+                $file = $trace[2]['file'];
+                $line = $trace[2]['line'];
             } else {
                 $file = $trace[0]['file'];
                 $line = $trace[0]['line'];
@@ -74,14 +74,7 @@ class DataCollector extends BaseDataCollector
             $name = strncasecmp($file, $name, strlen($name)) ? $file : substr($file, strlen($name));
         }
 
-        $json = '';
-        $lineDumper = $dumper->setLineDumper(function ($line, $depth) use (&$json) {
-            $json .= $line;
-        });
-        $dumper->walk($var);
-        $dumper->setLineDumper($lineDumper);
-
-        $this->data['dumps'][] = compact('json', 'name', 'file', 'line', 'excerpt');
+        $this->data['dumps'][] = compact('data', 'name', 'file', 'line', 'excerpt');
 
         $this->stopwatch and $this->stopwatch->stop('debug');
     }
@@ -96,7 +89,17 @@ class DataCollector extends BaseDataCollector
 
     public function getDumps()
     {
-        return $this->data['dumps'];
+        $dumper = new JsonDumper();
+        $dumps = array();
+
+        foreach ($this->data['dumps'] as $dump) {
+            $json = '';
+            $dumper->dump($dump['data'], function ($line) use (&$json) {$json .= $line;});
+            $dump['json'] = $json;
+            $dumps[] = $dump;
+        }
+
+        return $dumps;
     }
 
     public function getName()

@@ -88,10 +88,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
 
         $this->line .= $this->style($style, $val);
-        if (false !== $cursor->refIndex) {
-            $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-        }
-        $this->dumpLine($cursor->depth);
+        $this->endLine($cursor);
     }
 
     public function dumpString(Cursor $cursor, $str, $bin, $cut)
@@ -104,20 +101,14 @@ class CliDumper extends AbstractDumper implements DumperInterface
 
         if ('' === $str) {
             $this->line .= "''";
-            if (false !== $cursor->refIndex) {
-                $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-            }
-            $this->dumpLine($cursor->depth);
+            $this->endLine($cursor);
         } else {
             $str = explode("\n", $str);
             $m = count($str) - 1;
             $i = 0;
 
             if ($m) {
-                if (false !== $cursor->refIndex) {
-                    $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-                }
-                $this->dumpLine($cursor->depth);
+                $this->endLine($cursor);
             }
 
             foreach ($str as $str) {
@@ -150,12 +141,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
                         }
                         $this->line .= $cut;
                     }
-                    if (false !== $cursor->refIndex) {
-                        $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-                    }
                 }
 
-                $this->dumpLine($cursor->depth);
+                $this->endLine($cursor, !$m);
             }
         }
     }
@@ -198,10 +186,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
         if (false !== $cursor->refTo) {
             $this->line .= $this->style('ref', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
         } elseif ($cursor->dumpedChildren) {
-            if (false !== $cursor->refIndex) {
-                $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-            }
-            $this->dumpLine($cursor->depth);
+            $this->endLine($cursor);
         }
     }
 
@@ -214,10 +199,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
             }
         }
         $this->line .= $suffix;
-        if (false !== $cursor->refIndex && !$cursor->dumpedChildren) {
-            $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
-        }
-        $this->dumpLine($cursor->depth);
+        $this->endLine($cursor, !$cursor->dumpedChildren);
     }
 
     protected function dumpKey(Cursor $cursor)
@@ -251,6 +233,17 @@ class CliDumper extends AbstractDumper implements DumperInterface
             }
 
             $this->line .= $this->style($style, $key).': ';
+        }
+    }
+
+    protected function endLine(Cursor $cursor, $showRef = true)
+    {
+        if ($showRef && false !== $cursor->refIndex && !$cursor->dumpedChildren) {
+            $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
+        }
+        $this->dumpLine($cursor->depth);
+        if (0 == $cursor->depth && 1 >= $cursor->hashLength - $cursor->hashIndex) {
+            $this->dumpLine(false);
         }
     }
 

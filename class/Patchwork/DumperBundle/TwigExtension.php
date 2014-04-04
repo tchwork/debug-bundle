@@ -15,13 +15,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class TwigExtension extends \Twig_Extension
 {
-    private $dumper;
-
-    public function __construct(HtmlDumper $dumper = null)
-    {
-        $this->dumper = $dumper;
-    }
-
     public function getFunctions()
     {
         return array(
@@ -54,21 +47,8 @@ class TwigExtension extends \Twig_Extension
             $vars = array_slice(func_get_args(), 2);
         }
 
-        if ($this->dumper) {
-            $lines = '';
-            $prevDumper = $this->dumper->setLineDumper(function ($line, $depth) use (&$lines) {
-                $lines .= str_repeat('  ', $depth) . $line . "\n";
+        debug($vars);
 
-            });
-
-            $this->dumper->walk($vars);
-            $this->dumper->setLineDumper($prevDumper);
-
-            return $lines;
-        } else {
-            debug($vars);
-
-            return '';
-        }
+        return '';
     }
 }

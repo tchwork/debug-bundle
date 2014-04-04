@@ -6,14 +6,9 @@ abstract class AbstractDumper
 {
     public static $defaultOutputStream = 'php://output';
 
-    public $maxItems;
-    public $maxString;
-
     protected $line = '';
     protected $lineDumper = array(__CLASS__, 'echoLine');
     protected $outputStream;
-
-    private $collector;
 
     public function __construct($outputStream = null)
     {
@@ -25,18 +20,6 @@ abstract class AbstractDumper
             $this->outputStream = $outputStream;
             $this->setLineDumper(array($this, 'echoLine'));
         }
-
-        $this->collector = extension_loaded('symfony_debug')
-            ? new Collector\SymfonyCollector()
-            : new Collector\PhpCollector();
-
-        $this->maxItems =& $this->collector->maxItems;
-        $this->maxString =& $this->collector->maxString;
-    }
-
-    public function addCaster(array $casters)
-    {
-        $this->collector->addCasters($casters);
     }
 
     public function setLineDumper($callback)
@@ -47,18 +30,11 @@ abstract class AbstractDumper
         return $prev;
     }
 
-    public static function dump($var)
+    public function dump(Collector\Data $data, $lineDumper = null)
     {
-        $dumper = new static;
-        $dumper->walk($var);
-    }
-
-    public function walk($var)
-    {
-        $c = new CollectorDumper($this->collector, $this);
-        $c->dump($var);
-        '' !== $this->line && $this->dumpLine(0);
-        $this->dumpLine(false); // Notifies end of dump
+        isset($lineDumper) and $lineDumper = $this->setLineDumper($lineDumper);
+        $data->dump($this);
+        isset($lineDumper) and $this->setLineDumper($lineDumper);
     }
 
     protected function dumpLine($depth)

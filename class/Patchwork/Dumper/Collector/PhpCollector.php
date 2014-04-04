@@ -123,7 +123,7 @@ class PhpCollector extends AbstractCollector
                                 unset($arrayRefs[$len]);
                                 continue;
                             }
-                        } elseif (0 == $maxItems) {
+                        } elseif (-1 == $maxItems) {
                             $maxItems = $pos = count($a);
                         }
                         $queue[$len] = $a;

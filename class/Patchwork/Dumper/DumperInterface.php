@@ -4,6 +4,7 @@ namespace Patchwork\Dumper;
 
 interface DumperInterface
 {
+    public function dump(Collector\Data $data);
     public function dumpScalar(Cursor $cursor, $type, $value);
     public function dumpString(Cursor $cursor, $str, $bin, $cut);
     public function enterArray(Cursor $cursor, $count, $cut, $indexed);

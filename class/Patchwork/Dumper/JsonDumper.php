@@ -119,7 +119,7 @@ class JsonDumper extends AbstractDumper implements DumperInterface
             return;
         }
 
-        $this->line .= '{"_":"'.$this->position.':'.$type;
+        $this->line .= '{"_":"'.$this->position.':'.$type.'"';
         if ($cursor->dumpedChildren) {
             $this->line .= ',';
             $this->dumpLine($cursor->depth);
@@ -130,9 +130,6 @@ class JsonDumper extends AbstractDumper implements DumperInterface
     {
         if (false !== $cursor->refTo) {
             return;
-        }
-        if ($cut) {
-            $this->line .= ',"_cutBy": '.$cut;
         }
         $this->line .= $suffix;
         $this->endLine($cursor);
@@ -216,13 +213,25 @@ class JsonDumper extends AbstractDumper implements DumperInterface
 
     protected function endLine(Cursor $cursor)
     {
+        $depth = $cursor->depth;
+
         if (1 < $cursor->hashLength - $cursor->hashIndex) {
             $this->line .= ',';
-        } elseif (1 == $cursor->depth && $this->refs) {
-            $this->line .= ',';
-            $this->dumpLine($cursor->depth);
-            $this->line .= '"__refs": '.json_encode($this->refs);
+        } else {
+            if ($cursor->hashCut) {
+                $this->line .= ',';
+                $this->dumpLine($depth);
+                $this->line .= '"__cutBy": '.$cursor->hashCut;
+            }
+            if (1 == $depth && $this->refs) {
+                $this->line .= ',';
+                $this->dumpLine($depth);
+                $this->line .= '"__refs": '.json_encode($this->refs);
+            } elseif (0 == $depth) {
+                $this->dumpLine($depth);
+                $depth = false;
+            }
         }
-        $this->dumpLine($cursor->depth);
+        $this->dumpLine($depth);
     }
 }

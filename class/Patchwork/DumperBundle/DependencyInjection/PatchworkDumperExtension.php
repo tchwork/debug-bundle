@@ -25,15 +25,7 @@ class PatchworkDumperExtension extends Extension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
 
-        $container->getDefinition('patchwork.dumper.json')
-            ->setProperty('maxItems',  $config['max_items'])
-            ->setProperty('maxString', $config['max_string']);
-
-        $container->getDefinition('patchwork.dumper.html')
-            ->setProperty('maxItems',  $config['max_items'])
-            ->setProperty('maxString', $config['max_string']);
-
-        $container->getDefinition('patchwork.dumper.cli')
+        $container->getDefinition('patchwork.dumper.collector')
             ->setProperty('maxItems',  $config['max_items'])
             ->setProperty('maxString', $config['max_string']);
     }

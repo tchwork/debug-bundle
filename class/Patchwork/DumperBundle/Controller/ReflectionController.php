@@ -10,6 +10,7 @@
 
 namespace Patchwork\DumperBundle\Controller;
 
+use Patchwork\Dumper\Collector\PhpCollector;
 use Patchwork\Dumper\JsonDumper;
 use Patchwork\Dumper\Caster\ReflectionCaster;
 use ReflectionClass;
@@ -28,14 +29,9 @@ class ReflectionController extends Controller
      */
     public function classAction(Request $request)
     {
-        $class = new ReflectionClass($request->get('class', 'appDevDebugProjectContainer'));
-
         $json = '';
-
-        $dumper = new JsonDumper(function ($line, $depth) use (&$json) {
-            $json .= str_repeat('  ', $depth) . $line . "\n";
-        });
-
+        $class = new ReflectionClass($request->get('class', 'appDevDebugProjectContainer'));
+        $dumper = new PhpCollector();
         $dumper->addCasters(
             array(
                 'o:ReflectionClass' => 'Patchwork\Dumper\Caster\ReflectionCaster::castReflectionClass',
@@ -44,7 +40,11 @@ class ReflectionController extends Controller
             )
         );
 
-        $dumper->walk($class);
+        $data = $dumper->collect($class);
+        $dumper = new JsonDumper();
+        $dumper->dump($data, function ($line, $depth) use (&$json) {
+            $json .= str_repeat('  ', $depth) . $line . "\n";
+        });
 
         return new Response($json);
     }

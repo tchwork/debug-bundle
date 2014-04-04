@@ -7,11 +7,11 @@ namespace Patchwork\Dumper;
  */
 class HtmlDumper extends CliDumper
 {
+    public static $defaultOutputStream = 'php://output';
+
     public $colors = true;
     public $dumpPrefix;
     public $dumpSuffix;
-
-    public static $defaultOutputStream = 'php://output';
 
     protected $lastDepth = -1;
     protected $styles = array(
@@ -79,12 +79,12 @@ class HtmlDumper extends CliDumper
     protected function dumpLine($depth)
     {
         switch ($this->lastDepth - $depth) {
-            case +1: $this->line = '</span>' . $this->line; break;
+            case +1: $this->line = '</span>'.$this->line; break;
             case -1: $this->line = "<span class=patchwork-dumper-$depth>$this->line"; break;
         }
 
         if (-1 === $this->lastDepth) {
-            $this->line = $this->dumpPrefix . $this->line;
+            $this->line = $this->dumpPrefix.$this->line;
         }
 
         if (false === $depth) {

@@ -25,7 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('max_items')
                     ->min(0)
                     ->defaultValue(500)
-                    ->info('Max number of dumped elements, all levels included, -1 means no limit, 0 only first level')
+                    ->info('Max number of dumped elements, all levels included, 0 means no limit, -1 only first level')
                 ->end()
                 ->integerNode('max_string')
                     ->min(0)

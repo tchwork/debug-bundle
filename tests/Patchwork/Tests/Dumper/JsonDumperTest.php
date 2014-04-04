@@ -2,6 +2,7 @@
 
 namespace Patchwork\Tests\Dumper;
 
+use Patchwork\Dumper\Collector\PhpCollector;
 use Patchwork\Dumper\JsonDumper;
 
 class JsonDumperTest extends \PHPUnit_Framework_TestCase
@@ -32,15 +33,18 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $v['snobj'] =& $v['nobj'][0];
         $v['snobj2'] = $v['nobj'][0];
 
+        $dumper = new JsonDumper();
+        $collector = new PhpCollector();
+        $data = $collector->collect($v);
+
         $json = array();
-        $dumper = new JsonDumper(function ($line, $depth) use (&$json) {
-            $json[] = str_repeat('  ', $depth) . $line;
+        $dumper->dump($data, function ($line, $depth) use (&$json) {
+            $json[] = str_repeat('  ', $depth).$line;
         });
-        $dumper->walk($v);
         $json = implode("\n", $json);
 
         $this->assertSame(
-'{"_":"1:array:23,
+'{"_":"1:array:23",
   "number": 1,
   "n`0": 1.1,
   "const": null,
@@ -53,7 +57,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "str": "déjà",
   "n`7": "b`é",
   "[]": [],
-  "res": {"_":"14:resource:stream,
+  "res": {"_":"14:resource:stream",
     "~:wrapper_type": "plainfile",
     "~:stream_type": "dir",
     "~:mode": "r",
@@ -63,14 +67,14 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "~:blocked": true,
     "~:eof": false
   },
-  "n`8": {"_":"23:resource:Unknown},
-  "obj": {"_":"24:stdClass},
-  "closure": {"_":"25:Closure,
-    "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\Dumper\\\\{closure} ] {\n  @@ '.__FILE__.' 22 - 22\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
+  "n`8": {"_":"23:resource:Unknown"},
+  "obj": {"_":"24:stdClass"},
+  "closure": {"_":"25:Closure",
+    "~:reflection": "Closure [ <user> public method Patchwork\\\\Tests\\\\Dumper\\\\{closure} ] {\n  @@ '.__FILE__.' '.$v['line'].' - '.$v['line'].'\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
   },
-  "line": 22,
+  "line": '.$v['line'].',
   "nobj": [
-    {"_":"29:stdClass}
+    {"_":"29:stdClass"}
   ],
   "recurs": [
     "R`31:30"

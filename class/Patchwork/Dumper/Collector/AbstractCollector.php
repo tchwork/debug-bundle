@@ -79,7 +79,7 @@ abstract class AbstractCollector implements CollectorInterface
         restore_error_handler();
         $this->prevErrorHandler = null;
 
-        return $data;
+        return new Data($data);
     }
 
     abstract protected function doCollect($var);
