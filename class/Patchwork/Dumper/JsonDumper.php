@@ -200,15 +200,13 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         }
     }
 
-    protected function dumpLine($depth)
+    public function dumpEnd()
     {
-        parent::dumpLine($depth);
+        $this->refsPos = array();
+        $this->refs = array();
+        $this->position = 0;
 
-        if (false === $depth) {
-            $this->refsPos = array();
-            $this->refs = array();
-            $this->position = 0;
-        }
+        parent::dumpEnd();
     }
 
     protected function endLine(Cursor $cursor)
@@ -227,11 +225,9 @@ class JsonDumper extends AbstractDumper implements DumperInterface
                 $this->line .= ',';
                 $this->dumpLine($depth);
                 $this->line .= '"__refs": '.json_encode($this->refs);
-            } elseif (0 == $depth) {
-                $this->dumpLine($depth);
-                $depth = false;
             }
         }
+
         $this->dumpLine($depth);
     }
 }

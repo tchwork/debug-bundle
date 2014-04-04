@@ -32,9 +32,18 @@ abstract class AbstractDumper
 
     public function dump(Collector\Data $data, $lineDumper = null)
     {
-        isset($lineDumper) and $lineDumper = $this->setLineDumper($lineDumper);
-        $data->dump($this);
-        isset($lineDumper) and $this->setLineDumper($lineDumper);
+        $dumper = clone $this;
+        $dumper->setLineDumper($lineDumper);
+        $data->dump($dumper);
+    }
+
+    public function dumpStart()
+    {
+    }
+
+    public function dumpEnd()
+    {
+        $this->dumpLine(false);
     }
 
     protected function dumpLine($depth)

@@ -238,13 +238,10 @@ class CliDumper extends AbstractDumper implements DumperInterface
 
     protected function endLine(Cursor $cursor, $showRef = true)
     {
-        if ($showRef && false !== $cursor->refIndex && !$cursor->dumpedChildren) {
+        if ($showRef && false !== $cursor->refIndex) {
             $this->line .= ' '.$this->style('ref', '#'.$cursor->refIndex);
         }
         $this->dumpLine($cursor->depth);
-        if (0 == $cursor->depth && 1 >= $cursor->hashLength - $cursor->hashIndex) {
-            $this->dumpLine(false);
-        }
     }
 
     protected function style($style, $val)

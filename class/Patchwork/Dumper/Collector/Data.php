@@ -23,7 +23,9 @@ class Data
     public function dump(DumperInterface $dumper)
     {
         $refs = array(0);
+        $dumper->dumpStart();
         $this->dumpItem($dumper, new Cursor, $refs, $this->data[0][0]);
+        $dumper->dumpEnd();
     }
 
     protected function dumpItem($dumper, $cursor, &$refs, $item)
