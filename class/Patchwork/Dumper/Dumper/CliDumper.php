@@ -1,6 +1,6 @@
 <?php
 
-namespace Patchwork\Dumper;
+namespace Patchwork\Dumper\Dumper;
 
 /**
  * CliDumper dumps variable for command line output.
@@ -10,9 +10,8 @@ class CliDumper extends AbstractDumper implements DumperInterface
     public static $defaultColors = null;
     public static $defaultOutputStream = 'php://stderr';
 
-    public $colors = null;
-    public $maxStringWidth = 0;
-
+    protected $colors = null;
+    protected $maxStringWidth = 0;
     protected $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '1;38;5;33',
@@ -27,7 +26,6 @@ class CliDumper extends AbstractDumper implements DumperInterface
         'meta'      => '38;5;27',
     );
 
-
     public function __construct($outputStream = null)
     {
         parent::__construct($outputStream);
@@ -36,6 +34,16 @@ class CliDumper extends AbstractDumper implements DumperInterface
             isset(static::$defaultColors) or static::$defaultColors = $this->supportsColors();
             $this->colors = static::$defaultColors;
         }
+    }
+
+    public function setColors($colors)
+    {
+        $this->colors = !!$colors;
+    }
+
+    public function setMaxStringWidth($maxStringWidth)
+    {
+        $this->maxStringWidth = (int) $maxStringWidth;
     }
 
     public function setStyles(array $styles)
@@ -57,13 +65,12 @@ class CliDumper extends AbstractDumper implements DumperInterface
 
         $style = 'const';
 
-        switch ($type)
-        {
+        switch ($type) {
             case 'int':
                 $style = 'num';
                 break;
 
-            case 'float':
+            case 'double':
                 $style = 'num';
 
                 switch (true) {
@@ -148,49 +155,49 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
-    public function enterArray(Cursor $cursor, $count, $cut, $indexed)
+    public function enterArray(Cursor $cursor, $count, $indexed, $children, $cut)
     {
-        $this->enterHash($cursor, '[');
+        $this->enterHash($cursor, '[', $children);
     }
 
-    public function leaveArray(Cursor $cursor, $count, $cut, $indexed)
+    public function leaveArray(Cursor $cursor, $count, $indexed, $children, $cut)
     {
-        $this->leaveHash($cursor, $cut, ']');
+        $this->leaveHash($cursor, ']', $children, $cut);
     }
 
-    public function enterObject(Cursor $cursor, $class, $cut)
+    public function enterObject(Cursor $cursor, $class, $children, $cut)
     {
-        $this->enterHash($cursor, $this->style('note', $class).'{');
+        $this->enterHash($cursor, $this->style('note', $class).'{', $children);
     }
 
-    public function leaveObject(Cursor $cursor, $class, $cut)
+    public function leaveObject(Cursor $cursor, $class, $children, $cut)
     {
-        $this->leaveHash($cursor, $cut, '}');
+        $this->leaveHash($cursor, '}', $children, $cut);
     }
 
-    public function enterResource(Cursor $cursor, $res, $cut)
+    public function enterResource(Cursor $cursor, $res, $children, $cut)
     {
-        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{');
+        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{', $children);
     }
 
-    public function leaveResource(Cursor $cursor, $res, $cut)
+    public function leaveResource(Cursor $cursor, $res, $children, $cut)
     {
-        $this->leaveHash($cursor, $cut, '}');
+        $this->leaveHash($cursor, '}', $children, $cut);
     }
 
-    protected function enterHash(Cursor $cursor, $prefix)
+    protected function enterHash(Cursor $cursor, $prefix, $children)
     {
         $this->dumpKey($cursor);
 
         $this->line .= $prefix;
         if (false !== $cursor->refTo) {
             $this->line .= $this->style('ref', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
-        } elseif ($cursor->dumpedChildren) {
+        } elseif ($children) {
             $this->endLine($cursor);
         }
     }
 
-    protected function leaveHash(Cursor $cursor, $cut, $suffix)
+    protected function leaveHash(Cursor $cursor, $suffix, $children, $cut)
     {
         if ($cut) {
             $this->line .= '…';
@@ -199,7 +206,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
             }
         }
         $this->line .= $suffix;
-        $this->endLine($cursor, !$cursor->dumpedChildren);
+        $this->endLine($cursor, !$children);
     }
 
     protected function dumpKey(Cursor $cursor)
@@ -209,17 +216,16 @@ class CliDumper extends AbstractDumper implements DumperInterface
                 case $cursor::HASH_INDEXED:
                     return;
 
+                case $cursor::HASH_RESOURCE:
                 case $cursor::HASH_ASSOC:
                     $style = 'meta';
                     break;
 
-                default:
                 case $cursor::HASH_OBJECT:
-                case $cursor::HASH_RESOURCE:
                     if (!isset($key[0]) || "\0" !== $key[0]) {
                         $style = 'public';
                     } else {
-                        $key = explode("\0", substr($key, 1), 3);
+                        $key = explode("\0", substr($key, 1), 2);
 
                         switch ($key[0]) {
                             case '~': $style = 'meta';      break;

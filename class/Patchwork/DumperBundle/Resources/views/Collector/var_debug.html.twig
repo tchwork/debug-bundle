@@ -1,29 +1,30 @@
-{% extends 'WebProfilerBundle:Profiler:layout.html.twig' %}
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
 
 {% block toolbar %}
-
     {% set dumps_count = collector.dumps|length %}
 
-    {% set icon %}
-        <img alt="debug()" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAt1BMVEUAAAANDQ0AAAAhISESEhIAAABEREQAAAAAAAAQEBAAAAAAAAAFBQUMDAwVFRU2NjYJCQkGBgYNDQ0AAAA+Pj5FRUUuLi4QEBAuLi41NTUICAgFBQUAAAAAAAA6Ojo+Pj4jIyMJCQkEBAQAAAATExMqKipAQEAbGxssLCwAAAA6OjoKCgodHR0fHx89PT0ZGRlKSkpOTk5PT09dXV1SUlJaWlpYWFhGRkZVVVVERERiYmJUVFRISEj7yUYlAAAAOHRSTlMAahiweAX4AgFvCAo4Y4TjUyxmKO773HLO3EQ2JBHv/bRYOw59xPWW0B/5T56o5o7//////////vCDrPIAAAGKSURBVCjPbVPneoMwDBQrQPYgjCxSMpu2qQcz8fs/V22RfDSl+oGFzrKl0xl+mQP7zAUb/jPb2X3eTjunjWJCz7h9dQH+wo4DoE8GEY8GEx1/X9ImrlFxfue8Y7gTjDTYW5Txe3jNrmHJs2jcoHLVCk6NqT7ke326ZbwaPFFH5hWZN90BmNwFWGteNh+rOCbORrn3AdBFUJY79vJoBXadqOU0kJtsBOUCJs0HElFN6dv80JVBC0zJkCXRXpgb6/rWlaAaKEMQzaXFu2KlvxiWXmJbliXvzAPoSs9OvHK4WMKIEpqyeUcZOZgHgp5gKSXiAVKiLA3NMEWPIojHpsfpst/vJ7NT+T1LpLfUjqk8FgsqxLOg8lFQQCpVELbCVCsgW0ld+VWtMGwFSWAikLseoCJBMCShpo9tavrSAOnbMB/pq4mP6UZTxDMkfkNjJP45sphWamRMjayiMY6sGbZPqDiPyOgsKPFx2K8yuRAiCLnUMmkLzCd+I7CWNEkjzbaoRVvUzXOoXp7DD5aJLSEAGSFlAAAAAElFTkSuQmCC" />
-        <span class="sf-toolbar-status{% if dumps_count > 0 %} sf-toolbar-status-green{% endif %}">{{ dumps_count }}</span>
-    {% endset %}
     {% if dumps_count %}
-    {% set text %}
-        <div class="sf-toolbar-info-piece">
-            <b>debug()</b>
-            <ul>
-                {% for dump in collector.dumps %}
-                <li>
-                in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
-                on line {{ dump.line }}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endset %}
+        {% set icon %}
+            <img alt="debug()" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAt1BMVEUAAAANDQ0AAAAhISESEhIAAABEREQAAAAAAAAQEBAAAAAAAAAFBQUMDAwVFRU2NjYJCQkGBgYNDQ0AAAA+Pj5FRUUuLi4QEBAuLi41NTUICAgFBQUAAAAAAAA6Ojo+Pj4jIyMJCQkEBAQAAAATExMqKipAQEAbGxssLCwAAAA6OjoKCgodHR0fHx89PT0ZGRlKSkpOTk5PT09dXV1SUlJaWlpYWFhGRkZVVVVERERiYmJUVFRISEj7yUYlAAAAOHRSTlMAahiweAX4AgFvCAo4Y4TjUyxmKO773HLO3EQ2JBHv/bRYOw59xPWW0B/5T56o5o7//////////vCDrPIAAAGKSURBVCjPbVPneoMwDBQrQPYgjCxSMpu2qQcz8fs/V22RfDSl+oGFzrKl0xl+mQP7zAUb/jPb2X3eTjunjWJCz7h9dQH+wo4DoE8GEY8GEx1/X9ImrlFxfue8Y7gTjDTYW5Txe3jNrmHJs2jcoHLVCk6NqT7ke326ZbwaPFFH5hWZN90BmNwFWGteNh+rOCbORrn3AdBFUJY79vJoBXadqOU0kJtsBOUCJs0HElFN6dv80JVBC0zJkCXRXpgb6/rWlaAaKEMQzaXFu2KlvxiWXmJbliXvzAPoSs9OvHK4WMKIEpqyeUcZOZgHgp5gKSXiAVKiLA3NMEWPIojHpsfpst/vJ7NT+T1LpLfUjqk8FgsqxLOg8lFQQCpVELbCVCsgW0ld+VWtMGwFSWAikLseoCJBMCShpo9tavrSAOnbMB/pq4mP6UZTxDMkfkNjJP45sphWamRMjayiMY6sGbZPqDiPyOgsKPFx2K8yuRAiCLnUMmkLzCd+I7CWNEkjzbaoRVvUzXOoXp7DD5aJLSEAGSFlAAAAAElFTkSuQmCC" />
+            <span class="sf-toolbar-status{% if dumps_count > 0 %} sf-toolbar-status-yellow{% endif %}">{{ dumps_count }}</span>
+        {% endset %}
+
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>debug()</b>
+                <ul>
+                    {% for dump in collector.dumps %}
+                    <li>
+                    in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
+                    on line {{ dump.line }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endset %}
+
+        {% include '@WebProfiler/Profiler/toolbar_item.html.twig' with { 'link': true } %}
     {% endif %}
-    {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': true } %}
 {% endblock %}
 
 {% block head %}
@@ -45,10 +46,10 @@
 {% block panel %}
     <h2>debug()</h2>
 
-    <link rel="stylesheet" href="{{ asset('bundles/patchworkdumper/css/patchwork-dumper.css') }}" />
-    <script src="{{ asset('bundles/patchworkdumper/js/patchwork-dumper.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('bundles/patchworkdumper/css/var_debug.css') }}" />
+    <script src="{{ asset('bundles/patchworkdumper/js/var_debug.js') }}"></script>
 
-    <ul class="alt">
+    <ul id="var_debug" class="alt">
         {% for dump in collector.dumps %}
         <li class="dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}

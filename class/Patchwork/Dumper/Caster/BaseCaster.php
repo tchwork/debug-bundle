@@ -47,7 +47,7 @@ class BaseCaster
 
     public static function castGd($gd, array $a)
     {
-        $a['size'] = imagesx($gd) . 'x' . imagesy($gd);
+        $a['size'] = imagesx($gd).'x'.imagesy($gd);
         $a['trueColor'] = imageistruecolor($gd);
 
         return $a;

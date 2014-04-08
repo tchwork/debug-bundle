@@ -1,6 +1,6 @@
 <?php
 
-namespace Patchwork\Dumper;
+namespace Patchwork\Dumper\Dumper;
 
 /**
  * HtmlDumper dumps variable as HTML.
@@ -9,10 +9,10 @@ class HtmlDumper extends CliDumper
 {
     public static $defaultOutputStream = 'php://output';
 
-    public $colors = true;
     public $dumpPrefix;
     public $dumpSuffix;
 
+    protected $colors = true;
     protected $lastDepth = -1;
     protected $styles = array(
         'num'       => 'font-weight:bold;color:#0087FF',
@@ -27,7 +27,6 @@ class HtmlDumper extends CliDumper
         'meta'      => 'color:#005FFF',
     );
 
-
     public function __construct($outputStream = null)
     {
         parent::__construct($outputStream);
@@ -40,7 +39,7 @@ class HtmlDumper extends CliDumper
         $this->styles = $styles + $this->styles;
 
         $s = '';
-        $p = 'patchwork-dumper';
+        $p = 'sf-var-debug';
 
         foreach ($styles as $class => $style) {
             $s .= ".$p-$class{{$style}}";
@@ -68,19 +67,19 @@ class HtmlDumper extends CliDumper
                 foreach ($cchr as $c) {
                     if (false !== strpos($val, $c)) {
                         $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
-                        $val = str_replace($c, "<span class=patchwork-dumper-cchr>$r</span>", $val);
+                        $val = str_replace($c, "<span class=sf-var-debug-cchr>$r</span>", $val);
                     }
                 }
         }
 
-        return "<span class=patchwork-dumper-$style>$val</span>";
+        return "<span class=sf-var-debug-$style>$val</span>";
     }
 
     protected function dumpLine($depth)
     {
         switch ($this->lastDepth - $depth) {
             case +1: $this->line = '</span>'.$this->line; break;
-            case -1: $this->line = "<span class=patchwork-dumper-$depth>$this->line"; break;
+            case -1: $this->line = "<span class=sf-var-debug-$depth>$this->line"; break;
         }
 
         if (-1 === $this->lastDepth) {

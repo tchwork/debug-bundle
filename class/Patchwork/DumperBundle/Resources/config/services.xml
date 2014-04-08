@@ -6,11 +6,11 @@
 
     <parameters>
         <parameter key="patchwork.twig.dumper_extension.class">Patchwork\DumperBundle\TwigExtension</parameter>
-        <parameter key="patchwork.dumper.dataCollector.class">Patchwork\DumperBundle\DataCollector</parameter>
+        <parameter key="patchwork.data_collector.var_debug.class">Patchwork\DumperBundle\DataCollector</parameter>
         <parameter key="patchwork.dumper.collector.class">Patchwork\Dumper\Collector\PhpCollector</parameter>
-        <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\JsonDumper</parameter>
-        <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\HtmlDumper</parameter>
-        <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\CliDumper</parameter>
+        <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\Dumper\JsonDumper</parameter>
+        <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\Dumper\HtmlDumper</parameter>
+        <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\Dumper\CliDumper</parameter>
     </parameters>
 
     <services>
@@ -18,25 +18,16 @@
             <tag name="twig.extension" />
         </service>
 
-        <service id="patchwork.dumper.dataCollector" class="%patchwork.dumper.dataCollector.class%">
+        <service id="patchwork.data_collector.var_debug" class="%patchwork.data_collector.var_debug.class%">
             <argument type="service" id="service_container" />
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
-            <tag name="data_collector" template="PatchworkDumperBundle:Collector:patchwork.dumper" id="patchwork.dumper" />
+            <tag name="data_collector" template="@PatchworkDumper/Collector/var_debug.html.twig" id="var_debug" />
         </service>
 
-        <service id="patchwork.dumper.collector" class="%patchwork.dumper.collector.class%">
-            <property name="maxItems" />
-            <property name="maxString" />
-        </service>
-
-        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%">
-        </service>
-
-        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%">
-        </service>
-
-        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%">
-        </service>
+        <service id="patchwork.dumper.collector" class="%patchwork.dumper.collector.class%"/>
+        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%"/>
+        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%"/>
+        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%"/>
     </services>
 
 </container>

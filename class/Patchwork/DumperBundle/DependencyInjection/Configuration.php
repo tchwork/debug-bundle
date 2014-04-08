@@ -18,18 +18,18 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('patchwork_dumper');
+        $rootNode = $treeBuilder->root('var_debug');
 
         $rootNode
             ->children()
                 ->integerNode('max_items')
-                    ->min(0)
-                    ->defaultValue(500)
+                    ->min(-1)
+                    ->defaultValue(1000)
                     ->info('Max number of dumped elements, all levels included, 0 means no limit, -1 only first level')
                 ->end()
                 ->integerNode('max_string')
                     ->min(0)
-                    ->defaultValue(5000)
+                    ->defaultValue(10000)
                     ->info('Max length of dumped strings, 0 means no limit')
                 ->end()
             ->end();

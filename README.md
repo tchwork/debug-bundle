@@ -11,8 +11,8 @@ This package provides a better `debug()` function, that you can use instead of
 - configurable output format: HTML, command line with colors or [a dedicated high
   accuracy JSON format](doc/json-spec-en.md).
   More to come / add your own.
-- ablilty to dump internal references, either soft ones (objects or resources)
-  or hard ones (`=&` on arrays or objects properties). Repeated occurences of
+- ability to dump internal references, either soft ones (objects or resources)
+  or hard ones (`=&` on arrays or objects properties). Repeated occurrences of
   the same object/array/resource won't appear again and again anymore. Moreover,
   you'll be able to inspected the reference structure of your data.
 - ability to operate in the context of an output buffering handler.
@@ -28,21 +28,9 @@ command to install it:
 
     {
         "require": {
-            "patchwork/dumper": "1.0.*"
+            "patchwork/dumper": "1.*"
         }
     }
-
-Then, early in your bootstrap sequence, enable e.g. CLI output with colors:
-
-```php
-set_debug_handler(function ($var) {\Patchwork\Dumper\CliDumper::dump($var);});
-```
-
-or HTML mode with:
-
-```php
-set_debug_handler(function ($var) {\Patchwork\Dumper\HtmlDumper::dump($var);});
-```
 
 Then enjoy debugging with `debug($var)`.
 
@@ -56,7 +44,7 @@ For Symfony2 users, a bundle is also available. The bundle creates a `debug()`
 function that is available both in your PHP code and in your Twig templates.
 
 In console mode, variables are dumped on *stderr*. In web mode, variables are
-dumped in a new `Dumps` tab in the debug toolbar.
+dumped in a new `debug()` tab in the debug toolbar.
 
 Enabling only needs a line in your `app/AppKernel.php`:
 
@@ -77,7 +65,6 @@ Example
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
-set_debug_handler(function ($var) {Patchwork\Dumper\CliDumper::dump($var); echo "---\n";});
 
 $var = 1.0;
 debug($var);

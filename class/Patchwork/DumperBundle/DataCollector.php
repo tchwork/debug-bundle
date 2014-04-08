@@ -11,7 +11,7 @@
 namespace Patchwork\DumperBundle;
 
 use Patchwork\Dumper\Collector\Data;
-use Patchwork\Dumper\JsonDumper;
+use Patchwork\Dumper\Dumper\JsonDumper;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector as BaseDataCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,10 +57,10 @@ class DataCollector extends BaseDataCollector
             $excerpt = array();
 
             for ($i = max($line - 3, 1), $max = min($line + 3, count($src)); $i <= $max; $i++) {
-                $excerpt[] = '<li' . ($i === $line ? ' class="selected"' : '') . '><code>' . htmlspecialchars($src[$i - 1]) . '</code></li>';
+                $excerpt[] = '<li'.($i === $line ? ' class="selected"' : '').'><code>'.htmlspecialchars($src[$i - 1]).'</code></li>';
             }
 
-            $excerpt = '<ol start="' . max($line - 3, 1) . '">' . implode("\n", $excerpt) . '</ol>';
+            $excerpt = '<ol start="'.max($line - 3, 1).'">'.implode("\n", $excerpt).'</ol>';
         } else {
             if (isset($trace[2]['function']) && 'debug' === $trace[2]['function'] && empty($trace[2]['class'])) {
                 $file = $trace[2]['file'];
@@ -70,17 +70,13 @@ class DataCollector extends BaseDataCollector
                 $line = $trace[0]['line'];
             }
 
-            $name = dirname($this->container->get('kernel')->getRootDir()) . DIRECTORY_SEPARATOR;
+            $name = dirname($this->container->get('kernel')->getRootDir()).DIRECTORY_SEPARATOR;
             $name = strncasecmp($file, $name, strlen($name)) ? $file : substr($file, strlen($name));
         }
 
         $this->data['dumps'][] = compact('data', 'name', 'file', 'line', 'excerpt');
 
         $this->stopwatch and $this->stopwatch->stop('debug');
-    }
-
-    public function setLineDumper()
-    {
     }
 
     public function collect(Request $request, Response $response, \Exception $exception = null)
@@ -104,6 +100,6 @@ class DataCollector extends BaseDataCollector
 
     public function getName()
     {
-        return 'patchwork.dumper';
+        return 'var_debug';
     }
 }

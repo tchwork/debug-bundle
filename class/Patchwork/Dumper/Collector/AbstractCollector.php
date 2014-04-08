@@ -8,19 +8,21 @@ abstract class AbstractCollector implements CollectorInterface
 {
     public static $defaultCasters = array(
         'o:Closure'        => 'Patchwork\Dumper\Caster\BaseCaster::castClosure',
-        'o:Doctrine\Common\Proxy\Proxy'
-                           => 'Patchwork\Dumper\Caster\DoctrineCaster::castCommonProxy',
-        'o:Doctrine\ORM\Proxy\Proxy'
-                           => 'Patchwork\Dumper\Caster\DoctrineCaster::castOrmProxy',
+        'o:Reflector'      => 'Patchwork\Dumper\Caster\BaseCaster::castReflector',
+
+        'o:Doctrine\Common\Collections\Collection'
+                                        => 'Patchwork\Dumper\Caster\DoctrineCaster::castCollection',
+        'o:Doctrine\Common\Proxy\Proxy' => 'Patchwork\Dumper\Caster\DoctrineCaster::castCommonProxy',
+        'o:Doctrine\ORM\Proxy\Proxy'    => 'Patchwork\Dumper\Caster\DoctrineCaster::castOrmProxy',
+
         'o:ErrorException' => 'Patchwork\Dumper\Caster\ExceptionCaster::castErrorException',
         'o:Exception'      => 'Patchwork\Dumper\Caster\ExceptionCaster::castException',
-        'o:Patchwork\Debug\InDepthRecoverableErrorException'
-                           => 'Patchwork\Dumper\Caster\ExceptionCaster::castInDepthException',
-        'o:Patchwork\Dumper\ThrowingCasterException'
+        'o:Patchwork\Dumper\Exception\ThrowingCasterException'
                            => 'Patchwork\Dumper\Caster\ExceptionCaster::castThrowingCasterException',
+
         'o:PDO'            => 'Patchwork\Dumper\Caster\PdoCaster::castPdo',
         'o:PDOStatement'   => 'Patchwork\Dumper\Caster\PdoCaster::castPdoStatement',
-        'o:Reflector'      => 'Patchwork\Dumper\Caster\BaseCaster::castReflector',
+
         'o:SplDoublyLinkedList' => 'Patchwork\Dumper\Caster\SplCaster::castSplDoublyLinkedList',
         'o:SplFixedArray'       => 'Patchwork\Dumper\Caster\SplCaster::castSplFixedArray',
         'o:SplHeap'             => 'Patchwork\Dumper\Caster\SplCaster::castIterator',
@@ -35,13 +37,12 @@ abstract class AbstractCollector implements CollectorInterface
         'r:stream'         => 'Patchwork\Dumper\Caster\BaseCaster::castStream',
     );
 
-    public $maxItems = 500;
-    public $maxString = 5000;
+    protected $maxItems = 1000;
+    protected $maxString = 10000;
 
     private $casters = array();
     private $data = array(array(null));
     private $prevErrorHandler = null;
-
 
     public function __construct(array $defaultCasters = null)
     {
@@ -72,12 +73,13 @@ abstract class AbstractCollector implements CollectorInterface
         try {
             $data = $this->doCollect($var);
         } catch (\Exception $e) {
-            restore_error_handler();
-
-            throw $e;
         }
         restore_error_handler();
         $this->prevErrorHandler = null;
+
+        if (isset($e)) {
+            throw $e;
+        }
 
         return new Data($data);
     }
@@ -87,12 +89,9 @@ abstract class AbstractCollector implements CollectorInterface
     protected function castObject($class, $obj)
     {
         if (method_exists($obj, '__debugInfo')) {
-            $a = array();
-            if (!$this->callCaster(array($this, '__debugInfo'), $obj, $a)) {
-                $a = (array) $obj;
-            }
-        }
-        else {
+            $a = $this->callCaster(array($this, '__debugInfo'), $obj, array());
+            $a or $a = (array) $obj;
+        } else {
             $a = (array) $obj;
         }
 
@@ -104,7 +103,7 @@ abstract class AbstractCollector implements CollectorInterface
         foreach (array_reverse($p) as $p) {
             if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
                 foreach ($this->casters[$p] as $p) {
-                    $this->callCaster($p, $obj, $a);
+                    $a = $this->callCaster($p, $obj, $a);
                 }
             }
         }
@@ -115,38 +114,30 @@ abstract class AbstractCollector implements CollectorInterface
     protected function castResource($type, $res)
     {
         $a = array();
-        $b = array();
 
         if (!empty($this->casters['r:'.$type])) {
             foreach ($this->casters['r:'.$type] as $c) {
-                $this->callCaster($c, $res, $b);
+                $a = $this->callCaster($c, $res, $a);
             }
-        }
-
-        foreach ($b as $b => $c) {
-            if (0 !== strpos($b, "\0~\0")) {
-                $b = "\0~\0".$b;
-            }
-            $a[$b] = $c;
         }
 
         return $a;
     }
 
-    private function callCaster($callback, $obj, &$a)
+    private function callCaster($callback, $obj, $a)
     {
         try {
             // Ignore invalid $callback
-            $callback = @call_user_func($callback, $obj, $a);
+            $cast = @call_user_func($callback, $obj, $a);
 
-            if (is_array($callback)) {
-                $a = $callback;
-
-                return true;
+            if (is_array($cast)) {
+                $a = $cast;
             }
         } catch (\Exception $e) {
             $a["\0~\0⚠"] = new ThrowingCasterException($callback, $e);
         }
+
+        return $a;
     }
 
     /**
@@ -155,7 +146,7 @@ abstract class AbstractCollector implements CollectorInterface
     public function handleError($type, $msg, $file, $line, $context)
     {
         if (E_RECOVERABLE_ERROR === $type || E_USER_ERROR === $type) {
-            // Dumper never dies
+            // Collector never dies
             throw new \ErrorException($msg, 0, $type, $file, $line);
         }
 

@@ -8,8 +8,10 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-if (!function_exists('debug'))
-{
+use Patchwork\Dumper\Collector\PhpCollector;
+use Patchwork\Dumper\Dumper\CliDumper;
+
+if (!function_exists('debug')) {
     function debug($var)
     {
         static $reflector;
@@ -20,19 +22,32 @@ if (!function_exists('debug'))
 
         $h = $reflector->getStaticVariables();
 
-        if (isset($h['handler'])) {
-            return $h['handler']($var);
-        } else {
-            var_dump($var);
+        if (!isset($h['handler'])) {
+            if (class_exists('Patchwork\Dumper\Dumper\CliDumper')) {
+                $collector = new PhpCollector;
+                $dumper = new CliDumper;
+                $h['handler'] = function ($var) use ($collector, $dumper) {
+                    $dumper->dump($collector->collect($var));
+                };
+            } else {
+                $h['handler'] = 'var_dump';
+            }
+            set_debug_handler($h['handler']);
         }
+
+        return $h['handler']($var);
     }
 
-    function set_debug_handler(\Closure $closure)
+    function set_debug_handler($callable)
     {
         static $handler = null;
 
+        if (!is_callable($callable)) {
+            throw new \InvalidArgumentException('Invalid PHP callback.');
+        }
+
         $h = $handler;
-        $handler = $closure;
+        $handler = $callable;
 
         return $h;
     }

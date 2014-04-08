@@ -10,9 +10,13 @@
 
 namespace Patchwork\Dumper\Caster;
 
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Proxy\Proxy as CommonProxy;
+use Doctrine\ORM\Proxy\Proxy as OrmProxy;
+
 class DoctrineCaster
 {
-    public static function castCommonProxy(\Doctrine\Common\Proxy\Proxy $p, array $a)
+    public static function castCommonProxy(CommonProxy $p, array $a)
     {
         unset(
             $a['__cloner__'],
@@ -23,12 +27,19 @@ class DoctrineCaster
         return $a;
     }
 
-    public static function castOrmProxy(\Doctrine\ORM\Proxy\Proxy $p, array $a)
+    public static function castCollection(Collection $c, array $a)
     {
-        $p = "\0" . get_class($p) . "\0";
+        $a = array_merge($a, $c->toArray());
+
+        return $a;
+    }
+
+    public static function castOrmProxy(OrmProxy $p, array $a)
+    {
+        $p = "\0".get_class($p)."\0";
         unset(
-            $a[$p . '_entityPersister'],
-            $a[$p . '_identifier'],
+            $a[$p.'_entityPersister'],
+            $a[$p.'_identifier'],
             $a['__isInitialized__']
         );
 

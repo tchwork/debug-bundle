@@ -24,12 +24,12 @@ class TwigExtension extends \Twig_Extension
 
     public function getName()
     {
-        return 'patchwork_dumper';
+        return 'var_debug';
     }
 
     public function debug(\Twig_Environment $env, $context)
     {
-        if (! $env->isDebug()) {
+        if (!$env->isDebug()) {
             return;
         }
 
@@ -37,7 +37,7 @@ class TwigExtension extends \Twig_Extension
         if (2 === $count) {
             $vars = array();
             foreach ($context as $key => $value) {
-                if (! $value instanceof \Twig_Template) {
+                if (!$value instanceof \Twig_Template) {
                     $vars[$key] = $value;
                 }
             }

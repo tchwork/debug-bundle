@@ -1,6 +1,8 @@
 <?php
 
-namespace Patchwork\Dumper;
+namespace Patchwork\Dumper\Dumper;
+
+use Patchwork\Dumper\Collector\Data;
 
 abstract class AbstractDumper
 {
@@ -30,10 +32,10 @@ abstract class AbstractDumper
         return $prev;
     }
 
-    public function dump(Collector\Data $data, $lineDumper = null)
+    public function dump(Data $data, $lineDumper = null)
     {
         $dumper = clone $this;
-        $dumper->setLineDumper($lineDumper);
+        $lineDumper and $dumper->setLineDumper($lineDumper);
         $data->dump($dumper);
     }
 
@@ -54,6 +56,8 @@ abstract class AbstractDumper
 
     protected function echoLine($line, $depth)
     {
-        fwrite($this->outputStream, str_repeat('  ', $depth).$line."\n");
+        if (false !== $depth) {
+            fwrite($this->outputStream, str_repeat('  ', $depth).$line."\n");
+        }
     }
 }

@@ -40,10 +40,11 @@ class SplCaster
     {
         foreach ($c as $k => $obj) {
             $a[$k] = $obj;
-            if (null !== $i = $c->getInfo()) $a["\0~\0$k"] = $i;
+            if (null !== $i = $c->getInfo()) {
+                $a["\0~\0$k"] = $i;
+            }
         }
 
         return $a;
     }
 }
-

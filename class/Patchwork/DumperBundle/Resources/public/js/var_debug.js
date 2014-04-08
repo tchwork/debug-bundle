@@ -7,10 +7,10 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-"use strict";
-
 function htmlizeEvent(data, refs, filter)
 {
+    "use strict";
+
     var iRefs = {},
         depth,
         counter,
@@ -237,6 +237,8 @@ function htmlizeEvent(data, refs, filter)
 
 function arrayToggle(a)
 {
+    "use strict";
+
     var s = a.nextElementSibling.nextElementSibling;
 
     if ('array-compact' == s.className)

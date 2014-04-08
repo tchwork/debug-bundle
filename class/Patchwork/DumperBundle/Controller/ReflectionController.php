@@ -11,7 +11,7 @@
 namespace Patchwork\DumperBundle\Controller;
 
 use Patchwork\Dumper\Collector\PhpCollector;
-use Patchwork\Dumper\JsonDumper;
+use Patchwork\Dumper\Dumper\JsonDumper;
 use Patchwork\Dumper\Caster\ReflectionCaster;
 use ReflectionClass;
 use ReflectionMethod;

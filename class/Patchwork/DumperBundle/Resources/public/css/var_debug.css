@@ -1,3 +1,8 @@
+#var_debug pre
+{
+    white-space: pre;
+}
+
 li.dump
 {
     list-style-type: disc;
@@ -29,7 +34,6 @@ li.dump
     padding: 0;
     font-style: italic;
     font-family: inherit;
-    white-space: pre;
 }
 
 .array-compact

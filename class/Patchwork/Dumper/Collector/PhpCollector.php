@@ -2,8 +2,6 @@
 
 namespace Patchwork\Dumper\Collector;
 
-use stdClass;
-
 class PhpCollector extends AbstractCollector
 {
     protected function doCollect($var)
@@ -34,7 +32,7 @@ class PhpCollector extends AbstractCollector
                 if ($queue[$i][$k] === $cookie) {
                     $queue[$i][$k] =& $r;
                     unset($r);
-                    if ($v instanceof stdClass && isset($hardRefs[spl_object_hash($v)])) {
+                    if ($v instanceof \stdClass && isset($hardRefs[spl_object_hash($v)])) {
                         $v->ref = ++$refs;
                         $step[$k] = $queue[$i][$k] = $v;
                         continue;

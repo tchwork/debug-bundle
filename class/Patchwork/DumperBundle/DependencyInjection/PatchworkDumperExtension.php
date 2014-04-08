@@ -22,11 +22,11 @@ class PatchworkDumperExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
         $container->getDefinition('patchwork.dumper.collector')
-            ->setProperty('maxItems',  $config['max_items'])
-            ->setProperty('maxString', $config['max_string']);
+            ->addMethodCall('setMaxItems',  array($config['max_items']))
+            ->addMethodCall('setMaxString', array($config['max_string']));
     }
 }
