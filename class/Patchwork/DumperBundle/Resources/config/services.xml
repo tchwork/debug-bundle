@@ -19,7 +19,7 @@
         </service>
 
         <service id="patchwork.data_collector.var_debug" class="%patchwork.data_collector.var_debug.class%">
-            <argument type="service" id="service_container" />
+            <argument>%kernel.root_dir%</argument>
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
             <tag name="data_collector" template="@PatchworkDumper/Collector/var_debug.html.twig" id="var_debug" />
         </service>

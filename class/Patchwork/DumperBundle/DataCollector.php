@@ -16,16 +16,15 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollector as BaseDataCollecto
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DataCollector extends BaseDataCollector
 {
-    private $container;
+    private $rootDir;
     private $stopwatch;
 
-    public function __construct(ContainerInterface $container, Stopwatch $stopwatch = null)
+    public function __construct($rootDir, Stopwatch $stopwatch = null)
     {
-        $this->container = $container;
+        $this->rootDir = dirname($rootDir).DIRECTORY_SEPARATOR;
         $this->stopwatch = $stopwatch;
         $this->data['dumps'] = array();
     }
@@ -70,8 +69,7 @@ class DataCollector extends BaseDataCollector
                 $line = $trace[0]['line'];
             }
 
-            $name = dirname($this->container->get('kernel')->getRootDir()).DIRECTORY_SEPARATOR;
-            $name = strncasecmp($file, $name, strlen($name)) ? $file : substr($file, strlen($name));
+            $name = 0 === strpos($file, $this->rootDir) ? substr($file, strlen($this->rootDir)) : $file;
         }
 
         $this->data['dumps'][] = compact('data', 'name', 'file', 'line', 'excerpt');
