@@ -19,15 +19,15 @@
         </service>
 
         <service id="patchwork.data_collector.var_debug" class="%patchwork.data_collector.var_debug.class%">
+            <tag name="data_collector" template="@PatchworkDumper/Collector/var_debug.html.twig" id="var_debug" />
             <argument>%kernel.root_dir%</argument>
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
-            <tag name="data_collector" template="@PatchworkDumper/Collector/var_debug.html.twig" id="var_debug" />
         </service>
 
-        <service id="patchwork.dumper.collector" class="%patchwork.dumper.collector.class%"/>
-        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%"/>
-        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%"/>
-        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%"/>
+        <service id="patchwork.dumper.collector" class="%patchwork.dumper.collector.class%" />
+        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%" />
+        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%" />
+        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%" />
     </services>
 
 </container>

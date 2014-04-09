@@ -43,7 +43,7 @@ class TwigExtension extends \Twig_Extension
             }
         } elseif (3 === $count) {
             $vars = func_get_arg(2);
-        } else{
+        } else {
             $vars = array_slice(func_get_args(), 2);
         }
 
