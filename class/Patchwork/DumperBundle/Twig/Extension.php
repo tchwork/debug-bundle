@@ -8,13 +8,15 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-namespace Patchwork\DumperBundle;
+namespace Patchwork\DumperBundle\Twig;
 
-use Patchwork\Dumper\HtmlDumper;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
-class TwigExtension extends \Twig_Extension
+class Extension extends \Twig_Extension
 {
+    public function getTokenParsers()
+    {
+        return array(new DebugTokenParser());
+    }
+
     public function getFunctions()
     {
         return array(
@@ -24,7 +26,7 @@ class TwigExtension extends \Twig_Extension
 
     public function getName()
     {
-        return 'var_debug';
+        return 'patchwork_dumper';
     }
 
     public function debug(\Twig_Environment $env, $context)

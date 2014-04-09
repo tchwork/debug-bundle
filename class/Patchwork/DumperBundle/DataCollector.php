@@ -35,42 +35,46 @@ class DataCollector extends BaseDataCollector
 
         $trace = PHP_VERSION_ID >= 50306 ? DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS : true;
         if (PHP_VERSION_ID >= 50400) {
-            $trace = debug_backtrace($trace, 5);
+            $trace = debug_backtrace($trace, 6);
         } else {
             $trace = debug_backtrace($trace);
         }
 
-        $file = false;
+        $file = $trace[0]['file'];
+        $line = $trace[0]['line'];
+        $name = false;
         $excerpt = false;
 
-        if (isset($trace[4]['object']) && $trace[4]['object'] instanceof \Twig_Template) {
-            $line = $trace[3]['line'];
-            $trace = $trace[4]['object'];
+        for ($i = 1; $i < 6; ++$i) {
+            if (isset($trace[$i]['function']) && 'debug' === $trace[$i]['function'] && empty($trace[$i]['class'])) {
+                $file = $trace[$i]['file'];
+                $line = $trace[$i]['line'];
 
-            $name = $trace->getTemplateName();
-            $src = $trace->getEnvironment()->getLoader()->getSource($name);
-            $trace = $trace->getDebugInfo();
-            $line = $trace[$line];
+                while (++$i < 6) {
+                    if (isset($trace[$i]['object']) && $trace[$i]['object'] instanceof \Twig_Template) {
+                        $info = $trace[$i]['object'];
+                        $name = $info->getTemplateName();
+                        $src = $info->getEnvironment()->getLoader()->getSource($name);
+                        $info = $info->getDebugInfo();
+                        if (isset($info[$trace[$i-1]['line']])) {
+                            $line = $info[$trace[$i-1]['line']];
+                            $src = explode("\n", $src);
+                            $excerpt = array();
 
-            $src = explode("\n", $src);
-            $excerpt = array();
+                            for ($i = max($line - 3, 1), $max = min($line + 3, count($src)); $i <= $max; ++$i) {
+                                $excerpt[] = '<li'.($i === $line ? ' class="selected"' : '').'><code>'.htmlspecialchars($src[$i - 1]).'</code></li>';
+                            }
 
-            for ($i = max($line - 3, 1), $max = min($line + 3, count($src)); $i <= $max; $i++) {
-                $excerpt[] = '<li'.($i === $line ? ' class="selected"' : '').'><code>'.htmlspecialchars($src[$i - 1]).'</code></li>';
+                            $excerpt = '<ol start="'.max($line - 3, 1).'">'.implode("\n", $excerpt).'</ol>';
+                        }
+                        break;
+                    }
+                }
+                break;
             }
-
-            $excerpt = '<ol start="'.max($line - 3, 1).'">'.implode("\n", $excerpt).'</ol>';
-        } else {
-            if (isset($trace[2]['function']) && 'debug' === $trace[2]['function'] && empty($trace[2]['class'])) {
-                $file = $trace[2]['file'];
-                $line = $trace[2]['line'];
-            } else {
-                $file = $trace[0]['file'];
-                $line = $trace[0]['line'];
-            }
-
-            $name = 0 === strpos($file, $this->rootDir) ? substr($file, strlen($this->rootDir)) : $file;
         }
+
+        $name or $name = 0 === strpos($file, $this->rootDir) ? substr($file, strlen($this->rootDir)) : $file;
 
         $this->data['dumps'][] = compact('data', 'name', 'file', 'line', 'excerpt');
 
@@ -98,6 +102,6 @@ class DataCollector extends BaseDataCollector
 
     public function getName()
     {
-        return 'var_debug';
+        return 'patchwork_dumper';
     }
 }
