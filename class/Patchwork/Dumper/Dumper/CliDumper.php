@@ -31,7 +31,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
         parent::__construct($outputStream);
 
         if (!isset($this->colors) && !isset($outputStream)) {
-            isset(static::$defaultColors) or static::$defaultColors = $this->supportsColors();
+            if (!isset(static::$defaultColors)) {
+                static::$defaultColors = $this->supportsColors();
+            }
             $this->colors = static::$defaultColors;
         }
     }
@@ -278,14 +280,14 @@ class CliDumper extends AbstractDumper implements DumperInterface
             foreach ($cchr as $c) {
                 if (false !== strpos($val, $c)) {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
-                    $r = "\x1B[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\x1B[m";
-                    $r = "\x1B[m{$r}\x1B[{$this->styles[$style]}m";
+                    $r = "\033[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\033[m";
+                    $r = "\033[m{$r}\033[{$this->styles[$style]}m";
                     $val = str_replace($c, $r, $val);
                 }
             }
         }
 
-        return sprintf("\x1B[%sm%s\x1B[m", $this->styles[$style], $val);
+        return sprintf("\033[%sm%s\033[m", $this->styles[$style], $val);
     }
 
     protected function supportsColors()
@@ -321,7 +323,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
             return false;
         }
 
-        $colors = DIRECTORY_SEPARATOR === '\\'
+        $colors = defined('PHP_WINDOWS_VERSION_MAJOR')
             ? @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
             : @(function_exists('posix_isatty') && posix_isatty($this->outputStream));
 

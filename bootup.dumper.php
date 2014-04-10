@@ -10,45 +10,11 @@
 
 use Patchwork\Dumper\Collector\PhpCollector;
 use Patchwork\Dumper\Dumper\CliDumper;
+use Patchwork\Dumper\VarDebug;
 
 if (!function_exists('debug')) {
     function debug($var)
     {
-        static $reflector;
-
-        if (!isset($reflector)) {
-            $reflector = new ReflectionFunction('set_debug_handler');
-        }
-
-        $h = $reflector->getStaticVariables();
-
-        if (!isset($h['handler'])) {
-            if (class_exists('Patchwork\Dumper\Dumper\CliDumper')) {
-                $collector = new PhpCollector;
-                $dumper = new CliDumper;
-                $h['handler'] = function ($var) use ($collector, $dumper) {
-                    $dumper->dump($collector->collect($var));
-                };
-            } else {
-                $h['handler'] = 'var_dump';
-            }
-            set_debug_handler($h['handler']);
-        }
-
-        return $h['handler']($var);
-    }
-
-    function set_debug_handler($callable)
-    {
-        static $handler = null;
-
-        if (!is_callable($callable)) {
-            throw new \InvalidArgumentException('Invalid PHP callback.');
-        }
-
-        $h = $handler;
-        $handler = $callable;
-
-        return $h;
+        return VarDebug::debug($var);
     }
 }

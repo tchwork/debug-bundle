@@ -17,6 +17,21 @@ use ReflectionMethod;
 
 class ReflectionCaster
 {
+    public static function castReflector(\Reflector $c, array $a)
+    {
+        $a["\0~\0reflection"] = $c->__toString();
+
+        return $a;
+    }
+
+    public static function castClosure(\Closure $c, array $a)
+    {
+        $a = static::castReflector(new \ReflectionFunction($c), $a);
+        unset($a[0], $a['name']);
+
+        return $a;
+    }
+
     public static function castReflectionClass(ReflectionClass $c, array $a)
     {
         $a = array();

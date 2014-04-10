@@ -10,6 +10,7 @@
 
 namespace Patchwork\DumperBundle;
 
+use Patchwork\Dumper\VarDebug;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class PatchworkDumperBundle extends Bundle
@@ -21,7 +22,7 @@ class PatchworkDumperBundle extends Bundle
         $container = $this->container;
         $dumperService = 'cli' === PHP_SAPI ? 'patchwork.dumper.cli' : 'patchwork.data_collector.dumper';
 
-        set_debug_handler(function ($v) use ($container, $dumperService) {
+        VarDebug::setHandler(function ($v) use ($container, $dumperService) {
             $data = $container->get('patchwork.dumper.collector')->collect($v);
             $container->get($dumperService)->dump($data);
         });

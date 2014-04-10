@@ -11,9 +11,12 @@
 namespace Patchwork\Dumper\Caster;
 
 
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 class PdoCaster
 {
-    public static $pdoAttributes = array(
+    private static $pdoAttributes = array(
         'CASE' => array(
             \PDO::CASE_LOWER => 'LOWER',
             \PDO::CASE_NATURAL => 'NATURAL',

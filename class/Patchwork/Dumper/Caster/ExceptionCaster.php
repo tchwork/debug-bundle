@@ -10,8 +10,11 @@
 
 namespace Patchwork\Dumper\Caster;
 
-use Patchwork\Dumper\ThrowingCasterException;
+use Patchwork\Dumper\Exception\ThrowingCasterException;
 
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 class ExceptionCaster
 {
     public static $traceArgs = true;
@@ -71,12 +74,22 @@ class ExceptionCaster
         $b = static::castException($a["\0Exception\0previous"], $b);
         static::$traceArgs = $t;
 
-        empty($a["\0*\0message"]) and $a["\0*\0message"] = "Unexpected exception thrown from a caster: ".get_class($a["\0Exception\0previous"]);
+        if (empty($a["\0*\0message"])) {
+            $a["\0*\0message"] = "Unexpected exception thrown from a caster: ".get_class($a["\0Exception\0previous"]);
+        }
 
-        isset($b["\0*\0message"]) and $a["\0~\0message"] = $b["\0*\0message"];
-        isset($b["\0*\0file"]) and $a["\0~\0file"] = $b["\0*\0file"];
-        isset($b["\0*\0line"]) and $a["\0~\0line"] = $b["\0*\0line"];
-        isset($b["\0Exception\0trace"]) and $a["\0~\0trace"] = $b["\0Exception\0trace"];
+        if (isset($b["\0*\0message"])) {
+            $a["\0~\0message"] = $b["\0*\0message"];
+        }
+        if (isset($b["\0*\0file"])) {
+            $a["\0~\0file"] = $b["\0*\0file"];
+        }
+        if (isset($b["\0*\0line"])) {
+            $a["\0~\0line"] = $b["\0*\0line"];
+        }
+        if (isset($b["\0Exception\0trace"])) {
+            $a["\0~\0trace"] = $b["\0Exception\0trace"];
+        }
 
         unset($a["\0Exception\0trace"], $a["\0Exception\0previous"], $a["\0*\0code"], $a["\0*\0file"], $a["\0*\0line"]);
 
@@ -85,7 +98,9 @@ class ExceptionCaster
 
     public static function filterTrace(&$trace, $dumpArgs, $offset = 0)
     {
-        if (0 > $offset || empty($trace[$offset])) return $trace = null;
+        if (0 > $offset || empty($trace[$offset])) {
+            return $trace = null;
+        }
 
         $t = $trace[$offset];
 
@@ -95,7 +110,9 @@ class ExceptionCaster
             }
         }
 
-        $offset and array_splice($trace, 0, $offset);
+        if ($offset) {
+            array_splice($trace, 0, $offset);
+        }
 
         foreach ($trace as &$t) {
             $t = array(

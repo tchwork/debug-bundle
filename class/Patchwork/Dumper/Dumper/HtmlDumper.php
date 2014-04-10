@@ -60,7 +60,7 @@ class HtmlDumper extends CliDumper
             }
         }
 
-        $val = htmlspecialchars($val, ENT_NOQUOTES, 'UTF-8');
+        $val = htmlspecialchars($val, ENT_QUOTES, 'UTF-8');
 
         switch ($style) {
             case 'str':

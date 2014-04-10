@@ -13,14 +13,16 @@ namespace Patchwork\Dumper\Caster;
 use Doctrine\Common\Proxy\Proxy as CommonProxy;
 use Doctrine\ORM\Proxy\Proxy as OrmProxy;
 
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 class DoctrineCaster
 {
     public static function castCommonProxy(CommonProxy $p, array $a)
     {
         unset(
             $a['__cloner__'],
-            $a['__initializer__'],
-            $a['__isInitialized__']
+            $a['__initializer__']
         );
 
         return $a;
@@ -31,8 +33,7 @@ class DoctrineCaster
         $p = "\0".get_class($p)."\0";
         unset(
             $a[$p.'_entityPersister'],
-            $a[$p.'_identifier'],
-            $a['__isInitialized__']
+            $a[$p.'_identifier']
         );
 
         return $a;

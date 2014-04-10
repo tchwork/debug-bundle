@@ -10,6 +10,8 @@
 
 namespace Patchwork\DumperBundle\Twig;
 
+use Patchwork\Dumper\VarDebug;
+
 class Extension extends \Twig_Extension
 {
     public function getTokenParsers()
@@ -49,7 +51,7 @@ class Extension extends \Twig_Extension
             $vars = array_slice(func_get_args(), 2);
         }
 
-        debug($vars);
+        VarDebug::debug($vars);
 
         return '';
     }

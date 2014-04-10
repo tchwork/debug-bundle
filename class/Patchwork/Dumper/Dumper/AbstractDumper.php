@@ -17,8 +17,12 @@ abstract class AbstractDumper
         if (is_callable($outputStream)) {
             $this->setLineDumper($outputStream);
         } else {
-            isset($outputStream) or $outputStream =& static::$defaultOutputStream;
-            is_string($outputStream) and $outputStream = fopen($outputStream, 'wb');
+            if (!isset($outputStream)) {
+                $outputStream =& static::$defaultOutputStream;
+            }
+            if (is_string($outputStream)) {
+                $outputStream = fopen($outputStream, 'wb');
+            }
             $this->outputStream = $outputStream;
             $this->setLineDumper(array($this, 'echoLine'));
         }
@@ -35,7 +39,9 @@ abstract class AbstractDumper
     public function dump(Data $data, $lineDumper = null)
     {
         $dumper = clone $this;
-        $lineDumper and $dumper->setLineDumper($lineDumper);
+        if ($lineDumper) {
+            $dumper->setLineDumper($lineDumper);
+        }
         $data->dump($dumper);
     }
 

@@ -54,6 +54,9 @@ class PhpCollector extends AbstractCollector
                         }
                         break;
 
+                    case 'integer':
+                        break;
+
                     case 'array':
                         if ($v) {
                             $r = (object) array('count' => count($v));
@@ -138,7 +141,9 @@ class PhpCollector extends AbstractCollector
             }
 
             if (isset($arrayRefs[$i])) {
-                $indexed and $arrayRefs[$i]->indexed = 1;
+                if ($indexed) {
+                    $arrayRefs[$i]->indexed = 1;
+                }
                 unset($arrayRefs[$i]);
             }
         }

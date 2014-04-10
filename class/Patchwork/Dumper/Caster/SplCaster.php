@@ -10,11 +10,14 @@
 
 namespace Patchwork\Dumper\Caster;
 
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 class SplCaster
 {
-    public static function castIterator(\Iterator $c, array $a)
+    public static function casSplIterator(\Iterator $c, array $a)
     {
-        $a = array_merge($a, iterator_to_array($c));
+        $a = array_merge($a, iterator_to_array(clone $c));
 
         return $a;
     }

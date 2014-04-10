@@ -33,9 +33,11 @@ class DebugNode extends \Twig_Node
             return;
         }
 
+        $values = $this->getNode('values');
+
         $compiler->addDebugInfo($this);
-        $compiler->write('debug(');
-        if (!$values = $this->getNode('values')) {
+        $compiler->write('\Patchwork\Dumper\VarDebug::debug(');
+        if (!$values) {
             $compiler->raw('$context');
         } elseif ($values->count() === 1) {
             $compiler->subcompile($values->getNode(0));
@@ -43,7 +45,10 @@ class DebugNode extends \Twig_Node
             $compiler->raw('array(');
             foreach ($values as $node) {
                 if ($node->hasAttribute('name')) {
-                    $compiler->raw("'".addslashes($node->getAttribute('name'))."' => ");
+                    $compiler
+                        ->string($node->getAttribute('name'))
+                        ->raw('=>')
+                    ;
                 }
                 $compiler
                     ->subcompile($node)

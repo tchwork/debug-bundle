@@ -1,17 +1,27 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Patchwork\Dumper\Collector;
 
 use Patchwork\Dumper\Exception\ThrowingCasterException;
 
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 abstract class AbstractCollector implements CollectorInterface
 {
     public static $defaultCasters = array(
-        'o:Closure'        => 'Patchwork\Dumper\Caster\BaseCaster::castClosure',
-        'o:Reflector'      => 'Patchwork\Dumper\Caster\BaseCaster::castReflector',
+        'o:Closure'        => 'Patchwork\Dumper\Caster\ReflectionCaster::castClosure',
+        'o:Reflector'      => 'Patchwork\Dumper\Caster\ReflectionCaster::castReflector',
 
-        'o:Doctrine\Common\Collections\Collection'
-                                        => 'Patchwork\Dumper\Caster\DoctrineCaster::castCollection',
         'o:Doctrine\Common\Proxy\Proxy' => 'Patchwork\Dumper\Caster\DoctrineCaster::castCommonProxy',
         'o:Doctrine\ORM\Proxy\Proxy'    => 'Patchwork\Dumper\Caster\DoctrineCaster::castOrmProxy',
 
@@ -25,16 +35,16 @@ abstract class AbstractCollector implements CollectorInterface
 
         'o:SplDoublyLinkedList' => 'Patchwork\Dumper\Caster\SplCaster::castSplDoublyLinkedList',
         'o:SplFixedArray'       => 'Patchwork\Dumper\Caster\SplCaster::castSplFixedArray',
-        'o:SplHeap'             => 'Patchwork\Dumper\Caster\SplCaster::castIterator',
+        'o:SplHeap'             => 'Patchwork\Dumper\Caster\SplCaster::castSplIterator',
         'o:SplObjectStorage'    => 'Patchwork\Dumper\Caster\SplCaster::castSplObjectStorage',
-        'o:SplPriorityQueue'    => 'Patchwork\Dumper\Caster\SplCaster::castIterator',
+        'o:SplPriorityQueue'    => 'Patchwork\Dumper\Caster\SplCaster::castSplIterator',
 
-        'r:dba'            => 'Patchwork\Dumper\Caster\BaseCaster::castDba',
-        'r:dba persistent' => 'Patchwork\Dumper\Caster\BaseCaster::castDba',
-        'r:gd'             => 'Patchwork\Dumper\Caster\BaseCaster::castGd',
-        'r:mysql link'     => 'Patchwork\Dumper\Caster\BaseCaster::castMysqlLink',
-        'r:process'        => 'Patchwork\Dumper\Caster\BaseCaster::castProcess',
-        'r:stream'         => 'Patchwork\Dumper\Caster\BaseCaster::castStream',
+        'r:dba'            => 'Patchwork\Dumper\Caster\ResourceCaster::castDba',
+        'r:dba persistent' => 'Patchwork\Dumper\Caster\ResourceCaster::castDba',
+        'r:gd'             => 'Patchwork\Dumper\Caster\ResourceCaster::castGd',
+        'r:mysql link'     => 'Patchwork\Dumper\Caster\ResourceCaster::castMysqlLink',
+        'r:process'        => 'Patchwork\Dumper\Caster\ResourceCaster::castProcess',
+        'r:stream'         => 'Patchwork\Dumper\Caster\ResourceCaster::castStream',
     );
 
     protected $maxItems = 1000;
@@ -46,7 +56,9 @@ abstract class AbstractCollector implements CollectorInterface
 
     public function __construct(array $defaultCasters = null)
     {
-        isset($defaultCasters) or $defaultCasters = static::$defaultCasters;
+        if (!isset($defaultCasters)) {
+            $defaultCasters = static::$defaultCasters;
+        }
         $this->addCasters($defaultCasters);
     }
 
@@ -89,8 +101,9 @@ abstract class AbstractCollector implements CollectorInterface
     protected function castObject($class, $obj)
     {
         if (method_exists($obj, '__debugInfo')) {
-            $a = $this->callCaster(array($this, '__debugInfo'), $obj, array());
-            $a or $a = (array) $obj;
+            if (!$a = $this->callCaster(array($this, '__debugInfo'), $obj, array())) {
+                $a = (array) $obj;
+            }
         } else {
             $a = (array) $obj;
         }
