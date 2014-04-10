@@ -68,7 +68,7 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
   recurs: [ #4
     [&4]
   ]
-  9: &11.1
+  9: 1.1 &1
   sobj: stdClass{@2}
   snobj: stdClass{&3}
   snobj2: stdClass{@3}

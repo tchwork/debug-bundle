@@ -12,6 +12,8 @@ namespace Patchwork\DumperBundle;
 
 use Patchwork\Dumper\Collector\Data;
 use Patchwork\Dumper\Dumper\JsonDumper;
+use Patchwork\Dumper\Dumper\HtmlDumper;
+use Patchwork\Dumper\Dumper\CliDumper;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector as BaseDataCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +23,7 @@ class DataCollector extends BaseDataCollector
 {
     private $rootDir;
     private $stopwatch;
+    private $isCollected = true;
 
     public function __construct($rootDir, Stopwatch $stopwatch = null)
     {
@@ -32,6 +35,7 @@ class DataCollector extends BaseDataCollector
     public function dump(Data $data)
     {
         $this->stopwatch and $this->stopwatch->start('debug');
+        $this->isCollected = false;
 
         $trace = PHP_VERSION_ID >= 50306 ? DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS : true;
         if (PHP_VERSION_ID >= 50400) {
@@ -57,6 +61,7 @@ class DataCollector extends BaseDataCollector
                         $src = $info->getEnvironment()->getLoader()->getSource($name);
                         $info = $info->getDebugInfo();
                         if (isset($info[$trace[$i-1]['line']])) {
+                            $file = false;
                             $line = $info[$trace[$i-1]['line']];
                             $src = explode("\n", $src);
                             $excerpt = array();
@@ -87,6 +92,7 @@ class DataCollector extends BaseDataCollector
 
     public function getDumps()
     {
+        $this->isCollected = true;
         $dumper = new JsonDumper();
         $dumps = array();
 
@@ -103,5 +109,51 @@ class DataCollector extends BaseDataCollector
     public function getName()
     {
         return 'patchwork_dumper';
+    }
+
+    public function serialize()
+    {
+        $this->isCollected = true;
+
+        return parent::serialize();
+    }
+
+    public function __destruct()
+    {
+        if (!$this->isCollected) {
+            $this->isCollected = true;
+
+            $h = headers_list();
+            array_unshift($h, 'Content-Type: ' . ini_get('default_mimetype'));
+            $i = count($h);
+            while (0 !== stripos($h[--$i], 'Content-Type:')) {
+            }
+
+            if (stripos($h[$i], 'html')) {
+                echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+                $dumper = new HtmlDumper();
+            } else {
+                $dumper = new CliDumper('php://output');
+                $dumper->setColors(false);
+            }
+
+            foreach ($this->data['dumps'] as $i => $dump) {
+                $this->data['dumps'][$i] = null;
+
+                if ($dumper instanceof HtmlDumper) {
+                    $dump['name'] = htmlspecialchars($dump['name'], ENT_QUOTES, 'UTF-8');
+                    $dump['file'] = htmlspecialchars($dump['file'], ENT_QUOTES, 'UTF-8');
+                    if ('' !== $dump['file']) {
+                        $dump['name'] = "<abbr title=\"{$dump['file']}\">{$dump['name']}</abbr>";
+                    }
+                    echo "\n<br><span class=\"sf-var-debug-meta\">in {$dump['name']} on line {$dump['line']}:</span>";
+                } else {
+                    echo "\nin {$dump['name']} on line {$dump['line']}:\n\n";
+                }
+                $dumper->dump($dump['data']);
+            }
+
+            $this->data = array();
+        }
     }
 }

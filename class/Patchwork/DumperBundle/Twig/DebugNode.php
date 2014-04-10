@@ -36,11 +36,11 @@ class DebugNode extends \Twig_Node
         $compiler->addDebugInfo($this);
         $compiler->write('debug(');
         if (!$values = $this->getNode('values')) {
-            $compiler->write('$context');
+            $compiler->raw('$context');
         } elseif ($values->count() === 1) {
             $compiler->subcompile($values->getNode(0));
         } else {
-            $compiler->write('array(');
+            $compiler->raw('array(');
             foreach ($values as $node) {
                 if ($node->hasAttribute('name')) {
                     $compiler->raw("'".addslashes($node->getAttribute('name'))."' => ");

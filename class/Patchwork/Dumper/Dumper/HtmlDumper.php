@@ -38,19 +38,28 @@ class HtmlDumper extends CliDumper
     {
         $this->styles = $styles + $this->styles;
 
-        $s = '';
         $p = 'sf-var-debug';
+        $s = "a.$p-ref{{$this->styles['ref']}}";
 
-        foreach ($styles as $class => $style) {
-            $s .= ".$p-$class{{$style}}";
+        foreach ($this->styles as $class => $style) {
+            $s .= "span.$p-$class{{$style}}";
         }
 
-        $this->dumpPrefix = "<style>$s</style><pre class=$p>";
+        $this->dumpPrefix = "<style>$s</style><pre class=$p style=white-space:pre>";
         $this->dumpSuffix = '</pre>';
     }
 
     protected function style($style, $val)
     {
+        if ('ref' === $style) {
+            $ref = substr($val, 1);
+            if ('#' === $val[0]) {
+                return "<a class=sf-var-debug-ref name=\"sf-var-debug-ref$ref\">$val</a>";
+            } else {
+                return "<a class=sf-var-debug-ref href=\"#sf-var-debug-ref$ref\">$val</a>";
+            }
+        }
+
         $val = htmlspecialchars($val, ENT_NOQUOTES, 'UTF-8');
 
         switch ($style) {
