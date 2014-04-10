@@ -103,7 +103,6 @@ class CliDumper extends AbstractDumper implements DumperInterface
     {
         $this->dumpKey($cursor);
 
-
         if ('' === $str) {
             $this->line .= "''";
             if (false !== $cursor->refTo) {
@@ -279,14 +278,14 @@ class CliDumper extends AbstractDumper implements DumperInterface
             foreach ($cchr as $c) {
                 if (false !== strpos($val, $c)) {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
-                    $r = "\e[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\e[m";
-                    $r = "\e[m{$r}\e[{$this->styles[$style]}m";
+                    $r = "\x1B[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\x1B[m";
+                    $r = "\x1B[m{$r}\x1B[{$this->styles[$style]}m";
                     $val = str_replace($c, $r, $val);
                 }
             }
         }
 
-        return sprintf("\e[%sm%s\e[m", $this->styles[$style], $val);
+        return sprintf("\x1B[%sm%s\x1B[m", $this->styles[$style], $val);
     }
 
     protected function supportsColors()
