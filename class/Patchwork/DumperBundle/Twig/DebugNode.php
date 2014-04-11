@@ -16,12 +16,9 @@ namespace Patchwork\DumperBundle\Twig;
  */
 class DebugNode extends \Twig_Node
 {
-    protected $env;
-
-    public function __construct(\Twig_Environment $env, \Twig_NodeInterface $values = null, $lineno = 0, $tag = null)
+    public function __construct(\Twig_NodeInterface $values = null, $lineno, $tag = null)
     {
         parent::__construct(array('values' => $values), array(), $lineno, $tag);
-        $this->env = $env;
     }
 
     /**
@@ -29,15 +26,17 @@ class DebugNode extends \Twig_Node
      */
     public function compile(\Twig_Compiler $compiler)
     {
-        if (!$this->env->isDebug()) {
-            return;
-        }
+        $compiler->addDebugInfo($this);
+
+        $compiler
+            ->write("if (\$this->env->isDebug()) {\n")
+            ->indent()
+        ;
 
         $values = $this->getNode('values');
 
-        $compiler->addDebugInfo($this);
         $compiler->write('\Patchwork\Dumper\VarDebug::debug(');
-        if (!$values) {
+        if (null === $values) {
             $compiler->raw('$context');
         } elseif ($values->count() === 1) {
             $compiler->subcompile($values->getNode(0));
@@ -58,5 +57,10 @@ class DebugNode extends \Twig_Node
             $compiler->raw(')');
         }
         $compiler->raw(");\n");
+
+        $compiler
+            ->outdent()
+            ->write("}\n")
+        ;
     }
 }

@@ -36,7 +36,7 @@ class DebugTokenParser extends \Twig_TokenParser
         }
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new DebugNode($this->parser->getEnvironment(), $values, $token->getLine(), $this->getTag());
+        return new DebugNode($values, $token->getLine(), $this->getTag());
     }
 
     /**

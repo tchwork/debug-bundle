@@ -101,11 +101,11 @@ class DataCollector extends BaseDataCollector
 
     public function collect(Request $request, Response $response, \Exception $exception = null)
     {
+        $this->isCollected = true;
     }
 
     public function getDumps()
     {
-        $this->isCollected = true;
         $dumper = new JsonDumper();
         $dumps = array();
 
@@ -122,13 +122,6 @@ class DataCollector extends BaseDataCollector
     public function getName()
     {
         return 'patchwork_dumper';
-    }
-
-    public function serialize()
-    {
-        $this->isCollected = true;
-
-        return parent::serialize();
     }
 
     public function __destruct()
