@@ -6,32 +6,36 @@ class PhpCollector extends AbstractCollector
 {
     protected function doCollect($var)
     {
-        $i = 0;
-        $len = 1;
-        $pos = 1;
-        $refs = 0;
-        $queue = array(array($var));
-        $arrayRefs = array();
-        $hardRefs = array();
-        $softRefs = array();
-        $values = array();
+        $i = 0;                         // Current iteration position in $queue
+        $len = 1;                       // Length of $queue
+        $pos = 1;                       // Number of collected items
+        $refs = 0;                      // Number of hard+soft references in $var
+        $queue = array(array($var));    // This breadth-first queue is the return value
+        $arrayRefs = array();           // Map of queue indexes to stub array objects
+        $hardRefs = array();            // By-ref map of stub objects' hashes to original hard `&` references
+        $softRefs = array();            // Map of original object hashes to their stub object couterpart
+        $values = array();              // Map of stub objects' hashes to original values
         $maxItems = $this->maxItems;
         $maxString = $this->maxString;
-        $cookie = (object) array();
+        $cookie = (object) array();     // Unique object used to detect hard references
         $isRef = false;
+        $stub = null;                   // stdClass capturing the main properties of an original item value,
+                                        // or null if the original value is used directly
 
         for ($i = 0; $i < $len; ++$i) {
-            $indexed = 1;
-            $j = -1;
-            $step = $queue[$i];
+            $indexed = true;            // Whether the currently iterated array is numerically indexed or not
+            $j = -1;                    // Position in the currently iterated array
+            $step = $queue[$i];         // Copy of the currently iterated array used for hard references detection
             foreach ($step as $k => $v) {
+                // $k is the original key
+                // $v is the original value or a stub object in case of hard references
                 if ($indexed && $k !== ++$j) {
-                    $indexed = 0;
+                    $indexed = false;
                 }
                 $step[$k] = $cookie;
                 if ($queue[$i][$k] === $cookie) {
-                    $queue[$i][$k] =& $r;
-                    unset($r);
+                    $queue[$i][$k] =& $stub;    // Break hard references to make $queue completely
+                    unset($stub);               // independent from the original structure
                     if ($v instanceof \stdClass && isset($hardRefs[spl_object_hash($v)])) {
                         $v->ref = ++$refs;
                         $step[$k] = $queue[$i][$k] = $v;
@@ -39,18 +43,20 @@ class PhpCollector extends AbstractCollector
                     }
                     $isRef = true;
                 }
+                // Create $stub when the original value $v can not be used directly
+                // If $v is a nested structure, put that structure in array $a
                 switch (gettype($v)) {
                     case 'string':
                         if (isset($v[0]) && !preg_match('//u', $v)) {
                             if (0 < $maxString && 0 < $cut = strlen($v) - $maxString) {
-                                $r = substr_replace($v, '', 0, $maxString - 1);
-                                $r = (object) array('cut' => $cut + 1, 'bin' => Data::utf8Encode($r));
+                                $stub = substr_replace($v, '', 0, $maxString - 1);
+                                $stub = (object) array('cut' => $cut + 1, 'bin' => Data::utf8Encode($stub));
                             } else {
-                                $r = (object) array('bin' => Data::utf8Encode($v));
+                                $stub = (object) array('bin' => Data::utf8Encode($v));
                             }
                         } elseif (0 < $maxString && isset($v[1+($maxString>>2)]) && 0 < $cut = iconv_strlen($v, 'UTF-8') - $maxString) {
-                            $r = iconv_substr($v, 0, $maxString - 1, 'UTF-8');
-                            $r = (object) array('cut' => $cut + 1, 'str' => $r);
+                            $stub = iconv_substr($v, 0, $maxString - 1, 'UTF-8');
+                            $stub = (object) array('cut' => $cut + 1, 'str' => $stub);
                         }
                         break;
 
@@ -59,55 +65,55 @@ class PhpCollector extends AbstractCollector
 
                     case 'array':
                         if ($v) {
-                            $r = (object) array('count' => count($v));
-                            $arrayRefs[$len] = $r;
+                            $stub = (object) array('count' => count($v));
+                            $arrayRefs[$len] = $stub;
                             $a = $v;
                         }
                         break;
 
                     case 'object':
                         if (empty($softRefs[$h = spl_object_hash($v)])) {
-                            $r = $softRefs[$h] = (object) array('class' => get_class($v));
+                            $stub = $softRefs[$h] = (object) array('class' => get_class($v));
                             if (0 >= $maxItems || $pos < $maxItems) {
-                                $a = $this->castObject($r->class, $v);
+                                $a = $this->castObject($stub->class, $v);
                             } else {
-                                $r->cut = -1;
+                                $stub->cut = -1;
                             }
                         } else {
-                            $r = $softRefs[$h];
-                            $r->ref = ++$refs;
+                            $stub = $softRefs[$h];
+                            $stub->ref = ++$refs;
                         }
                         break;
 
                     case 'resource':
                     case 'unknown type':
                         if (empty($softRefs[$h = (int) substr_replace($v, '', 0, 13)])) {
-                            $r = $softRefs[$h] = (object) array('res' => @get_resource_type($v));
+                            $stub = $softRefs[$h] = (object) array('res' => @get_resource_type($v));
                             if (0 >= $maxItems || $pos < $maxItems) {
-                                $a = $this->castResource($r->res, $v);
+                                $a = $this->castResource($stub->res, $v);
                             } else {
-                                $r->cut = -1;
+                                $stub->cut = -1;
                             }
                         } else {
-                            $r = $softRefs[$h];
-                            $r->ref = ++$refs;
+                            $stub = $softRefs[$h];
+                            $stub->ref = ++$refs;
                         }
                         break;
                 }
 
-                if (isset($r)) {
+                if (isset($stub)) {
                     if ($isRef) {
-                        if (isset($r->count)) {
-                            $step[$k] = $r;
+                        if (isset($stub->count)) {
+                            $step[$k] = $stub;
                         } else {
-                            $step[$k] = (object) array('val' => $r);
+                            $step[$k] = (object) array('val' => $stub);
                         }
                         $h = spl_object_hash($step[$k]);
                         $queue[$i][$k] = $hardRefs[$h] =& $step[$k];
                         $values[$h] = $v;
                         $isRef = false;
                     } else {
-                        $queue[$i][$k] = $r;
+                        $queue[$i][$k] = $stub;
                     }
 
                     if ($a) {
@@ -116,11 +122,11 @@ class PhpCollector extends AbstractCollector
                             if ($pos < $maxItems) {
                                 if ($maxItems < $pos += $k) {
                                     $a = array_slice($a, 0, $maxItems - $pos);
-                                    $r->cut = $pos - $maxItems;
+                                    $stub->cut = $pos - $maxItems;
                                 }
                             } else {
-                                $r->cut = $k;
-                                $r = $a = null;
+                                $stub->cut = $k;
+                                $stub = $a = null;
                                 unset($arrayRefs[$len]);
                                 continue;
                             }
@@ -128,9 +134,9 @@ class PhpCollector extends AbstractCollector
                             $maxItems = $pos = count($a);
                         }
                         $queue[$len] = $a;
-                        $r->pos = $len++;
+                        $stub->pos = $len++;
                     }
-                    $r = $a = null;
+                    $stub = $a = null;
                 } elseif ($isRef) {
                     $step[$k] = $queue[$i][$k] = $v = (object) array('val' => $v);
                     $h = spl_object_hash($v);
