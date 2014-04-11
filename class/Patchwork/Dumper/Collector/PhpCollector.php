@@ -44,9 +44,9 @@ class PhpCollector extends AbstractCollector
                         if (isset($v[0]) && !preg_match('//u', $v)) {
                             if (0 < $maxString && 0 < $cut = strlen($v) - $maxString) {
                                 $r = substr_replace($v, '', 0, $maxString - 1);
-                                $r = (object) array('cut' => $cut + 1, 'bin' => iconv('CP1252', 'UTF-8', $r));
+                                $r = (object) array('cut' => $cut + 1, 'bin' => Data::utf8Encode($r));
                             } else {
-                                $r = (object) array('bin' => iconv('CP1252', 'UTF-8', $v));
+                                $r = (object) array('bin' => Data::utf8Encode($v));
                             }
                         } elseif (0 < $maxString && isset($v[1+($maxString>>2)]) && 0 < $cut = iconv_strlen($v, 'UTF-8') - $maxString) {
                             $r = iconv_substr($v, 0, $maxString - 1, 'UTF-8');

@@ -4,6 +4,8 @@ namespace Patchwork\Dumper\Dumper;
 
 /**
  * CliDumper dumps variable for command line output.
+ *
+ * @author Nicolas Grekas <p@tchwork.com>
  */
 class CliDumper extends AbstractDumper implements DumperInterface
 {
@@ -45,7 +47,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
 
     public function setMaxStringWidth($maxStringWidth)
     {
-        $this->maxStringWidth = (int) $maxStringWidth;
+        if (function_exists('iconv')) {
+            $this->maxStringWidth = (int) $maxStringWidth;
+        }
     }
 
     public function setStyles(array $styles)

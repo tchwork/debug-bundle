@@ -83,6 +83,9 @@ abstract class AbstractCollector implements CollectorInterface
     {
         $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
         try {
+            if (!function_exists('iconv')) {
+                $this->maxString = 0;
+            }
             $data = $this->doCollect($var);
         } catch (\Exception $e) {
         }

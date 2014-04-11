@@ -2,6 +2,8 @@
 
 namespace Patchwork\Dumper\Dumper;
 
+use Patchwork\Dumper\Collector\Data;
+
 /**
  * JsonDumper implements the JSON convention to dump any PHP variable with high accuracy.
  */
@@ -158,7 +160,7 @@ class JsonDumper extends AbstractDumper implements DumperInterface
                 $key = 'n`'.$key;
             } else {
                 if (!preg_match('//u', $key)) {
-                    $key = 'b`'.iconv('CP1252', 'UTF-8', $key);
+                    $key = 'b`'.Data::utf8Encode($key);
                 } elseif (false !== strpos($key, '`')) {
                     $key = 'u`'.$key;
                 }

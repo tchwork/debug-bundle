@@ -4,6 +4,8 @@ namespace Patchwork\Dumper\Dumper;
 
 /**
  * HtmlDumper dumps variable as HTML.
+ *
+ * @author Nicolas Grekas <p@tchwork.com>
  */
 class HtmlDumper extends CliDumper
 {
