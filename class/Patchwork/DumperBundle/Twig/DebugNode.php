@@ -26,8 +26,6 @@ class DebugNode extends \Twig_Node
      */
     public function compile(\Twig_Compiler $compiler)
     {
-        $compiler->addDebugInfo($this);
-
         $compiler
             ->write("if (\$this->env->isDebug()) {\n")
             ->indent()
@@ -35,28 +33,53 @@ class DebugNode extends \Twig_Node
 
         $values = $this->getNode('values');
 
-        $compiler->write('\Patchwork\Dumper\VarDebug::debug(');
         if (null === $values) {
-            $compiler->raw('$context');
-        } elseif ($values->count() === 1) {
-            $compiler->subcompile($values->getNode(0));
+            // remove embedded templates (macros) from the context
+            $compiler
+                ->write("\$vars = array();\n")
+                ->write("foreach (\$context as \$key => \$value) {\n")
+                ->indent()
+                ->write("if (!\$value instanceof Twig_Template) {\n")
+                ->indent()
+                ->write("\$vars[\$key] = \$value;\n")
+                ->outdent()
+                ->write("}\n")
+                ->outdent()
+                ->write("}\n")
+                ->addDebugInfo($this)
+                ->write('\Patchwork\Dumper\VarDebug::debug($vars);'."\n")
+            ;
+        } elseif (1 === $values->count()) {
+            $compiler
+                ->addDebugInfo($this)
+                ->write('\Patchwork\Dumper\VarDebug::debug(')
+                ->subcompile($values->getNode(0))
+                ->raw(");\n")
+            ;
         } else {
-            $compiler->raw('array(');
+            $compiler
+                ->addDebugInfo($this)
+                ->write('\Patchwork\Dumper\VarDebug::debug(array(')
+                ->indent()
+            ;
             foreach ($values as $node) {
+                $compiler->addIndentation();
                 if ($node->hasAttribute('name')) {
                     $compiler
                         ->string($node->getAttribute('name'))
-                        ->raw('=>')
+                        ->raw(' => ')
                     ;
                 }
                 $compiler
                     ->subcompile($node)
-                    ->raw(',')
+                    ->raw(",\n")
                 ;
             }
-            $compiler->raw(')');
+            $compiler
+                ->outdent()
+                ->raw("));\n")
+            ;
         }
-        $compiler->raw(");\n");
 
         $compiler
             ->outdent()
