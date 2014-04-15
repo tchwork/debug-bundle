@@ -13,6 +13,10 @@ use Patchwork\Dumper\VarDebug;
 if (!function_exists('debug')) {
     function debug($var)
     {
+        if (1 < func_num_args()) {
+            throw new \BadFunctionCallException(sprintf('%d() expects exactly 1 parameter, %d given', __FUNCTION__, func_num_args()));
+        }
+
         return VarDebug::debug($var);
     }
 }
