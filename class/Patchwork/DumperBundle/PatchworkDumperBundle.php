@@ -20,15 +20,20 @@ class PatchworkDumperBundle extends Bundle
         parent::boot();
 
         $container = $this->container;
-        $dumper = 'cli' === PHP_SAPI ? 'patchwork.dumper.cli' : 'patchwork.data_collector.dumper';
 
-        VarDebug::setHandler(function ($var) use ($container, $dumper) {
-            $dumper = $container->get($dumper);
-            $collector = $container->get('patchwork.dumper.collector');
-            $dumper->dump($collector->collect($var));
-            VarDebug::setHandler(function ($var) use ($dumper, $collector) {
+        if ($container->getParameter('kernel.debug')) {
+            $dumper = 'cli' === PHP_SAPI ? 'patchwork.dumper.cli' : 'patchwork.data_collector.dumper';
+
+            VarDebug::setHandler(function ($var) use ($container, $dumper) {
+                $dumper = $container->get($dumper);
+                $collector = $container->get('patchwork.dumper.collector');
                 $dumper->dump($collector->collect($var));
+                VarDebug::setHandler(function ($var) use ($dumper, $collector) {
+                    $dumper->dump($collector->collect($var));
+                });
             });
-        });
+        } else {
+            VarDebug::setHandler(function () {});
+        }
     }
 }
