@@ -68,15 +68,20 @@ class HtmlDumper extends CliDumper
         $this->headerIsDumped = true;
 
         $p = 'sf-var-debug';
-        parent::dumpLine('<style>');
-        parent::dumpLine("a.$p-ref {{$this->styles['ref']}}");
+        $this->line .= '<style>';
+        parent::dumpLine(0);
+        $this->line .= "a.$p-ref {{$this->styles['ref']}}";
+        parent::dumpLine(0);
 
         foreach ($this->styles as $class => $style) {
-            parent::dumpLine("span.$p-$class {{$style}}");
+            $this->line .= "span.$p-$class {{$style}}";
+            parent::dumpLine(0);
         }
 
-        parent::dumpLine('</style>');
-        parent::dumpLine($this->dumpHeader);
+        $this->line .= '</style>';
+        parent::dumpLine(0);
+        $this->line .= $this->dumpHeader;
+        parent::dumpLine(0);
     }
 
     public function dumpStart()

@@ -8,8 +8,6 @@
  * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
  */
 
-use Patchwork\Dumper\Collector\PhpCollector;
-use Patchwork\Dumper\Dumper\CliDumper;
 use Patchwork\Dumper\VarDebug;
 
 if (!function_exists('debug')) {
