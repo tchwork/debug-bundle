@@ -63,65 +63,65 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor);
     }
 
-    public function enterArray(Cursor $cursor, $count, $indexed, $children, $cut)
+    public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
     {
         if ($indexed && $cursor->depth) {
             if ($this->dumpKey($cursor)) {
                 return;
             }
             $this->line .= '[';
-            if ($children) {
+            if ($hasChild) {
                 $this->dumpLine($cursor->depth);
             }
         } else {
-            $this->enterHash($cursor, 'array:'.$count, $children);
+            $this->enterHash($cursor, 'array:'.$count, $hasChild);
         }
     }
 
-    public function leaveArray(Cursor $cursor, $count, $indexed, $children, $cut)
+    public function leaveArray(Cursor $cursor, $count, $indexed, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, $indexed && $cursor->depth ? ']' : '}', $children, $cut);
+        $this->leaveHash($cursor, $indexed && $cursor->depth ? ']' : '}', $hasChild, $cut);
     }
 
-    public function enterObject(Cursor $cursor, $class, $children, $cut)
+    public function enterObject(Cursor $cursor, $class, $hasChild)
     {
-        $this->enterHash($cursor, $class, $children);
+        $this->enterHash($cursor, $class, $hasChild);
     }
 
-    public function leaveObject(Cursor $cursor, $class, $children, $cut)
+    public function leaveObject(Cursor $cursor, $class, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, '}', $children, $cut);
+        $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
-    public function enterResource(Cursor $cursor, $res, $children, $cut)
+    public function enterResource(Cursor $cursor, $res, $hasChild)
     {
-        $this->enterHash($cursor, 'resource:'.$res, $children);
+        $this->enterHash($cursor, 'resource:'.$res, $hasChild);
     }
 
-    public function leaveResource(Cursor $cursor, $res, $children, $cut)
+    public function leaveResource(Cursor $cursor, $res, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, '}', $children, $cut);
+        $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
-    protected function enterHash(Cursor $cursor, $type, $children)
+    protected function enterHash(Cursor $cursor, $type, $hasChild)
     {
         if ($this->dumpKey($cursor)) {
             return;
         }
 
         $this->line .= '{"_":"'.$this->position.':'.$type.'"';
-        if ($children) {
+        if ($hasChild) {
             $this->line .= ',';
             $this->dumpLine($cursor->depth);
         }
     }
 
-    protected function leaveHash(Cursor $cursor, $suffix, $children, $cut)
+    protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
         if (false !== $cursor->refTo) {
             return;
         }
-        if (!$children && $cut) {
+        if (!$hasChild && $cut) {
             $this->line .= ',"__cutBy": '.$cut;
         }
         $this->line .= $suffix;

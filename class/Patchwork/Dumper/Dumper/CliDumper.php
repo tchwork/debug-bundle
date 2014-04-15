@@ -166,61 +166,61 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
-    public function enterArray(Cursor $cursor, $count, $indexed, $children, $cut)
+    public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
     {
-        $this->enterHash($cursor, '[', $children);
+        $this->enterHash($cursor, '[', $hasChild);
     }
 
-    public function leaveArray(Cursor $cursor, $count, $indexed, $children, $cut)
+    public function leaveArray(Cursor $cursor, $count, $indexed, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, ']', $children, $cut);
+        $this->leaveHash($cursor, ']', $hasChild, $cut);
     }
 
-    public function enterObject(Cursor $cursor, $class, $children, $cut)
+    public function enterObject(Cursor $cursor, $class, $hasChild)
     {
-        $this->enterHash($cursor, $this->style('note', $class).'{', $children);
+        $this->enterHash($cursor, $this->style('note', $class).'{', $hasChild);
     }
 
-    public function leaveObject(Cursor $cursor, $class, $children, $cut)
+    public function leaveObject(Cursor $cursor, $class, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, '}', $children, $cut);
+        $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
-    public function enterResource(Cursor $cursor, $res, $children, $cut)
+    public function enterResource(Cursor $cursor, $res, $hasChild)
     {
-        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{', $children);
+        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{', $hasChild);
     }
 
-    public function leaveResource(Cursor $cursor, $res, $children, $cut)
+    public function leaveResource(Cursor $cursor, $res, $hasChild, $cut)
     {
-        $this->leaveHash($cursor, '}', $children, $cut);
+        $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
-    protected function enterHash(Cursor $cursor, $prefix, $children)
+    protected function enterHash(Cursor $cursor, $prefix, $hasChild)
     {
         $this->dumpKey($cursor);
 
         $this->line .= $prefix;
         if (false !== $cursor->refTo) {
             $this->line .= $this->style('ref', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
-        } elseif ($children) {
+        } elseif ($hasChild) {
             $this->endLine($cursor);
         }
     }
 
-    protected function leaveHash(Cursor $cursor, $suffix, $children, $cut)
+    protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
         if ($cut) {
             $this->line .= '…';
             if (0 < $cut) {
                 $this->line .= $cut;
             }
-            if ($children) {
+            if ($hasChild) {
                 $this->dumpLine($cursor->depth+1);
             }
         }
         $this->line .= $suffix;
-        $this->endLine($cursor, !$children);
+        $this->endLine($cursor, !$hasChild);
     }
 
     protected function dumpKey(Cursor $cursor)

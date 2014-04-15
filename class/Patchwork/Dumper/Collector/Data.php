@@ -55,12 +55,20 @@ class Data
                     $cursor->refIndex = $refs[$r] = ++$refs[0];
                 }
             }
-            if (isset($item->pos) && false === $cursor->refTo) {
-                $children = count($this->data[$item->pos]);
-            } else {
-                $children = 0;
-            }
             $cut = isset($item->cut) ? $item->cut : 0;
+
+            if (isset($item->pos) && false === $cursor->refTo) {
+                $children = $this->data[$item->pos];
+
+                if ($cursor->stop) {
+                    if ($cut >= 0) {
+                        $cut += count($children);
+                    }
+                    $children = array();
+                }
+            } else {
+                $children = array();
+            }
             switch (true) {
                 case isset($item->bin):
                     $dumper->dumpString($cursor, $item->bin, true, $cut);
@@ -73,23 +81,23 @@ class Data
                     return;
 
                 case isset($item->count):
-                    $dumper->enterArray($cursor, $item->count, !empty($item->indexed), $children, $cut);
-                    $this->dumpChildren($dumper, $cursor, $refs, $item, $children, $cut, empty($item->indexed) ? $cursor::HASH_ASSOC : $cursor::HASH_INDEXED);
-                    $dumper->leaveArray($cursor, $item->count, !empty($item->indexed), $children, $cut);
+                    $dumper->enterArray($cursor, $item->count, !empty($item->indexed), (bool) $children);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, empty($item->indexed) ? $cursor::HASH_ASSOC : $cursor::HASH_INDEXED);
+                    $dumper->leaveArray($cursor, $item->count, !empty($item->indexed), (bool) $children, $cut);
 
                     return;
 
                 case isset($item->class):
-                    $dumper->enterObject($cursor, $item->class, $children, $cut);
-                    $this->dumpChildren($dumper, $cursor, $refs, $item, $children, $cut, $cursor::HASH_OBJECT);
-                    $dumper->leaveObject($cursor, $item->class, $children, $cut);
+                    $dumper->enterObject($cursor, $item->class, (bool) $children);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $cursor::HASH_OBJECT);
+                    $dumper->leaveObject($cursor, $item->class, (bool) $children, $cut);
 
                     return;
 
                 case isset($item->res):
-                    $dumper->enterResource($cursor, $item->res, $children, $cut);
-                    $this->dumpChildren($dumper, $cursor, $refs, $item, $children, $cut, $cursor::HASH_RESOURCE);
-                    $dumper->leaveResource($cursor, $item->res, $children, $cut);
+                    $dumper->enterResource($cursor, $item->res, (bool) $children);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $cursor::HASH_RESOURCE);
+                    $dumper->leaveResource($cursor, $item->res, (bool) $children, $cut);
 
                     return;
             }
@@ -103,20 +111,27 @@ class Data
         }
     }
 
-    private function dumpChildren($dumper, $cursor, &$refs, $parent, $children, $hashCut, $hashType)
+    private function dumpChildren($dumper, $parentCursor, &$refs, $children, $hashCut, $hashType)
     {
         if ($children) {
-            $cursor = clone $cursor;
+            $cursor = clone $parentCursor;
             ++$cursor->depth;
             $cursor->hashType = $hashType;
             $cursor->hashIndex = 0;
-            $cursor->hashLength = $children;
+            $cursor->hashLength = count($children);
             $cursor->hashCut = $hashCut;
-            foreach ($this->data[$parent->pos] as $cursor->hashKey => $child) {
+            foreach ($children as $cursor->hashKey => $child) {
                 $this->dumpItem($dumper, $cursor, $refs, $child);
                 ++$cursor->hashIndex;
+                if ($cursor->stop) {
+                    $parentCursor->stop = true;
+
+                    return $hashCut >= 0 ? $hashCut + $children - $cursor->hashIndex : $hashCut;
+                }
             }
         }
+
+        return $hashCut;
     }
 
     /**
