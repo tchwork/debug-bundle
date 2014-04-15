@@ -11,10 +11,11 @@ class HtmlDumper extends CliDumper
 {
     public static $defaultOutputStream = 'php://output';
 
-    public $dumpPrefix;
-    public $dumpSuffix;
-
+    protected $dumpHeader = '';
+    protected $dumpPrefix = '<pre class=sf-var-debug style=white-space:pre>';
+    protected $dumpSuffix = '</pre>';
     protected $colors = true;
+    protected $headerIsDumped = false;
     protected $lastDepth = -1;
     protected $styles = array(
         'num'       => 'font-weight:bold;color:#0087FF',
@@ -33,22 +34,56 @@ class HtmlDumper extends CliDumper
     {
         parent::__construct($outputStream);
 
-        $this->setStyles($this->styles);
+        if (!isset($this->dumpHeader)) {
+            $this->setStyles($this->styles);
+        }
+    }
+
+    public function setLineDumper($callback)
+    {
+        $this->headerIsDumped = false;
+
+        return parent::setLineDumper($callback);
     }
 
     public function setStyles(array $styles)
     {
+        $this->headerIsDumped = false;
         $this->styles = $styles + $this->styles;
+    }
+
+    public function setDumpHeader($header)
+    {
+        $this->dumpHeader = $header;
+    }
+
+    public function setDumpBoudaries($prefix, $suffix)
+    {
+        $this->dumpPrefix = $prefix;
+        $this->dumpSuffix = $suffix;
+    }
+
+    public function dumpHeader()
+    {
+        $this->headerIsDumped = true;
 
         $p = 'sf-var-debug';
-        $s = "a.$p-ref{{$this->styles['ref']}}";
+        parent::dumpLine('<style>');
+        parent::dumpLine("a.$p-ref {{$this->styles['ref']}}");
 
         foreach ($this->styles as $class => $style) {
-            $s .= "span.$p-$class{{$style}}";
+            parent::dumpLine("span.$p-$class {{$style}}");
         }
 
-        $this->dumpPrefix = "<style>$s</style><pre class=$p style=white-space:pre>";
-        $this->dumpSuffix = '</pre>';
+        parent::dumpLine('</style>');
+        parent::dumpLine($this->dumpHeader);
+    }
+
+    public function dumpStart()
+    {
+        if (!$this->headerIsDumped) {
+            $this->dumpHeader();
+        }
     }
 
     protected function style($style, $val)
