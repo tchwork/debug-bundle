@@ -41,11 +41,14 @@ class SplCaster
 
     public static function castSplObjectStorage(\SplObjectStorage $c, array $a)
     {
-        foreach ($c as $k => $obj) {
-            $a[$k] = $obj;
-            if (null !== $i = $c->getInfo()) {
-                $a["\0~\0$k"] = $i;
-            }
+        $storage = array();
+        unset($a["\0gcdata"]); // Don't hit https://bugs.php.net/65967
+
+        foreach ($c as $obj) {
+            $storage[spl_object_hash($obj)] = array(
+                'object' => $obj,
+                'info' => $c->getInfo(),
+             );
         }
 
         return $a;
