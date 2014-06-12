@@ -22,13 +22,13 @@ This package provides a better `debug()` function, that you can use instead of
 Usage
 -----
 
-The recommended way to use Patchwork Dumper is [through composer](http://getcomposer.org).
+The recommended way to use this package is [through composer](http://getcomposer.org).
 Just create a `composer.json` file and run the `php composer.phar install`
 command to install it:
 
     {
         "require": {
-            "patchwork/dumper": "1.*"
+            "symfony/debug-bundle": "~2.6"
         }
     }
 
@@ -53,7 +53,7 @@ public function registerBundles()
 {
     $bundles = array(
         // ...
-        new Patchwork\DumperBundle\PatchworkDumperBundle(),
+        new \Symfony\Bundle\DebugBundle\DebugBundle(),
     );
 }
 ```
@@ -89,15 +89,3 @@ debug($var);
 ```
 
 ![Example output](doc/cli-example.png)
-
-License
--------
-
-Patchwork\Dumper is free software; you can redistribute it and/or modify it under
-the terms of the (at your option):
-- [Apache License v2.0](http://apache.org/licenses/LICENSE-2.0.txt), or
-- [GNU General Public License v2.0](http://gnu.org/licenses/gpl-2.0.txt).
-
-This code is extracted from the [Patchwork](http://pa.tchwork.com/) framework
-where it serves as the foundation for the debugging system. It is released here
-standalone in the hope that it can be used in a different context successfully!

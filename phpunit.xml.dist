@@ -4,8 +4,9 @@
     bootstrap="vendor/autoload.php"
 >
     <testsuites>
-        <testsuite name="Patchwork Dumperr Test Suite">
-            <directory>./tests/Patchwork/</directory>
+        <testsuite name="Patchwork Dumper Test Suite">
+            <directory>./src/Symfony/Component/*/Tests/</directory>
+            <directory>./src/Symfony/Bundle/*/Tests/</directory>
         </testsuite>
     </testsuites>
 </phpunit>

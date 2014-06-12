@@ -1,14 +1,29 @@
 <?php
 
-namespace Patchwork\Dumper\Collector;
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-class PhpCollector extends AbstractCollector
+namespace Symfony\Component\VarDumper\Cloner;
+
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
+class PhpCloner extends AbstractCloner
 {
-    protected function doCollect($var)
+    /**
+     * {@inheritdoc}
+     */
+    protected function doClone($var)
     {
         $i = 0;                         // Current iteration position in $queue
         $len = 1;                       // Length of $queue
-        $pos = 1;                       // Number of collected items
+        $pos = 1;                       // Number of cloned items
         $refs = 0;                      // Number of hard+soft references in $var
         $queue = array(array($var));    // This breadth-first queue is the return value
         $arrayRefs = array();           // Map of queue indexes to stub array objects

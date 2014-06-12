@@ -9,19 +9,21 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\VarDumper\Cloner;
+namespace Symfony\Component\VarDumper\Dumper;
+
+use Symfony\Component\VarDumper\Cloner\Data;
 
 /**
+ * DataDumperInterface for dumping Data objects.
+ *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface ClonerInterface
+interface DataDumperInterface
 {
     /**
-     * Clones a PHP variable.
+     * Dumps a Data object.
      *
-     * @param mixed $var Any PHP variable.
-     *
-     * @return Data The cloned variable represented by a Data object.
+     * @param Data $data A Data object.
      */
-    public function cloneVar($var);
+    public function dump(Data $data);
 }

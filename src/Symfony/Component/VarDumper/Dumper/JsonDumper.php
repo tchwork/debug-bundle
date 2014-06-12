@@ -1,13 +1,26 @@
 <?php
 
-namespace Patchwork\Dumper\Dumper;
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use Patchwork\Dumper\Collector\Data;
+namespace Symfony\Component\VarDumper\Dumper;
+
+use Symfony\Component\VarDumper\Cloner\Data;
 
 /**
  * JsonDumper implements the JSON convention to dump any PHP variable with high accuracy.
+ *
+ * @see Resources/doc/json-spec.md
+ *
+ * @author Nicolas Grekas <p@tchwork.com>
  */
-class JsonDumper extends AbstractDumper implements DumperInterface
+class JsonDumper extends AbstractDumper
 {
     protected static $reserved = array(
         '_' => 1,
@@ -20,6 +33,9 @@ class JsonDumper extends AbstractDumper implements DumperInterface
     protected $refsPos = array();
     protected $refs = array();
 
+    /**
+     * {@inheritdoc}
+     */
     public function dumpScalar(Cursor $cursor, $type, $val)
     {
         if ('string' === $type) {
@@ -44,6 +60,9 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function dumpString(Cursor $cursor, $str, $bin, $cut)
     {
         if ($this->dumpKey($cursor)) {
@@ -63,6 +82,9 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
     {
         if ($indexed && $cursor->depth) {
@@ -78,31 +100,53 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveArray(Cursor $cursor, $count, $indexed, $hasChild, $cut)
     {
         $this->leaveHash($cursor, $indexed && $cursor->depth ? ']' : '}', $hasChild, $cut);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterObject(Cursor $cursor, $class, $hasChild)
     {
         $this->enterHash($cursor, $class, $hasChild);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveObject(Cursor $cursor, $class, $hasChild, $cut)
     {
         $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterResource(Cursor $cursor, $res, $hasChild)
     {
         $this->enterHash($cursor, 'resource:'.$res, $hasChild);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveResource(Cursor $cursor, $res, $hasChild, $cut)
     {
         $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
+    /**
+     * Generic dumper used while entering any hash-style structure.
+     *
+     * @param Cursor $cursor   The Cursor position in the dump.
+     * @param string $type     The type of the hash structure.
+     * @param bool   $hasChild When the dump of the hash has child item.
+     */
     protected function enterHash(Cursor $cursor, $type, $hasChild)
     {
         if ($this->dumpKey($cursor)) {
@@ -116,6 +160,14 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * Generic dumper used while leaving any hash-style structure.
+     *
+     * @param Cursor $cursor   The Cursor position in the dump.
+     * @param string $suffix   The string that ends the next dumped line.
+     * @param bool   $hasChild When the dump of the hash has child item.
+     * @param int    $cut      The number of items the hash has been cut by.
+     */
     protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
         if (false !== $cursor->refTo) {
@@ -128,6 +180,9 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor);
     }
 
+    /**
+     * JSON-encodes a string.
+     */
     protected function encodeString($str)
     {
         static $map = array(
@@ -150,6 +205,11 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         $this->line .= '"'.str_replace($map[0], $map[1], $str).'"';
     }
 
+    /**
+     * Dumps a key in a hash structure.
+     *
+     * @param Cursor $cursor The Cursor position in the dump.
+     */
     protected function dumpKey(Cursor $cursor)
     {
         ++$this->position;
@@ -193,15 +253,25 @@ class JsonDumper extends AbstractDumper implements DumperInterface
         }
     }
 
-    public function dumpEnd()
+    /**
+     * {@inheritdoc}
+     */
+    public function dumpLine($depth)
     {
-        $this->refsPos = array();
-        $this->refs = array();
-        $this->position = 0;
+        parent::dumpLine($depth);
 
-        parent::dumpEnd();
+        if (false === $depth) {
+            $this->refsPos = array();
+            $this->refs = array();
+            $this->position = 0;
+        }
     }
 
+    /**
+     * Finishes a line and dumps it.
+     *
+     * @param Cursor $cursor The current Cursor position.
+     */
     protected function endLine(Cursor $cursor)
     {
         $depth = $cursor->depth;

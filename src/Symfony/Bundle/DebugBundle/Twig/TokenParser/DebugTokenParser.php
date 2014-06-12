@@ -9,7 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Patchwork\DumperBundle\Twig;
+namespace Symfony\Bundle\DebugBundle\Twig\TokenParser;
+
+use Symfony\Bundle\DebugBundle\Twig\Node\DebugNode;
 
 /**
  * Token Parser for the 'debug' tag.

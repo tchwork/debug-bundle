@@ -5,29 +5,36 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="patchwork.twig.dumper_extension.class">Patchwork\DumperBundle\Twig\Extension</parameter>
-        <parameter key="patchwork.data_collector.dumper.class">Patchwork\DumperBundle\DataCollector</parameter>
-        <parameter key="patchwork.dumper.collector.class">Patchwork\Dumper\Collector\PhpCollector</parameter>
-        <parameter key="patchwork.dumper.json.class">Patchwork\Dumper\Dumper\JsonDumper</parameter>
-        <parameter key="patchwork.dumper.html.class">Patchwork\Dumper\Dumper\HtmlDumper</parameter>
-        <parameter key="patchwork.dumper.cli.class">Patchwork\Dumper\Dumper\CliDumper</parameter>
+        <parameter key="twig.extension.debug.class">Symfony\Bundle\DebugBundle\Twig\DebugExtension</parameter>
+        <parameter key="data_collector.debug.class">Symfony\Bundle\DebugBundle\DataCollector\DebugDataCollector</parameter>
+        <parameter key="debug.debug_listener.class">Symfony\Bundle\DebugBundle\EventListener\DebugListener</parameter>
+        <parameter key="var_dumper.cloner.class">Symfony\Component\VarDumper\Cloner\PhpCloner</parameter>
+        <parameter key="var_dumper.json_dumper.class">Symfony\Component\VarDumper\Dumper\JsonDumper</parameter>
+        <parameter key="var_dumper.html_dumper.class">Symfony\Component\VarDumper\Dumper\HtmlDumper</parameter>
+        <parameter key="var_dumper.cli_dumper.class">Symfony\Component\VarDumper\Dumper\CliDumper</parameter>
     </parameters>
 
     <services>
-        <service id="patchwork.twig.dumper_extension" class="%patchwork.twig.dumper_extension.class%">
+        <service id="twig.extension.debug" class="%twig.extension.debug.class%">
             <tag name="twig.extension" />
         </service>
 
-        <service id="patchwork.data_collector.dumper" class="%patchwork.data_collector.dumper.class%">
-            <tag name="data_collector" template="@PatchworkDumper/Collector/var_debug.html.twig" id="patchwork_dumper" />
+        <service id="data_collector.debug" class="%data_collector.debug.class%">
+            <tag name="data_collector" template="@Debug/Collector/debug.html.twig" id="debug" />
             <argument>%kernel.root_dir%</argument>
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
         </service>
 
-        <service id="patchwork.dumper.collector" class="%patchwork.dumper.collector.class%" />
-        <service id="patchwork.dumper.json" class="%patchwork.dumper.json.class%" />
-        <service id="patchwork.dumper.html" class="%patchwork.dumper.html.class%" />
-        <service id="patchwork.dumper.cli" class="%patchwork.dumper.cli.class%" />
+        <service id="debug.debug_listener" class="%debug.debug_listener.class%">
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="service_container" />
+            <argument>data_collector.debug</argument>
+        </service>
+
+        <service id="var_dumper.cloner" class="%var_dumper.cloner.class%" />
+        <service id="var_dumper.json_dumper" class="%var_dumper.json_dumper.class%" />
+        <service id="var_dumper.html_dumper" class="%var_dumper.html_dumper.class%" />
+        <service id="var_dumper.cli_dumper" class="%var_dumper.cli_dumper.class%" />
     </services>
 
 </container>

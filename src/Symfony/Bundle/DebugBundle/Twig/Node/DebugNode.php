@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Patchwork\DumperBundle\Twig;
+namespace Symfony\Bundle\DebugBundle\Twig\Node;
 
 /**
  * @author Julien Galenski <julien.galenski@gmail.com>
@@ -47,19 +47,19 @@ class DebugNode extends \Twig_Node
                 ->outdent()
                 ->write("}\n")
                 ->addDebugInfo($this)
-                ->write('\Patchwork\Dumper\VarDebug::debug($vars);'."\n")
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug($vars);'."\n")
             ;
         } elseif (1 === $values->count()) {
             $compiler
                 ->addDebugInfo($this)
-                ->write('\Patchwork\Dumper\VarDebug::debug(')
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug(')
                 ->subcompile($values->getNode(0))
                 ->raw(");\n")
             ;
         } else {
             $compiler
                 ->addDebugInfo($this)
-                ->write('\Patchwork\Dumper\VarDebug::debug(array(')
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug(array(')
                 ->indent()
             ;
             foreach ($values as $node) {

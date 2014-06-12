@@ -1,12 +1,28 @@
 <?php
 
-namespace Patchwork\Dumper\Caster;
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Symfony\Component\VarDumper\Caster;
 
 /**
+ * Casts common resource types to array representation.
+ *
  * @author Nicolas Grekas <p@tchwork.com>
  */
 class ResourceCaster
 {
+    public static function castCurl($h, array $a)
+    {
+        return curl_getinfo($h);
+    }
+
     public static function castDba($dba, array $a)
     {
         $list = dba_list();
@@ -22,7 +38,12 @@ class ResourceCaster
 
     public static function castStream($stream, array $a)
     {
-        return stream_get_meta_data($stream);
+        return stream_get_meta_data($stream) + static::castStreamContext($stream, $a);
+    }
+
+    public static function castStreamContext($stream, array $a)
+    {
+        return stream_context_get_params($stream);
     }
 
     public static function castGd($gd, array $a)

@@ -1,14 +1,29 @@
 <?php
 
-namespace Patchwork\Dumper\Collector;
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use Patchwork\Dumper\Dumper\DumperInterface;
-use Patchwork\Dumper\Dumper\Cursor;
+namespace Symfony\Component\VarDumper\Cloner;
 
+use Symfony\Component\VarDumper\Dumper\DumperInternalsInterface;
+use Symfony\Component\VarDumper\Dumper\Cursor;
+
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
 class Data
 {
     private $data;
 
+    /**
+     * @param array $data A array as returned by ClonerInterface::cloneVar().
+     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,14 +34,23 @@ class Data
         return $this->data;
     }
 
-    public function dump(DumperInterface $dumper)
+    /**
+     * Dumps data with a DumperInternalsInterface dumper.
+     */
+    public function dump(DumperInternalsInterface $dumper)
     {
         $refs = array(0);
-        $dumper->dumpStart();
         $this->dumpItem($dumper, new Cursor, $refs, $this->data[0][0]);
-        $dumper->dumpEnd();
     }
 
+    /**
+     * Breadth-first dumping of items.
+     *
+     * @param DumperInternalsInterface $dumper The dumper being used for dumping.
+     * @param Cursor                   $cursor A cursor used for tracking dumper state position.
+     * @param array                    &$refs  A map of all references discovered while dumping.
+     * @param mixed                    $item   A stub stdClass or the original value being dumped.
+     */
     private function dumpItem($dumper, $cursor, &$refs, $item)
     {
         $cursor->refIndex = $cursor->refTo = $cursor->refIsHard = false;
@@ -111,6 +135,18 @@ class Data
         }
     }
 
+    /**
+     * Dumps children of hash structures.
+     *
+     * @param DumperInternalsInterface $dumper
+     * @param Cursor                   $parentCursor The cursor of the parent hash.
+     * @param array                    &$refs        A map of all references discovered while dumping.
+     * @param array                    $children     The children to dump.
+     * @param int                      $hashCut      The number of items removed from the original hash.
+     * @param int                      $hashType     A Cursor::HASH_* const.
+     *
+     * @return int The final number of removed items.
+     */
     private function dumpChildren($dumper, $parentCursor, &$refs, $children, $hashCut, $hashType)
     {
         if ($children) {
@@ -135,6 +171,12 @@ class Data
     }
 
     /**
+     * Portable variant of utf8_encode()
+     *
+     * @param string $s
+     *
+     * @return string
+     *
      * @internal
      */
     public static function utf8Encode($s)

@@ -1,18 +1,21 @@
-<?php // vi: set fenc=utf-8 ts=4 sw=4 et:
+<?php
+
 /*
- * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
+ * This file is part of the Symfony package.
  *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the (at your option):
- * Apache License v2.0 (http://apache.org/licenses/LICENSE-2.0.txt), or
- * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Patchwork\Dumper\Caster;
+namespace Symfony\Component\VarDumper\Caster;
 
-use Patchwork\Dumper\Exception\ThrowingCasterException;
+use Symfony\Component\VarDumper\Exception\ThrowingCasterException;
 
 /**
+ * Casts common Exception classes to array representation.
+ *
  * @author Nicolas Grekas <p@tchwork.com>
  */
 class ExceptionCaster
@@ -43,7 +46,7 @@ class ExceptionCaster
 
         static::filterTrace($trace, static::$traceArgs);
 
-        if (isset($trace)) {
+        if (null !== $trace) {
             $a["\0Exception\0trace"] = $trace;
         }
         if (empty($a["\0Exception\0previous"])) {

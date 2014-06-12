@@ -1,7 +1,7 @@
 {% extends '@WebProfiler/Profiler/layout.html.twig' %}
 
 {% block toolbar %}
-    {% set dumps_count = collector.dumps|length %}
+    {% set dumps_count = collector.dumpsCount %}
 
     {% if dumps_count %}
         {% set icon %}
@@ -12,15 +12,12 @@
         {% set text %}
             <div class="sf-toolbar-info-piece">
                 <b>debug()</b>
-                <ul>
-                    {% for dump in collector.dumps %}
-                    <li>
-                    in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
-                    on line {{ dump.line }}
-                    </li>
-                    {% endfor %}
-                </ul>
             </div>
+            {% for dump in collector.dumpsExcerpts %}
+            <div class="sf-toolbar-info-piece">
+                {{ dump.dataExcerpt }}
+            </div>
+            {% endfor %}
         {% endset %}
 
         {% include '@WebProfiler/Profiler/toolbar_item.html.twig' with { 'link': true } %}
@@ -34,7 +31,7 @@
             {% endspaceless %}</span>
         <strong>debug()</strong>
         <span class="count">
-            <span>{{ collector.dumps|length }}</span>
+            <span>{{ collector.dumpsCount }}</span>
         </span>
     </span>
 {% endblock %}
@@ -42,20 +39,20 @@
 {% block panel %}
     <h2>debug()</h2>
 
-    <link rel="stylesheet" href="{{ asset('bundles/patchworkdumper/css/var_debug.css') }}" />
-    <script src="{{ asset('bundles/patchworkdumper/js/var_debug.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('bundles/debug/css/debug.css') }}" />
+    <script src="{{ asset('bundles/debug/js/debug.js') }}"></script>
 
     <ul id="var_debug" class="alt">
-        {% for dump in collector.dumps %}
+        {% for dump in collector.dumps(true) %}
         <li class="dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
-            on line {{ dump.line }}:
+            line {{ dump.line }}:
             <a onclick="arrayToggle(this)"> ⊞ </a><span class="key"></span>
             <span class="array-compact">
-            {% if dump.excerpt %}{{ dump.excerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
+            {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>
 
-            <pre class="event"><script>document.write(htmlizeEvent({{ dump.json|raw }}))</script></pre>
+            <pre class="event"><script>document.write(htmlizeEvent({{ dump.data|raw }}))</script></pre>
         </li>
         {% endfor %}
     </ul>

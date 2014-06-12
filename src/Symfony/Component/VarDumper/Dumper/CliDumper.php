@@ -1,18 +1,27 @@
 <?php
 
-namespace Patchwork\Dumper\Dumper;
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Symfony\Component\VarDumper\Dumper;
 
 /**
- * CliDumper dumps variable for command line output.
+ * CliDumper dumps variables for command line output.
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class CliDumper extends AbstractDumper implements DumperInterface
+class CliDumper extends AbstractDumper
 {
-    public static $defaultColors = null;
+    public static $defaultColors;
     public static $defaultOutputStream = 'php://stderr';
 
-    protected $colors = null;
+    protected $colors;
     protected $maxStringWidth = 0;
     protected $styles = array(
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
@@ -28,23 +37,36 @@ class CliDumper extends AbstractDumper implements DumperInterface
         'meta'      => '38;5;27',
     );
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($outputStream = null)
     {
         parent::__construct($outputStream);
 
-        if (!isset($this->colors) && !isset($outputStream)) {
-            if (!isset(static::$defaultColors)) {
+        if (null === $this->colors && null === $outputStream) {
+            if (null === static::$defaultColors) {
                 static::$defaultColors = $this->supportsColors();
             }
             $this->colors = static::$defaultColors;
         }
     }
 
+    /**
+     * Enables/disables colored output.
+     *
+     * @param bool $colors
+     */
     public function setColors($colors)
     {
-        $this->colors = !!$colors;
+        $this->colors = (bool) $colors;
     }
 
+    /**
+     * Sets the maximum number of characters per line for dumped strings.
+     *
+     * @param int $maxStringWidth
+     */
     public function setMaxStringWidth($maxStringWidth)
     {
         if (function_exists('iconv')) {
@@ -52,11 +74,19 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * Configures styles.
+     *
+     * @param array $styles A map of style namaes to style definitions.
+     */
     public function setStyles(array $styles)
     {
         $this->styles = $styles + $this->styles;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function dumpScalar(Cursor $cursor, $type, $val)
     {
         if ('string' === $type) {
@@ -105,6 +135,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function dumpString(Cursor $cursor, $str, $bin, $cut)
     {
         $this->dumpKey($cursor);
@@ -166,36 +199,61 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
     {
         $this->enterHash($cursor, '[', $hasChild);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveArray(Cursor $cursor, $count, $indexed, $hasChild, $cut)
     {
         $this->leaveHash($cursor, ']', $hasChild, $cut);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterObject(Cursor $cursor, $class, $hasChild)
     {
         $this->enterHash($cursor, $this->style('note', $class).'{', $hasChild);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveObject(Cursor $cursor, $class, $hasChild, $cut)
     {
         $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function enterResource(Cursor $cursor, $res, $hasChild)
     {
         $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{', $hasChild);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function leaveResource(Cursor $cursor, $res, $hasChild, $cut)
     {
         $this->leaveHash($cursor, '}', $hasChild, $cut);
     }
 
+    /**
+     * Generic dumper used while entering any hash-style structure.
+     *
+     * @param Cursor $cursor   The Cursor position in the dump.
+     * @param string $prefix   The string that starts the next dumped line.
+     * @param bool   $hasChild When the dump of the hash has child item.
+     */
     protected function enterHash(Cursor $cursor, $prefix, $hasChild)
     {
         $this->dumpKey($cursor);
@@ -208,6 +266,14 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * Generic dumper used while leaving any hash-style structure.
+     *
+     * @param Cursor $cursor   The Cursor position in the dump.
+     * @param string $suffix   The string that ends the next dumped line.
+     * @param bool   $hasChild When the dump of the hash has child item.
+     * @param int    $cut      The number of items the hash has been cut by.
+     */
     protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
         if ($cut) {
@@ -223,13 +289,16 @@ class CliDumper extends AbstractDumper implements DumperInterface
         $this->endLine($cursor, !$hasChild);
     }
 
+    /**
+     * Dumps a key in a hash structure.
+     *
+     * @param Cursor $cursor The Cursor position in the dump.
+     */
     protected function dumpKey(Cursor $cursor)
     {
         if (null !== $key = $cursor->hashKey) {
             switch ($cursor->hashType) {
                 case $cursor::HASH_INDEXED:
-                    return;
-
                 case $cursor::HASH_RESOURCE:
                 case $cursor::HASH_ASSOC:
                     $style = 'meta';
@@ -238,7 +307,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
                 case $cursor::HASH_OBJECT:
                     if (!isset($key[0]) || "\0" !== $key[0]) {
                         $style = 'public';
-                    } else {
+                    } elseif (0 < strpos($key, "\0", 1)) {
                         $key = explode("\0", substr($key, 1), 2);
 
                         switch ($key[0]) {
@@ -248,6 +317,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
                         }
 
                         $key = $key[1];
+                    } else {
+                        // This case should not happen
+                        $style = 'private';
                     }
                     break;
             }
@@ -256,6 +328,12 @@ class CliDumper extends AbstractDumper implements DumperInterface
         }
     }
 
+    /**
+     * Finishes a line and dumps it.
+     *
+     * @param Cursor $cursor  The current Cursor position.
+     * @param bool   $showRef Show/hide the current ref index.
+     */
     protected function endLine(Cursor $cursor, $showRef = true)
     {
         if ($showRef && false !== $cursor->refIndex) {
@@ -264,9 +342,19 @@ class CliDumper extends AbstractDumper implements DumperInterface
         $this->dumpLine($cursor->depth);
     }
 
+    /**
+     * Decorates a value with some style.
+     *
+     * @param string $style The type of style being applied.
+     * @param string $val   The value being styled.
+     *
+     * @return string The value with style decoration.
+     */
     protected function style($style, $val)
     {
-        isset($this->colors) or $this->colors = $this->supportsColors();
+        if (null === $this->colors) {
+            $this->colors = $this->supportsColors($this->outputStream);
+        }
 
         if (!$this->colors) {
             return $val;
@@ -294,6 +382,9 @@ class CliDumper extends AbstractDumper implements DumperInterface
         return sprintf("\033[%sm%s\033[m", $this->styles[$style], $val);
     }
 
+    /**
+     * @return bool Tells if the current output stream supports ANSI colors or not.
+     */
     protected function supportsColors()
     {
         if (isset($_SERVER['argv'][1])) {
@@ -323,7 +414,7 @@ class CliDumper extends AbstractDumper implements DumperInterface
             return static::$defaultColors;
         }
 
-        if (empty($this->outputStream)) {
+        if (null === $this->outputStream) {
             return false;
         }
 

@@ -1,22 +1,28 @@
-<?php // vi: set fenc=utf-8 ts=4 sw=4 et:
+<?php
+
 /*
- * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
+ * This file is part of the Symfony package.
  *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the (at your option):
- * Apache License v2.0 (http://apache.org/licenses/LICENSE-2.0.txt), or
- * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Patchwork\DumperBundle\Twig;
+namespace Symfony\Bundle\DebugBundle\Twig;
 
-use Patchwork\Dumper\VarDebug;
+use Symfony\Bundle\DebugBundle\DebugBundle;
 
-class Extension extends \Twig_Extension
+/**
+ * Provides integration of the debug() function with Twig.
+ *
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
+class DebugExtension extends \Twig_Extension
 {
     public function getTokenParsers()
     {
-        return array(new DebugTokenParser());
+        return array(new TokenParser\DebugTokenParser());
     }
 
     public function getFunctions()
@@ -28,7 +34,7 @@ class Extension extends \Twig_Extension
 
     public function getName()
     {
-        return 'patchwork_dumper';
+        return 'debug';
     }
 
     public function debug(\Twig_Environment $env, $context)
@@ -41,6 +47,7 @@ class Extension extends \Twig_Extension
         if (2 === $count) {
             $vars = array();
             foreach ($context as $key => $value) {
+                // remove embedded templates (macros) from the context
                 if (!$value instanceof \Twig_Template) {
                     $vars[$key] = $value;
                 }
@@ -51,7 +58,7 @@ class Extension extends \Twig_Extension
             $vars = array_slice(func_get_args(), 2);
         }
 
-        VarDebug::debug($vars);
+        DebugBundle::debug($vars);
 
         return '';
     }

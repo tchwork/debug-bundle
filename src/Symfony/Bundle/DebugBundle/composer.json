@@ -1,0 +1,37 @@
+{
+    "name": "symfony/debug-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony DebugBundle",
+    "keywords": [],
+    "homepage": "http://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "http://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/config": "~2.4",
+        "symfony/dependency-injection": "~2.2",
+        "symfony/event-dispatcher": "~2.5",
+        "symfony/http-kernel": "~2.5",
+        "symfony/var-dumper": "~2.6"
+    },
+    "autoload": {
+        "psr-0": { "Symfony\\Bundle\\DebugBundle\\": "" },
+        "files": [ "Resources/functions/debug.php" ]
+    },
+    "target-dir": "Symfony/Bundle/DebugBundle",
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.6-dev"
+        }
+    }
+}

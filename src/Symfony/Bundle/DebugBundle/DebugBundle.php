@@ -1,39 +1,80 @@
-<?php // vi: set fenc=utf-8 ts=4 sw=4 et:
+<?php
+
 /*
- * Copyright (C) 2014 Nicolas Grekas - p@tchwork.com
+ * This file is part of the Symfony package.
  *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the (at your option):
- * Apache License v2.0 (http://apache.org/licenses/LICENSE-2.0.txt), or
- * GNU General Public License v2.0 (http://gnu.org/licenses/gpl-2.0.txt).
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Patchwork\DumperBundle;
+namespace Symfony\Bundle\DebugBundle;
 
-use Patchwork\Dumper\VarDebug;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\VarDumper\Cloner\ExtCloner;
+use Symfony\Component\VarDumper\Cloner\PhpCloner;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
+use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
-class PatchworkDumperBundle extends Bundle
+/**
+ * @author Nicolas Grekas <p@tchwork.com>
+ */
+class DebugBundle extends Bundle
 {
+    private static $handler;
+
     public function boot()
     {
-        parent::boot();
+        if ($this->container->getParameter('kernel.debug')) {
+            $container = $this->container;
 
-        $container = $this->container;
-
-        if ($container->getParameter('kernel.debug')) {
-            $dumper = 'cli' === PHP_SAPI ? 'patchwork.dumper.cli' : 'patchwork.data_collector.dumper';
-
-            VarDebug::setHandler(function ($var) use ($container, $dumper) {
-                $dumper = $container->get($dumper);
-                $collector = $container->get('patchwork.dumper.collector');
-                $dumper->dump($collector->collect($var));
-                VarDebug::setHandler(function ($var) use ($dumper, $collector) {
-                    $dumper->dump($collector->collect($var));
-                });
+            // This default config for CLI mode is overriden in HTTP mode on REQUEST event
+            static::setHandler(function ($var) use ($container) {
+                $dumper = $container->get('var_dumper.cli_dumper');
+                $cloner = $container->get('var_dumper.cloner');
+                $handler = function ($var) use ($dumper, $cloner) {$dumper->dump($cloner->cloneVar($var));};
+                static::setHandler($handler);
+                $handler($var);
             });
-        } else {
-            VarDebug::setHandler(function () {});
         }
+    }
+
+    public static function debug($var)
+    {
+        if (null === self::$handler) {
+            $cloner = extension_loaded('symfony_debug') ? new ExtCloner() : new PhpCloner();
+            $dumper = 'cli' === PHP_SAPI ? new CliDumper() : new HtmlDumper();
+            self::$handler = function ($var) use ($cloner, $dumper) {
+                $dumper->dump($cloner->cloneVar($var));
+            };
+        }
+
+        $h = self::$handler;
+
+        if (is_array($h)) {
+            return $h[0]->{$h[1]}($var);
+        }
+
+        return $h($var);
+    }
+
+    public static function setHandler($callable)
+    {
+        if (!is_callable($callable)) {
+            throw new \InvalidArgumentException('Invalid PHP callback.');
+        }
+
+        $prevHandler = self::$handler;
+
+        if (is_array($callable)) {
+            if (!is_object($callable[0])) {
+                self::$handler = $callable[0].'::'.$callable[1];
+            }
+        } else {
+            self::$handler = $callable;
+        }
+
+        return $prevHandler;
     }
 }
