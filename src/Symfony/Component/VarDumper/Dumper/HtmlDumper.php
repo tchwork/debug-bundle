@@ -86,9 +86,10 @@ class HtmlDumper extends CliDumper
     protected function dumpHeader()
     {
         $this->headerIsDumped = true;
+        $line = $this->line;
 
         $p = 'sf-var-debug';
-        $this->line .= '<style>';
+        $this->line = '<!DOCTYPE html><style>';
         parent::dumpLine(0);
         $this->line .= "a.$p-ref {{$this->styles['ref']}}";
         parent::dumpLine(0);
@@ -102,6 +103,8 @@ class HtmlDumper extends CliDumper
         parent::dumpLine(0);
         $this->line .= $this->dumpHeader;
         parent::dumpLine(0);
+
+        $this->line = $line;
     }
 
     /**
@@ -147,21 +150,23 @@ class HtmlDumper extends CliDumper
      */
     protected function dumpLine($depth)
     {
+        if (!$this->headerIsDumped) {
+            $this->dumpHeader();
+        }
+
         switch ($this->lastDepth - $depth) {
             case +1: $this->line = '</span>'.$this->line; break;
             case -1: $this->line = "<span class=sf-var-debug-$depth>$this->line"; break;
         }
 
         if (-1 === $this->lastDepth) {
-            if (!$this->headerIsDumped) {
-                $this->dumpHeader();
-            }
             $this->line = $this->dumpPrefix.$this->line;
         }
 
         if (false === $depth) {
             $this->lastDepth = -1;
             $this->line .= $this->dumpSuffix;
+            parent::dumpLine(0);
         } else {
             $this->lastDepth = $depth;
         }
