@@ -26,5 +26,11 @@
             "Symfony\\Bundle\\DebugBundle\\": "src",
             "Symfony\\Component\\VarDumper\\": "src"
         }
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.2-dev"
+        }
     }
 }
