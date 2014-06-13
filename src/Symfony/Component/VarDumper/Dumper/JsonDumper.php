@@ -153,7 +153,14 @@ class JsonDumper extends AbstractDumper
             return;
         }
 
-        $this->line .= '{"_":"'.$this->position.':'.$type.'"';
+        $this->line .= '{"_":';
+        $type = $this->position.':'.$type;
+        if (!preg_match('//u', $type)) {
+            $type = 'b`'.Data::utf8Encode($type);
+        } elseif (false !== strpos($type, '`')) {
+            $type = 'u`'.$type;
+        }
+        $this->encodeString($type);
         if ($hasChild) {
             $this->line .= ',';
             $this->dumpLine($cursor->depth);

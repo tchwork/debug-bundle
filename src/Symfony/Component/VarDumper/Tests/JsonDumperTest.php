@@ -25,6 +25,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
 
         $dumper = new JsonDumper();
         $cloner = new PhpCloner();
+        $var['dumper'] = $dumper;
         $data = $cloner->cloneVar($var);
 
         $var['file'] = str_replace('\\', '\\\\', $var['file']);
@@ -37,7 +38,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $closureLabel = PHP_VERSION_ID >= 50400 ? 'public method' : 'function';
 
         $this->assertSame(
-'{"_":"1:array:24",
+'{"_":"1:array:25",
   "number": 1,
   "n`0": 1.1,
   "const": null,
@@ -78,7 +79,29 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "snobj": "R`35:30",
   "snobj2": "r`36:30",
   "file": "'.$var['file'].'",
-  "__refs": {"31":[-32],"3":[-33],"25":[34],"30":[-35,36]}
+  "dumper": {"_":"38:Symfony\\\\Component\\\\VarDumper\\\\Dumper\\\\JsonDumper",
+    "*:position": 0,
+    "*:refsPos": [],
+    "*:refs": [],
+    "*:line": "",
+    "*:lineDumper": [
+      "r`44:38",
+      "echoLine"
+    ],
+    "*:outputStream": {"_":"46:resource:stream",
+      "wrapper_type": "PHP",
+      "stream_type": "Output",
+      "mode": "wb",
+      "unread_bytes": 0,
+      "seekable": false,
+      "uri": "php://output",
+      "timed_out": false,
+      "blocked": true,
+      "eof": false,
+      "options": []
+    }
+  },
+  "__refs": {"31":[-32],"3":[-33],"25":[34],"30":[-35,36],"38":[44]}
 }
 ',
             $json
