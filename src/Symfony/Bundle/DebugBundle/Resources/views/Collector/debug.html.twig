@@ -39,8 +39,13 @@
 {% block panel %}
     <h2>debug()</h2>
 
-    <link rel="stylesheet" href="{{ asset('bundles/debug/css/debug.css') }}" />
-    <script src="{{ asset('bundles/debug/js/debug.js') }}"></script>
+    <style>
+        {% include '@Debug/Profiler/debug.css.twig' %}
+    </style>
+
+    <script>
+        {% include '@Debug/Profiler/debug.js.twig' %}
+    </script>
 
     <ul id="var_debug" class="alt">
         {% for dump in collector.dumps(true) %}
