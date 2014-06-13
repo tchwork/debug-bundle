@@ -26,15 +26,13 @@ use Symfony\Component\VarDumper\Dumper\DataDumperInterface;
  */
 class DebugDataCollector extends DataCollector implements DataDumperInterface
 {
-    private $rootDir;
     private $stopwatch;
     private $isCollected = true;
     private $clonesRoot;
     private $clonesCount = 0;
 
-    public function __construct($rootDir, Stopwatch $stopwatch = null)
+    public function __construct(Stopwatch $stopwatch = null)
     {
-        $this->rootDir = dirname($rootDir).DIRECTORY_SEPARATOR;
         $this->stopwatch = $stopwatch;
         $this->clonesRoot = $this;
     }

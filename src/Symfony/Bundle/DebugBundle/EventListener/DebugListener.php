@@ -27,8 +27,8 @@ class DebugListener implements EventSubscriberInterface
     private $dumper;
 
     /**
-     * @param ContainerInterface $container
-     * @param string             $dumper var_dumper dumper service that is used
+     * @param ContainerInterface $container Service container, for lazy loading.
+     * @param string             $dumper    var_dumper dumper service to use.
      */
     public function __construct(ContainerInterface $container, $dumper)
     {

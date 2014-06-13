@@ -25,41 +25,8 @@ class DebugExtension extends \Twig_Extension
         return array(new TokenParser\DebugTokenParser());
     }
 
-    public function getFunctions()
-    {
-        return array(
-            new \Twig_SimpleFunction('debug', array($this, 'debug'), array('is_safe' => array('html'), 'needs_context' => true, 'needs_environment' => true)),
-        );
-    }
-
     public function getName()
     {
         return 'debug';
-    }
-
-    public function debug(\Twig_Environment $env, $context)
-    {
-        if (!$env->isDebug()) {
-            return;
-        }
-
-        $count = func_num_args();
-        if (2 === $count) {
-            $vars = array();
-            foreach ($context as $key => $value) {
-                // remove embedded templates (macros) from the context
-                if (!$value instanceof \Twig_Template) {
-                    $vars[$key] = $value;
-                }
-            }
-        } elseif (3 === $count) {
-            $vars = func_get_arg(2);
-        } else {
-            $vars = array_slice(func_get_args(), 2);
-        }
-
-        DebugBundle::debug($vars);
-
-        return '';
     }
 }
