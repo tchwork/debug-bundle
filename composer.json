@@ -15,13 +15,8 @@
         "php": ">=5.3.3",
         "symfony/config": "~2.4",
         "symfony/dependency-injection": "~2.2",
-        "symfony/event-dispatcher": "~2.5",
-        "symfony/http-kernel": "~2.5",
-        "symfony/var-dumper": "~2.6"
-    },
-    "replace": {
-        "symfony/debug-bundle": "self.version",
-        "symfony/var-dumper": "self.version"
+        "symfony/event-dispatcher": "~2.3",
+        "symfony/http-kernel": "~2.3"
     },
     "autoload": {
         "files": [
@@ -30,12 +25,6 @@
         "psr-0": {
             "Symfony\\Bundle\\DebugBundle\\": "src",
             "Symfony\\Component\\VarDumper\\": "src"
-        }
-    },
-    "minimum-stability": "dev",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.6-dev"
         }
     }
 }

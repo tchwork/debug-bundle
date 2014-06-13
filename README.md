@@ -28,7 +28,7 @@ command to install it:
 
     {
         "require": {
-            "symfony/debug-bundle": "~2.6"
+            "patchwork/dumper": "~1.2"
         }
     }
 
