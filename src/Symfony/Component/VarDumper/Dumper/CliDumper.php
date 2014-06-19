@@ -38,21 +38,6 @@ class CliDumper extends AbstractDumper
     );
 
     /**
-     * {@inheritdoc}
-     */
-    public function __construct($outputStream = null)
-    {
-        parent::__construct($outputStream);
-
-        if (null === $this->colors && null === $outputStream) {
-            if (null === static::$defaultColors) {
-                static::$defaultColors = $this->supportsColors();
-            }
-            $this->colors = static::$defaultColors;
-        }
-    }
-
-    /**
      * Enables/disables colored output.
      *
      * @param bool $colors
@@ -387,6 +372,12 @@ class CliDumper extends AbstractDumper
      */
     protected function supportsColors()
     {
+        if ($this->outputStream !== static::$defaultOutputStream) {
+            return @(is_resource($this->outputStream) && function_exists('posix_isatty') && posix_isatty($this->outputStream));
+        }
+        if (null !== static::$defaultColors) {
+            return static::$defaultColors;
+        }
         if (isset($_SERVER['argv'][1])) {
             $colors = $_SERVER['argv'];
             $i = count($colors);
@@ -398,30 +389,22 @@ class CliDumper extends AbstractDumper
                         case '--color=yes':
                         case '--color=force':
                         case '--color=always':
-                            return true;
+                            return static::$defaultColors = true;
 
                         case '--no-ansi':
                         case '--color=no':
                         case '--color=none':
                         case '--color=never':
-                            return false;
+                            return static::$defaultColors = false;
                     }
                 }
             }
         }
 
-        if (null !== static::$defaultColors) {
-            return static::$defaultColors;
-        }
-
-        if (null === $this->outputStream) {
-            return false;
-        }
-
-        $colors = defined('PHP_WINDOWS_VERSION_MAJOR')
+        static::$defaultColors = defined('PHP_WINDOWS_VERSION_MAJOR')
             ? @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
             : @(function_exists('posix_isatty') && posix_isatty($this->outputStream));
 
-        return $colors;
+        return static::$defaultColors;
     }
 }
