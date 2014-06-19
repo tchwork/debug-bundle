@@ -1,0 +1,141 @@
+#var_debug pre
+{
+    white-space: pre;
+}
+
+li.dump
+{
+    list-style-type: disc;
+    border: none;
+}
+
+.dump>pre
+{
+    margin: 15px 0;
+    padding-left: 11px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.dump ol>li
+{
+    padding: 0;
+}
+
+.event br /* Hide Chrome inserted BR */
+{
+    display: none;
+}
+
+.event
+{
+    color: gray;
+    margin: 0;
+    padding: 0;
+    font-style: italic;
+    font-family: inherit;
+}
+
+.array-compact
+{
+    white-space: nowrap; /* This rule makes IE slow as hell */
+}
+
+.arrow,
+.const,
+.class,
+.alias,
+.handle,
+.string
+{
+    color: black;
+    font-style: normal;
+    font-family: sans-serif;
+}
+
+.dump a
+{
+    display: inline-block;
+    position: relative;
+    right: 15px;
+    width: 0;
+    font-style: normal;
+    font-family: sans-serif;
+    color: lightblue;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.dump>a
+{
+    right: 0;
+}
+
+.const,
+.dump a:hover
+{
+    color: blue;
+    text-decoration: none;
+}
+
+.string
+{
+    color: purple;
+    background-color: #F9F9F9;
+}
+
+.empty.string
+{
+    width: 3px;
+    height: 1em;
+    display: inline-block;
+}
+
+.key
+{
+    font-family: monospace;
+    background-color: white;
+}
+
+.public
+{
+    color: green;
+}
+
+.protected
+{
+    color: orange;
+}
+
+.private
+{
+    color: red;
+}
+
+.arrow
+{
+    color: gray;
+    background-color: white;
+}
+
+.event.silenced>.array-compact span
+{
+    color: silver;
+    background-color: white;
+}
+
+.array-compact a,
+.array-compact .key
+{
+    display: none;
+}
+
+.key.string
+{
+    display: inline;
+}
+
+.array-compact>ol
+{
+    display: none;
+}

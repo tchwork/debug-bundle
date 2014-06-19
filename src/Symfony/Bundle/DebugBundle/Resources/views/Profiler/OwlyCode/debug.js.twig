@@ -375,7 +375,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurence-' + entity.index;
+            node.className = 'occurrence-' + entity.index;
             if (entity.type == 'string') {
                 if((entity.value.length > VarDebug.maxStringSize) && !entity.expanded) {
                     node.appendChild(__self.renderNode(entity));
@@ -408,7 +408,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurence-' + entity.index;
+            node.className = 'occurrence-' + entity.index;
 
             var prefix = document.createElement('span');
             var suffix = document.createElement('span');
@@ -431,7 +431,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurence-' + entity.index;
+            node.className = 'occurrence-' + entity.index;
             var ul = __self.renderChildrenContainer(entity);
 
             var prefix = document.createElement('span');
@@ -510,7 +510,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurence-' + entity.index;
+            node.className = 'occurrence-' + entity.index;
 
             var prefix = document.createElement('span');
             var suffix = document.createElement('span');
@@ -589,15 +589,15 @@
                 node.insertBefore(refPrefix, node.firstChild);
             }
             if (!entity.ampersand && __self.parser.isAmpersanded(entity.index) && entity.target) {
-                node.className += ' reference occurence-' + entity.target;
-                node.hoverTarget = 'occurence-' + entity.target;
+                node.className += ' reference occurrence-' + entity.target;
+                node.hoverTarget = 'occurrence-' + entity.target;
             } else if (!entity.ampersand && __self.parser.isAmpersanded(entity.index)) {
-                node.className += ' reference occurence-' + entity.index;
-                node.hoverTarget = 'occurence-' + entity.index;
+                node.className += ' reference occurrence-' + entity.index;
+                node.hoverTarget = 'occurrence-' + entity.index;
             }
             if (entity.ampersand) {
-                node.className += ' reference occurence-' + entity.ampersand;
-                node.hoverTarget = 'occurence-' + entity.ampersand;
+                node.className += ' reference occurrence-' + entity.ampersand;
+                node.hoverTarget = 'occurrence-' + entity.ampersand;
             }
 
             return node;

@@ -45,6 +45,10 @@ class Configuration implements ConfigurationInterface
                     ->info('Where dumps are written to, leave empty to put them in the toolbar')
                     ->defaultValue('')
                 ->end()
+                ->scalarNode('profiler_template')
+                    ->info('The template used for theming the debub panel in the profiler')
+                    ->defaultValue('@Debug/Profiler/Patchwork/debug.html.twig')
+                ->end()
             ->end();
 
         return $treeBuilder;

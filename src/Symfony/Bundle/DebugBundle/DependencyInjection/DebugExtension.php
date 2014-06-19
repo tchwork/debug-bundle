@@ -51,5 +51,11 @@ class DebugExtension extends Extension
             $container->getDefinition('var_dumper.cli_dumper')->addArgument($config['dump_path']);
             $container->getDefinition('var_dumper.html_dumper')->addArgument($config['dump_path']);
         }
+
+        $collectorDef = $container->getDefinition('data_collector.debug');
+        $collectorTag = $collectorDef->getTag('data_collector');
+        $collectorTag[0]['template'] = $config['profiler_template'];
+        $collectorDef->clearTag('data_collector');
+        $collectorDef->addTag('data_collector', $collectorTag[0]);
     }
 }

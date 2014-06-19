@@ -20,7 +20,7 @@
         </service>
 
         <service id="data_collector.debug" class="%data_collector.debug.class%">
-            <tag name="data_collector" template="@Debug/Collector/debug.html.twig" id="debug" />
+            <tag name="data_collector" id="debug" />
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
         </service>
 
