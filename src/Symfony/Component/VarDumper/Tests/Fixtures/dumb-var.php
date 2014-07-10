@@ -1,5 +1,17 @@
 <?php
 
+namespace Symfony\Component\VarDumper\Tests\Fixture;
+
+if (!class_exists('Symfony\Component\VarDumper\Tests\Fixture\DumbFoo')) {
+    class DumbFoo
+    {
+        public $foo = 'foo';
+    }
+}
+
+$foo = new DumbFoo();
+$foo->bar = 'bar';
+
 $g = opendir('.');
 $h = opendir('.');
 closedir($h);
@@ -11,7 +23,7 @@ $var = array(
     '[]' => array(),
     'res' => $g,
     $h,
-    'obj' => (object) array(),
+    'obj' => $foo,
     'closure' => function ($a, \PDO &$b = null) {},
     'line' => __LINE__ - 1,
     'nobj' => array((object) array()),

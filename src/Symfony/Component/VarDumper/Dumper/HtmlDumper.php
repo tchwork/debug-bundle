@@ -112,6 +112,10 @@ class HtmlDumper extends CliDumper
      */
     protected function style($style, $val)
     {
+        if ('' === $val) {
+            return '';
+        }
+
         if ('ref' === $style) {
             $ref = substr($val, 1);
             if ('#' === $val[0]) {
@@ -123,23 +127,13 @@ class HtmlDumper extends CliDumper
 
         $val = htmlspecialchars($val, ENT_QUOTES, 'UTF-8');
 
-        switch ($style) {
-            case 'str':
-            case 'public':
-                static $cchr = array(
-                    "\x1B",
-                    "\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07",
-                    "\x08", "\x09", "\x0A", "\x0B", "\x0C", "\x0D", "\x0E", "\x0F",
-                    "\x10", "\x11", "\x12", "\x13", "\x14", "\x15", "\x16", "\x17",
-                    "\x18", "\x19", "\x1A", "\x1C", "\x1D", "\x1E", "\x1F", "\x7F",
-                );
-
-                foreach ($cchr as $c) {
-                    if (false !== strpos($val, $c)) {
-                        $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
-                        $val = str_replace($c, "<span class=sf-var-debug-cchr>$r</span>", $val);
-                    }
+        if ('str' === $style || 'meta' === $style || 'public' === $style) {
+            foreach (static::$controlChars as $c) {
+                if (false !== strpos($val, $c)) {
+                    $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
+                    $val = str_replace($c, "<span class=sf-var-debug-cchr>$r</span>", $val);
                 }
+            }
         }
 
         return "<span class=sf-var-debug-$style>$val</span>";

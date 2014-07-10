@@ -57,6 +57,7 @@ abstract class AbstractCloner implements ClonerInterface
     private $casters = array();
     private $data = array(array(null));
     private $prevErrorHandler;
+    private $classInfo = array();
 
     /**
      * @param callable[]|null $casters A map of casters.
@@ -151,24 +152,36 @@ abstract class AbstractCloner implements ClonerInterface
      */
     protected function castObject($class, $obj)
     {
-        if (method_exists($obj, '__debugInfo')) {
-            if (!$a = $this->callCaster(array($this, '__debugInfo'), $obj, array())) {
-                $a = (array) $obj;
-            }
+        $a = (array) $obj;
+
+        if (isset($this->classInfo[$class])) {
+            $classInfo = $this->classInfo[$class];
         } else {
-            $a = (array) $obj;
+            $classInfo = array(
+                array_reverse(array($class => $class) + class_parents($class) + class_implements($class) + array('*' => '*')),
+                method_exists($class, '__debugInfo'),
+                new \ReflectionClass($class),
+            );
+
+            $this->classInfo[$class] = $classInfo;
         }
 
-        $p = array($class => $class)
-            + class_parents($obj)
-            + class_implements($obj)
-            + array('*' => '*');
-
-        foreach (array_reverse($p) as $p) {
+        foreach ($classInfo[0] as $p) {
             if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
                 foreach ($this->casters[$p] as $p) {
                     $a = $this->callCaster($p, $obj, $a);
                 }
+            }
+        }
+
+        if ($classInfo[1]) {
+            $a = $this->callCaster(array($obj, '__debugInfo'), $obj, $a);
+        }
+
+        foreach ($a as $k => $p) {
+            if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[2]->hasProperty($k))) {
+                unset($a[$k]);
+                $a["\0+\0".$k] = $p;
             }
         }
 
@@ -234,7 +247,7 @@ abstract class AbstractCloner implements ClonerInterface
         }
 
         if ($this->prevErrorHandler) {
-            return call_user_func_array($this->prevErrorHandler, array($type, $msg, $file, $line, $context));
+            return call_user_func($this->prevErrorHandler, $type, $msg, $file, $line, $context);
         }
 
         return false;

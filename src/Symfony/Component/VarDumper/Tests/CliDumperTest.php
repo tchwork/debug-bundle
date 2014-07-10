@@ -38,22 +38,22 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
             <<<EOTXT
 
 [
-  number: 1
-  0: 1.1 #1
-  const: null
-  1: true
-  2: false
-  3: NAN
-  4: INF
-  5: -INF
-  6: 9223372036854775807
-  str: déjà
-  7:bé
-  []: []
-  res: resource:stream{
-    wrapper_type: plainfile
-    stream_type: dir
-    mode: r
+  "number" => 1
+  0 => 1.1 #1
+  "const" => null
+  1 => true
+  2 => false
+  3 => NAN
+  4 => INF
+  5 => -INF
+  6 => 9223372036854775807
+  "str" => "déjà"
+  7 => b"é"
+  "[]" => []
+  "res" => resource:stream{
+    wrapper_type: "plainfile"
+    stream_type: "dir"
+    mode: "r"
     unread_bytes: 0
     seekable: true
     timed_out: false
@@ -61,11 +61,14 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
     eof: false
     options: []
   }
-  8: resource:Unknown{}
-  obj: stdClass{} #2
-  closure: Closure{
-    reflection:
-      Closure [ <user> {$closureLabel} {closure} ] {
+  8 => resource:Unknown{}
+  "obj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo{ #2
+    foo: "foo"
+    "bar": "bar"
+  }
+  "closure" => Closure{
+    reflection: """
+      Closure [ <user> {$closureLabel} Symfony\Component\VarDumper\Tests\Fixture\{closure} ] {
         @@ {$var['file']} {$var['line']} - {$var['line']}
 
         - Parameters [2] {
@@ -73,20 +76,20 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
           Parameter #1 [ <optional> PDO or NULL &\$b = NULL ]
         }
       }
-
+      """
   }
-  line: {$var['line']}
-  nobj: [
-    0: stdClass{} #3
+  "line" => {$var['line']}
+  "nobj" => [
+    0 => {} #3
   ]
-  recurs: [ #4
-    0: [&4]
+  "recurs" => [ #4
+    0 => [&4]
   ]
-  9: 1.1 &1
-  sobj: stdClass{@2}
-  snobj: stdClass{&3}
-  snobj2: stdClass{@3}
-  file: {$var['file']}
+  9 => 1.1 &1
+  "sobj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo{@2}
+  "snobj" => {&3}
+  "snobj2" => {@3}
+  "file" => "{$var['file']}"
 ]
 
 EOTXT

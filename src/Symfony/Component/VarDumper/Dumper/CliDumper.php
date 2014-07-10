@@ -37,6 +37,14 @@ class CliDumper extends AbstractDumper
         'meta'      => '38;5;27',
     );
 
+    protected static $controlChars = array(
+        "\x1B", // ESC must be the first
+        "\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07",
+        "\x08", "\x09", "\x0A", "\x0B", "\x0C", "\x0D", "\x0E", "\x0F",
+        "\x10", "\x11", "\x12", "\x13", "\x14", "\x15", "\x16", "\x17",
+        "\x18", "\x19", "\x1A", "\x1C", "\x1D", "\x1E", "\x1F", "\x7F",
+    );
+
     /**
      * Enables/disables colored output.
      *
@@ -128,7 +136,7 @@ class CliDumper extends AbstractDumper
         $this->dumpKey($cursor);
 
         if ('' === $str) {
-            $this->line .= "''";
+            $this->line .= '""';
             if (false !== $cursor->refTo) {
                 $this->line .= ' '.$this->style('ref', '&'.$cursor->refTo);
             }
@@ -138,11 +146,18 @@ class CliDumper extends AbstractDumper
             $m = count($str) - 1;
             $i = 0;
 
+            if ($bin) {
+                $this->line .= 'b';
+            }
+
             if ($m) {
+                $this->line .= '"""';
                 if (false !== $cursor->refTo) {
                     $this->line .= $this->style('ref', '&'.$cursor->refTo);
                 }
                 $this->endLine($cursor);
+            } else {
+                $this->line .= '"';
             }
 
             foreach ($str as $str) {
@@ -153,19 +168,10 @@ class CliDumper extends AbstractDumper
                     $str = $this->style('str', $str);
                 }
 
-                if ($bin) {
-                    if ($m) {
-                        $this->line .= ' b'.$str;
-                    } elseif (' ' === substr($this->line, -1)) {
-                        $this->line = substr_replace($this->line, 'b'.$str, -1);
-                    } else {
-                        $this->line .= 'b'.$str;
-                    }
-                } elseif ($m) {
-                    $this->line .= '  '.$str;
-                } else {
-                    $this->line .= $str;
+                if ($m) {
+                    $this->line .= '  ';
                 }
+                $this->line .= $str;
 
                 if ($i++ == $m) {
                     if ($cut) {
@@ -173,6 +179,10 @@ class CliDumper extends AbstractDumper
                             $this->line .= '…';
                         }
                         $this->line .= $cut;
+                    } elseif ($m) {
+                        $this->line .= '"""';
+                    } else {
+                        $this->line .= '"';
                     }
                     if (!$m && false !== $cursor->refTo) {
                         $this->line .= $this->style('ref', '&'.$cursor->refTo);
@@ -205,6 +215,9 @@ class CliDumper extends AbstractDumper
      */
     public function enterObject(Cursor $cursor, $class, $hasChild)
     {
+        if ('stdClass' === $class) {
+            $class = '';
+        }
         $this->enterHash($cursor, $this->style('note', $class).'{', $hasChild);
     }
 
@@ -283,33 +296,42 @@ class CliDumper extends AbstractDumper
     {
         if (null !== $key = $cursor->hashKey) {
             switch ($cursor->hashType) {
-                case $cursor::HASH_INDEXED:
-                case $cursor::HASH_RESOURCE:
-                case $cursor::HASH_ASSOC:
-                    $style = 'meta';
+                default:
+                case Cursor::HASH_INDEXED:
+                case Cursor::HASH_ASSOC:
+                    if (is_int($key)) {
+                        $this->line .= $this->style('meta', $key).' => ';
+                    } else {
+                        $this->line .= '"'.$this->style('meta', $key).'" => ';
+                    }
                     break;
 
-                case $cursor::HASH_OBJECT:
+                case Cursor::HASH_RESOURCE:
+                    $key = "\0~\0".$key;
+                    // No break;
+                case Cursor::HASH_OBJECT:
                     if (!isset($key[0]) || "\0" !== $key[0]) {
-                        $style = 'public';
+                        $this->line .= $this->style('public', $key).': ';
                     } elseif (0 < strpos($key, "\0", 1)) {
                         $key = explode("\0", substr($key, 1), 2);
 
                         switch ($key[0]) {
+                            case '+': // User inserted keys
+                                $this->line .= '"'.$this->style('public', $key[1]).'": ';
+                                break 2;
+
                             case '~': $style = 'meta';      break;
                             case '*': $style = 'protected'; break;
                             default:  $style = 'private';   break;
                         }
 
-                        $key = $key[1];
+                        $this->line .= $this->style($style, $key[1]).': ';
                     } else {
                         // This case should not happen
-                        $style = 'private';
+                        $this->line .= '"'.$this->style('private', $key).'": ';
                     }
                     break;
             }
-
-            $this->line .= $this->style($style, $key).': ';
         }
     }
 
@@ -341,20 +363,12 @@ class CliDumper extends AbstractDumper
             $this->colors = $this->supportsColors($this->outputStream);
         }
 
-        if (!$this->colors) {
+        if (!$this->colors || '' === $val) {
             return $val;
         }
 
-        if ('str' === $style || 'public' === $style) {
-            static $cchr = array(
-                "\x1B", // ESC must be the first
-                "\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07",
-                "\x08", "\x09", "\x0A", "\x0B", "\x0C", "\x0D", "\x0E", "\x0F",
-                "\x10", "\x11", "\x12", "\x13", "\x14", "\x15", "\x16", "\x17",
-                "\x18", "\x19", "\x1A", "\x1C", "\x1D", "\x1E", "\x1F", "\x7F",
-            );
-
-            foreach ($cchr as $c) {
+        if ('str' === $style || 'meta' === $style || 'public' === $style) {
+            foreach (static::$controlChars as $c) {
                 if (false !== strpos($val, $c)) {
                     $r = "\x7F" === $c ? '?' : chr(64 + ord($c));
                     $r = "\033[{$this->styles[$style]};{$this->styles['cchr']}m{$r}\033[m";

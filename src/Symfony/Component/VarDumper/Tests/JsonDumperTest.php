@@ -63,32 +63,35 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "options": []
   },
   "n`8": {"_":"24:resource:Unknown"},
-  "obj": {"_":"25:stdClass"},
-  "closure": {"_":"26:Closure",
-    "~:reflection": "Closure [ <user> '.$closureLabel.' {closure} ] {\n  @@ '.$var['file'].' '.$var['line'].' - '.$var['line'].'\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
+  "obj": {"_":"25:Symfony\\\\Component\\\\VarDumper\\\\Tests\\\\Fixture\\\\DumbFoo",
+    "foo": "foo",
+    "+:bar": "bar"
+  },
+  "closure": {"_":"28:Closure",
+    "~:reflection": "Closure [ <user> '.$closureLabel.' Symfony\\\\Component\\\\VarDumper\\\\Tests\\\\Fixture\\\\{closure} ] {\n  @@ '.$var['file'].' '.$var['line'].' - '.$var['line'].'\n\n  - Parameters [2] {\n    Parameter #0 [ <required> $a ]\n    Parameter #1 [ <optional> PDO or NULL &$b = NULL ]\n  }\n}\n"
   },
   "line": '.$var['line'].',
   "nobj": [
-    {"_":"30:stdClass"}
+    {"_":"32:stdClass"}
   ],
   "recurs": [
-    "R`32:31"
+    "R`34:33"
   ],
-  "n`9": "R`33:3",
-  "sobj": "r`34:25",
-  "snobj": "R`35:30",
-  "snobj2": "r`36:30",
+  "n`9": "R`35:3",
+  "sobj": "r`36:25",
+  "snobj": "R`37:32",
+  "snobj2": "r`38:32",
   "file": "'.$var['file'].'",
-  "dumper": {"_":"38:Symfony\\\\Component\\\\VarDumper\\\\Dumper\\\\JsonDumper",
+  "dumper": {"_":"40:Symfony\\\\Component\\\\VarDumper\\\\Dumper\\\\JsonDumper",
     "*:position": 0,
     "*:refsPos": [],
     "*:refs": [],
     "*:line": "",
     "*:lineDumper": [
-      "r`44:38",
+      "r`46:40",
       "echoLine"
     ],
-    "*:outputStream": {"_":"46:resource:stream",
+    "*:outputStream": {"_":"48:resource:stream",
       "wrapper_type": "PHP",
       "stream_type": "Output",
       "mode": "wb",
@@ -101,7 +104,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
       "options": []
     }
   },
-  "__refs": {"31":[-32],"3":[-33],"25":[34],"30":[-35,36],"38":[44]}
+  "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"40":[46]}
 }
 ',
             $json
