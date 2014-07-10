@@ -8,10 +8,6 @@
         <parameter key="twig.extension.debug.class">Symfony\Bundle\DebugBundle\Twig\DebugExtension</parameter>
         <parameter key="data_collector.debug.class">Symfony\Bundle\DebugBundle\DataCollector\DebugDataCollector</parameter>
         <parameter key="debug.debug_listener.class">Symfony\Bundle\DebugBundle\EventListener\DebugListener</parameter>
-        <parameter key="var_dumper.cloner.class">Symfony\Component\VarDumper\Cloner\PhpCloner</parameter>
-        <parameter key="var_dumper.json_dumper.class">Symfony\Component\VarDumper\Dumper\JsonDumper</parameter>
-        <parameter key="var_dumper.html_dumper.class">Symfony\Component\VarDumper\Dumper\HtmlDumper</parameter>
-        <parameter key="var_dumper.cli_dumper.class">Symfony\Component\VarDumper\Dumper\CliDumper</parameter>
     </parameters>
 
     <services>
@@ -31,9 +27,6 @@
         </service>
 
         <service id="var_dumper.cloner" class="%var_dumper.cloner.class%" />
-        <service id="var_dumper.json_dumper" class="%var_dumper.json_dumper.class%" />
-        <service id="var_dumper.html_dumper" class="%var_dumper.html_dumper.class%" />
-        <service id="var_dumper.cli_dumper" class="%var_dumper.cli_dumper.class%" />
     </services>
 
 </container>

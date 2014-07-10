@@ -31,7 +31,7 @@ class DebugBundle extends Bundle
 
             // This default config for CLI mode is overriden in HTTP mode on REQUEST event
             static::setHandler(function ($var) use ($container) {
-                $dumper = $container->get('var_dumper.cli_dumper');
+                $dumper = new CliDumper();
                 $cloner = $container->get('var_dumper.cloner');
                 $handler = function ($var) use ($dumper, $cloner) {$dumper->dump($cloner->cloneVar($var));};
                 static::setHandler($handler);

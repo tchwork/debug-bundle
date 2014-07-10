@@ -19,7 +19,7 @@ namespace Symfony\Component\VarDumper\Dumper;
 class CliDumper extends AbstractDumper
 {
     public static $defaultColors;
-    public static $defaultOutputStream = 'php://stderr';
+    public static $defaultOutputStream = 'php://stdout';
 
     protected $colors;
     protected $maxStringWidth = 0;
@@ -415,9 +415,15 @@ class CliDumper extends AbstractDumper
             }
         }
 
-        static::$defaultColors = defined('PHP_WINDOWS_VERSION_MAJOR')
-            ? @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'))
-            : @(function_exists('posix_isatty') && posix_isatty($this->outputStream));
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            static::$defaultColors = @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'));
+        } elseif (function_exists('posix_isatty')) {
+            $h = stream_get_meta_data($this->outputStream) + array('wrapper_type' => null);
+            $h = 'Output' === $h['stream_type'] && 'PHP' === $h['wrapper_type'] ? fopen('php://stdout', 'wb') : $this->outputStream;
+            static::$defaultColors = @posix_isatty($h);
+        } else {
+            static::$defaultColors = false;
+        }
 
         return static::$defaultColors;
     }

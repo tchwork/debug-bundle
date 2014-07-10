@@ -43,19 +43,12 @@ class DebugExtension extends Extension
             ->addMethodCall('setMaxItems',  array($config['max_items']))
             ->addMethodCall('setMaxString', array($config['max_string_length']));
 
-        if ($config['dump_path']) {
-            $container->getDefinition('debug.debug_listener')
-                ->replaceArgument(1, 'php://output' === $config['dump_path'] ? 'var_dumper.html_dumper' : 'var_dumper.cli_dumper');
-
-            $container->getDefinition('var_dumper.json_dumper')->addArgument($config['dump_path']);
-            $container->getDefinition('var_dumper.cli_dumper')->addArgument($config['dump_path']);
-            $container->getDefinition('var_dumper.html_dumper')->addArgument($config['dump_path']);
-        }
-
         $collectorDef = $container->getDefinition('data_collector.debug');
         $collectorTag = $collectorDef->getTag('data_collector');
-        $collectorTag[0]['template'] = $config['profiler_template'];
         $collectorDef->clearTag('data_collector');
-        $collectorDef->addTag('data_collector', $collectorTag[0]);
+        if ($config['profiler_template']) {
+            $collectorTag[0]['template'] = $config['profiler_template'];
+            $collectorDef->addTag('data_collector', $collectorTag[0]);
+        }
     }
 }
