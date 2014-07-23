@@ -49,6 +49,7 @@
 
     <div id="dumper-content">
         {% for dump in collector.dumps(true) %}
+        <div class="dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
             <a href="#" onclick="arrayToggle(this); return false"> ⊞ </a><span class="key"></span>
@@ -56,6 +57,7 @@
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>
             <script>VarDebug.run({{ dump.data|raw }})</script>
+        </div>
         {% endfor %}
     </div>
 {% endblock %}
