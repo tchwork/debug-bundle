@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\VarDumper\Dumper;
 
+use Symfony\Component\VarDumper\Cloner\Data;
+
 /**
  * CliDumper dumps variables for command line output.
  *
@@ -295,6 +297,10 @@ class CliDumper extends AbstractDumper
     protected function dumpKey(Cursor $cursor)
     {
         if (null !== $key = $cursor->hashKey) {
+            if ($bin = isset($key[0]) && !preg_match('//u', $key)) {
+                $key = Data::utf8Encode($key);
+                $bin = 'b';
+            }
             switch ($cursor->hashType) {
                 default:
                 case Cursor::HASH_INDEXED:
@@ -302,7 +308,7 @@ class CliDumper extends AbstractDumper
                     if (is_int($key)) {
                         $this->line .= $this->style('meta', $key).' => ';
                     } else {
-                        $this->line .= '"'.$this->style('meta', $key).'" => ';
+                        $this->line .= $bin.'"'.$this->style('meta', $key).'" => ';
                     }
                     break;
 
@@ -311,13 +317,13 @@ class CliDumper extends AbstractDumper
                     // No break;
                 case Cursor::HASH_OBJECT:
                     if (!isset($key[0]) || "\0" !== $key[0]) {
-                        $this->line .= $this->style('public', $key).': ';
+                        $this->line .= $bin.$this->style('public', $key).': ';
                     } elseif (0 < strpos($key, "\0", 1)) {
                         $key = explode("\0", substr($key, 1), 2);
 
                         switch ($key[0]) {
                             case '+': // User inserted keys
-                                $this->line .= '"'.$this->style('public', $key[1]).'": ';
+                                $this->line .= $bin.'"'.$this->style('public', $key[1]).'": ';
                                 break 2;
 
                             case '~': $style = 'meta';      break;
@@ -325,10 +331,10 @@ class CliDumper extends AbstractDumper
                             default:  $style = 'private';   break;
                         }
 
-                        $this->line .= $this->style($style, $key[1]).': ';
+                        $this->line .= $bin.$this->style($style, $key[1]).': ';
                     } else {
                         // This case should not happen
-                        $this->line .= '"'.$this->style('private', $key).'": ';
+                        $this->line .= $bin.'"'.$this->style('private', $key).'": ';
                     }
                     break;
             }

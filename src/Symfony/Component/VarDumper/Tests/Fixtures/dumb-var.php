@@ -38,5 +38,6 @@ $var['sobj'] = $var['obj'];
 $var['snobj'] =& $var['nobj'][0];
 $var['snobj2'] = $var['nobj'][0];
 $var['file'] = __FILE__;
+$var["bin-key-\xE9"] = "";
 
 unset($g, $h, $r);

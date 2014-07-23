@@ -38,7 +38,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $closureLabel = PHP_VERSION_ID >= 50400 ? 'public method' : 'function';
 
         $this->assertSame(
-'{"_":"1:array:25",
+'{"_":"1:array:26",
   "number": 1,
   "n`0": 1.1,
   "const": null,
@@ -82,16 +82,17 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "snobj": "R`37:32",
   "snobj2": "r`38:32",
   "file": "'.$var['file'].'",
-  "dumper": {"_":"40:Symfony\\\\Component\\\\VarDumper\\\\Dumper\\\\JsonDumper",
+  "b`bin-key-é": "",
+  "dumper": {"_":"41:Symfony\\\\Component\\\\VarDumper\\\\Dumper\\\\JsonDumper",
     "*:position": 0,
     "*:refsPos": [],
     "*:refs": [],
     "*:line": "",
     "*:lineDumper": [
-      "r`46:40",
+      "r`47:41",
       "echoLine"
     ],
-    "*:outputStream": {"_":"48:resource:stream",
+    "*:outputStream": {"_":"49:resource:stream",
       "wrapper_type": "PHP",
       "stream_type": "Output",
       "mode": "wb",
@@ -104,7 +105,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
       "options": []
     }
   },
-  "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"40":[46]}
+  "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"41":[47]}
 }
 ',
             $json

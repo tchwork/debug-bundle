@@ -90,6 +90,7 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
   "snobj" => {&3}
   "snobj2" => {@3}
   "file" => "{$var['file']}"
+  b"bin-key-é" => ""
 ]
 
 EOTXT

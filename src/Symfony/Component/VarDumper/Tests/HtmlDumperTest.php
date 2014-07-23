@@ -105,6 +105,7 @@ span.sf-var-debug-meta {color:#005FFF}
   "<span class=sf-var-debug-meta>snobj</span>" => {<a class=sf-var-debug-ref href="#sf-var-debug-ref3">&3</a>}
   "<span class=sf-var-debug-meta>snobj2</span>" => {<a class=sf-var-debug-ref href="#sf-var-debug-ref3">@3</a>}
   "<span class=sf-var-debug-meta>file</span>" => "<span class=sf-var-debug-str>{$var['file']}</span>"
+  b"<span class=sf-var-debug-meta>bin-key-é</span>" => ""
 </span>]
 </pre>
 
