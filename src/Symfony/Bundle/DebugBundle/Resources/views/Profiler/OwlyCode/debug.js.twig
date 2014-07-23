@@ -365,7 +365,7 @@
             if (mode === 'short' && entity.type === 'string' && entity.value.length > VarDebug.maxStringSize) {
                 var node = document.createElement('span');
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
-                node.innerHTML = ('"' + entity.value.substr(0, VarDebug.maxStringSize) + '..."');
+                node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, VarDebug.maxStringSize)) + '..."');
                 if (entity.cut > 0) {
                     node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
