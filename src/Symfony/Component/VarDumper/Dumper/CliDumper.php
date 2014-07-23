@@ -274,7 +274,7 @@ class CliDumper extends AbstractDumper
      */
     protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
-        if ($cut) {
+        if ($cut && false === $cursor->refTo) {
             $this->line .= '…';
             if (0 < $cut) {
                 $this->line .= $cut;

@@ -51,8 +51,8 @@ abstract class AbstractCloner implements ClonerInterface
         'r:stream-context' => 'Symfony\Component\VarDumper\Caster\ResourceCaster::castStreamContext',
     );
 
-    protected $maxItems = 0;
-    protected $maxString = 0;
+    protected $maxItems = 2500;
+    protected $maxString = -1;
 
     private $casters = array();
     private $data = array(array(null));
@@ -91,7 +91,7 @@ abstract class AbstractCloner implements ClonerInterface
     }
 
     /**
-     * Sets the maximum number of items to clone in nested structures.
+     * Sets the maximum number of items to clone past the first level in nested structures.
      *
      * @param int $maxItems
      */
@@ -118,7 +118,7 @@ abstract class AbstractCloner implements ClonerInterface
         $this->prevErrorHandler = set_error_handler(array($this, 'handleError'));
         try {
             if (!function_exists('iconv')) {
-                $this->maxString = 0;
+                $this->maxString = -1;
             }
             $data = $this->doClone($var);
         } catch (\Exception $e) {
