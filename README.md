@@ -61,6 +61,14 @@ public function registerBundles()
 Example
 -------
 
+**In your Twig templates:**
+
+```twig
+{% debug myVar %}
+```
+
+**In your Php code:**
+
 ```php
 <?php
 
