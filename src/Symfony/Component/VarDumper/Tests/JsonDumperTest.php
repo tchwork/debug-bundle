@@ -40,8 +40,8 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(
 '{"_":"1:array:26",
   "number": 1,
-  "n`0": 1.1,
-  "const": null,
+  "n`0": null,
+  "const": 1.1,
   "n`1": true,
   "n`2": false,
   "n`3": "n`NAN",

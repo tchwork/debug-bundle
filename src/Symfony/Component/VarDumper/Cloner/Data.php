@@ -56,7 +56,7 @@ class Data
         $cursor->refIndex = $cursor->refTo = $cursor->refIsHard = false;
 
         if ($item instanceof \stdClass) {
-            if (isset($item->val)) {
+            if (property_exists($item, 'val')) {
                 if (isset($item->ref)) {
                     if (isset($refs[$r = $item->ref])) {
                         $cursor->refTo = $refs[$r];

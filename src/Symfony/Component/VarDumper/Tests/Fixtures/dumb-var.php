@@ -17,8 +17,8 @@ $h = opendir('.');
 closedir($h);
 
 $var = array(
-    'number' => 1, 1.1,
-    'const' => null, true, false, NAN, INF, -INF, PHP_INT_MAX,
+    'number' => 1, null,
+    'const' => 1.1, true, false, NAN, INF, -INF, PHP_INT_MAX,
     'str' => "déjà", "\xE9",
     '[]' => array(),
     'res' => $g,

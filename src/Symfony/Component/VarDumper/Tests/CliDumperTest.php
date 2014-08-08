@@ -39,8 +39,8 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
 
 [
   "number" => 1
-  0 => 1.1 #1
-  "const" => null
+  0 => null #1
+  "const" => 1.1
   1 => true
   2 => false
   3 => NAN
@@ -85,7 +85,7 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
   "recurs" => [ #4
     0 => [&4]
   ]
-  9 => 1.1 &1
+  9 => null &1
   "sobj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo{@2}
   "snobj" => {&3}
   "snobj2" => {@3}

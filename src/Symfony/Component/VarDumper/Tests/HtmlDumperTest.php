@@ -54,8 +54,8 @@ span.sf-var-debug-meta {color:#005FFF}
 
 <pre class=sf-var-debug style=white-space:pre><span class=sf-var-debug-0>[
   <span class=sf-var-debug-1>"<span class=sf-var-debug-meta>number</span>" => <span class=sf-var-debug-const>1</span>
-  <span class=sf-var-debug-meta>0</span> => <span class=sf-var-debug-num>1.1</span> <a class=sf-var-debug-ref name="sf-var-debug-ref1">#1</a>
-  "<span class=sf-var-debug-meta>const</span>" => <span class=sf-var-debug-const>null</span>
+  <span class=sf-var-debug-meta>0</span> => <span class=sf-var-debug-const>null</span> <a class=sf-var-debug-ref name="sf-var-debug-ref1">#1</a>
+  "<span class=sf-var-debug-meta>const</span>" => <span class=sf-var-debug-num>1.1</span>
   <span class=sf-var-debug-meta>1</span> => <span class=sf-var-debug-const>true</span>
   <span class=sf-var-debug-meta>2</span> => <span class=sf-var-debug-const>false</span>
   <span class=sf-var-debug-meta>3</span> => <span class=sf-var-debug-num>NAN</span>
@@ -100,7 +100,7 @@ span.sf-var-debug-meta {color:#005FFF}
   "<span class=sf-var-debug-meta>recurs</span>" => [ <a class=sf-var-debug-ref name="sf-var-debug-ref4">#4</a>
     <span class=sf-var-debug-2><span class=sf-var-debug-meta>0</span> => [<a class=sf-var-debug-ref href="#sf-var-debug-ref4">&4</a>]
   </span>]
-  <span class=sf-var-debug-meta>9</span> => <span class=sf-var-debug-num>1.1</span> <a class=sf-var-debug-ref href="#sf-var-debug-ref1">&1</a>
+  <span class=sf-var-debug-meta>9</span> => <span class=sf-var-debug-const>null</span> <a class=sf-var-debug-ref href="#sf-var-debug-ref1">&1</a>
   "<span class=sf-var-debug-meta>sobj</span>" => <span class=sf-var-debug-note>Symfony\Component\VarDumper\Tests\Fixture\DumbFoo</span>{<a class=sf-var-debug-ref href="#sf-var-debug-ref2">@2</a>}
   "<span class=sf-var-debug-meta>snobj</span>" => {<a class=sf-var-debug-ref href="#sf-var-debug-ref3">&3</a>}
   "<span class=sf-var-debug-meta>snobj2</span>" => {<a class=sf-var-debug-ref href="#sf-var-debug-ref3">@3</a>}
