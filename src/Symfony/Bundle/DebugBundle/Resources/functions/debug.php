@@ -17,10 +17,10 @@ if (!function_exists('debug')) {
      */
     function debug($var)
     {
-        if (func_num_args() > 1) {
-            $var = func_get_args();
+        foreach (func_get_args() as $var) {
+            $var = DebugBundle::debug($var);
         }
 
-        return DebugBundle::debug($var);
+        return $var;
     }
 }
