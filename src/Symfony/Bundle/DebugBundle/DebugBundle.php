@@ -29,11 +29,15 @@ class DebugBundle extends Bundle
         if ($this->container->getParameter('kernel.debug')) {
             $container = $this->container;
 
-            // This default config for CLI mode is overriden in HTTP mode on REQUEST event
+            // This code is here to lazy load the debug stack. This default
+            // configuration for CLI mode is overridden in HTTP mode on
+            // 'kernel.request' event
             static::setHandler(function ($var) use ($container) {
                 $dumper = new CliDumper();
                 $cloner = $container->get('var_dumper.cloner');
-                $handler = function ($var) use ($dumper, $cloner) {$dumper->dump($cloner->cloneVar($var));};
+                $handler = function ($var) use ($dumper, $cloner) {
+                    $dumper->dump($cloner->cloneVar($var));
+                };
                 static::setHandler($handler);
                 $handler($var);
             });
