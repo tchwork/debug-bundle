@@ -87,7 +87,10 @@ class ExtCloner extends AbstractCloner
                         if (empty($softRefs[$h = $zval['object_hash']])) {
                             $stub = $softRefs[$h] = (object) array('class' => $zval['object_class']);
                             if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castObject($stub->class, $v);
+                                $a = $this->castObject($stub->class, $v, 0 < $i, $cut);
+                                if ($cut) {
+                                    $stub->cut = $cut;
+                                }
                             } else {
                                 $stub->cut = -1;
                             }
@@ -101,7 +104,7 @@ class ExtCloner extends AbstractCloner
                         if (empty($softRefs[$h = $zval['resource_id']])) {
                             $stub = $softRefs[$h] = (object) array('res' => $zval['resource_type']);
                             if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castResource($stub->res, $v);
+                                $a = $this->castResource($stub->res, $v, 0 < $i);
                             } else {
                                 $stub->cut = -1;
                             }
@@ -129,10 +132,18 @@ class ExtCloner extends AbstractCloner
                             if ($pos < $maxItems) {
                                 if ($maxItems < $pos += $k) {
                                     $a = array_slice($a, 0, $maxItems - $pos);
-                                    $stub->cut = $pos - $maxItems;
+                                    if (empty($stub->cut)) {
+                                        $stub->cut = $pos - $maxItems;
+                                    } elseif ($stub->cut > 0) {
+                                        $stub->cut += $pos - $maxItems;
+                                    }
                                 }
                             } else {
-                                $stub->cut = $k;
+                                if (empty($stub->cut)) {
+                                    $stub->cut = $k;
+                                } elseif ($stub->cut > 0) {
+                                    $stub->cut += $k;
+                                }
                                 $stub = $a = null;
                                 unset($arrayRefs[$len]);
                                 continue;

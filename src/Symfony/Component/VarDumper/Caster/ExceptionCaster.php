@@ -52,7 +52,7 @@ class ExceptionCaster
         if (empty($a["\0Exception\0previous"])) {
             unset($a["\0Exception\0previous"]);
         }
-        unset($a["\0Exception\0string"], $a['xdebug_message'], $a['__destructorException']);
+        unset($a["\0Exception\0string"], $a["\0+\0xdebug_message"], $a["\0+\0__destructorException"]);
 
         return $a;
     }

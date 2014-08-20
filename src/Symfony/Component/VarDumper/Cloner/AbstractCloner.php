@@ -145,43 +145,46 @@ abstract class AbstractCloner implements ClonerInterface
     /**
      * Casts an object to an array representation.
      *
-     * @param string $class The class of the object.
-     * @param object $obj   The object itself.
+     * @param string $class    The class of the object.
+     * @param object $obj      The object itself.
+     * @param bool   $isNested True if the object is nested in the dumped structure.
+     * @param int    &$cut     After the cast, number of items removed from $obj.
      *
      * @return array The object casted as array.
      */
-    protected function castObject($class, $obj)
+    protected function castObject($class, $obj, $isNested, &$cut)
     {
-        $a = (array) $obj;
-
         if (isset($this->classInfo[$class])) {
             $classInfo = $this->classInfo[$class];
         } else {
             $classInfo = array(
-                array_reverse(array($class => $class) + class_parents($class) + class_implements($class) + array('*' => '*')),
                 method_exists($class, '__debugInfo'),
                 new \ReflectionClass($class),
+                array_reverse(array($class => $class) + class_parents($class) + class_implements($class) + array('*' => '*')),
             );
 
             $this->classInfo[$class] = $classInfo;
         }
 
-        foreach ($classInfo[0] as $p) {
-            if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
-                foreach ($this->casters[$p] as $p) {
-                    $a = $this->callCaster($p, $obj, $a);
-                }
+        if ($classInfo[0]) {
+            $a = $this->callCaster(array($obj, '__debugInfo'), $obj, array(), $isNested);
+        } else {
+            $a = (array) $obj;
+        }
+        $cut = 0;
+
+        foreach ($a as $k => $p) {
+            if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[1]->hasProperty($k))) {
+                unset($a[$k]);
+                $a["\0+\0".$k] = $p;
             }
         }
 
-        if ($classInfo[1]) {
-            $a = $this->callCaster(array($obj, '__debugInfo'), $obj, $a);
-        }
-
-        foreach ($a as $k => $p) {
-            if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[2]->hasProperty($k))) {
-                unset($a[$k]);
-                $a["\0+\0".$k] = $p;
+        foreach ($classInfo[2] as $p) {
+            if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
+                foreach ($this->casters[$p] as $p) {
+                    $a = $this->callCaster($p, $obj, $a, $isNested, $cut);
+                }
             }
         }
 
@@ -191,18 +194,19 @@ abstract class AbstractCloner implements ClonerInterface
     /**
      * Casts a resource to an array representation.
      *
-     * @param string   $type The type of the resource.
-     * @param resource $res  The resource.
+     * @param string   $type     The type of the resource.
+     * @param resource $res      The resource.
+     * @param bool     $isNested True if the object is nested in the dumped structure.
      *
      * @return array The resource casted as array.
      */
-    protected function castResource($type, $res)
+    protected function castResource($type, $res, $isNested)
     {
         $a = array();
 
         if (!empty($this->casters['r:'.$type])) {
             foreach ($this->casters['r:'.$type] as $c) {
-                $a = $this->callCaster($c, $res, $a);
+                $a = $this->callCaster($c, $res, $a, $isNested);
             }
         }
 
@@ -215,14 +219,15 @@ abstract class AbstractCloner implements ClonerInterface
      * @param callable        $callback The caster.
      * @param object|resource $obj      The object/resource being casted.
      * @param array           $a        The result of the previous cast for chained casters.
+     * @param bool            $isNested True if $obj is nested in the dumped structure.
+     * @param int             &$cut     After the cast, number of items removed from $obj.
      *
      * @return array The casted object/resource.
      */
-    private function callCaster($callback, $obj, $a)
+    private function callCaster($callback, $obj, $a, $isNested, &$cut = 0)
     {
         try {
-            // Ignore invalid $callback
-            $cast = @call_user_func($callback, $obj, $a);
+            $cast = call_user_func_array($callback, array($obj, $a, $isNested, &$cut));
 
             if (is_array($cast)) {
                 $a = $cast;

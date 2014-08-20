@@ -28,7 +28,7 @@ class ReflectionCaster
     public static function castClosure(\Closure $c, array $a)
     {
         $a = static::castReflector(new \ReflectionFunction($c), $a);
-        unset($a[0], $a['name']);
+        unset($a["\0+\0000"], $a['name']);
 
         return $a;
     }

@@ -29,10 +29,10 @@ class CliDumper extends AbstractDumper
         // See http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
         'num'       => '1;38;5;33',
         'const'     => '1;38;5;33',
-        'str'       => '1;38;5;45',
+        'str'       => '1;38;5;37',
         'cchr'      => '7',
         'note'      => '38;5;178',
-        'ref'       => '38;5;238',
+        'ref'       => '38;5;245',
         'public'    => '38;5;28',
         'protected' => '38;5;166',
         'private'   => '38;5;160',
