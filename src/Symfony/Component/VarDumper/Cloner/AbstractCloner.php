@@ -27,6 +27,7 @@ abstract class AbstractCloner implements ClonerInterface
         'o:Doctrine\Common\Persistence\ObjectManager' => 'Symfony\Component\VarDumper\Caster\DoctrineCaster::castObjectManager',
         'o:Doctrine\Common\Proxy\Proxy'               => 'Symfony\Component\VarDumper\Caster\DoctrineCaster::castCommonProxy',
         'o:Doctrine\ORM\Proxy\Proxy'                  => 'Symfony\Component\VarDumper\Caster\DoctrineCaster::castOrmProxy',
+        'o:Doctrine\ORM\PersistentCollection'         => 'Symfony\Component\VarDumper\Caster\DoctrineCaster::castPersistentCollection',
 
         'o:DOMException'             => 'Symfony\Component\VarDumper\Caster\DOMCaster::castException',
         'o:DOMStringList'            => 'Symfony\Component\VarDumper\Caster\DOMCaster::castLength',

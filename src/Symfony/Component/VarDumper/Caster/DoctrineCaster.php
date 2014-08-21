@@ -14,7 +14,6 @@ namespace Symfony\Component\VarDumper\Caster;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Proxy\Proxy as CommonProxy;
 use Doctrine\ORM\Proxy\Proxy as OrmProxy;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\PersistentCollection;
 
 /**
