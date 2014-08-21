@@ -27,6 +27,6 @@ class DebugExtension extends \Twig_Extension
 
     public function getName()
     {
-        return 'debug';
+        return 'symfony_debug';
     }
 }
