@@ -25,12 +25,15 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
     protected $line = '';
     protected $lineDumper;
     protected $outputStream;
+    protected $decimalPoint; // This is locale dependent
 
     /**
      * @param callable|resource|string|null $outputStream A line dumper callable, an opened stream or an output path, defaults to static::$defaultOutputStream.
      */
     public function __construct($outputStream = null)
     {
+        $this->decimalPoint = (string) 0.5;
+        $this->decimalPoint = $this->decimalPoint[1];
         if (is_callable($outputStream)) {
             $this->setLineDumper($outputStream);
         } else {
@@ -68,6 +71,8 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
      */
     public function dump(Data $data, $lineDumper = null)
     {
+        $this->decimalPoint = (string) 0.5;
+        $this->decimalPoint = $this->decimalPoint[1];
         $dumper = clone $this;
         if ($lineDumper) {
             $dumper->setLineDumper($lineDumper);

@@ -105,9 +105,10 @@ class CliDumper extends AbstractDumper
                     case -INF === $val: $val = '-INF'; break;
                     case is_nan($val):  $val = 'NAN';  break;
                     default:
-                        $v = sprintf('%.14E', $val);
-                        $val = sprintf('%.17E', $val);
-                        $val = preg_replace('/(\d)0*(?:E\+0|(E)\+?(.*))$/', '$1$2$3', (float) $v === (float) $val ? $v : $val);
+                        $val = (string) $val;
+                        if (false === strpos($val, $this->decimalPoint)) {
+                            $val .= $this->decimalPoint.'0';
+                        }
                         break;
                 }
                 break;

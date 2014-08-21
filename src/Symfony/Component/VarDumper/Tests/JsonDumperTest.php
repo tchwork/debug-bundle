@@ -23,6 +23,8 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     {
         require __DIR__.'/Fixtures/dumb-var.php';
 
+        $decPoint = (string) 0.5;
+        $decPoint = $decPoint[1];
         $dumper = new JsonDumper();
         $cloner = new PhpCloner();
         $var['dumper'] = $dumper;
@@ -103,7 +105,8 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
       "blocked": true,
       "eof": false,
       "options": []
-    }
+    },
+    "*:decimalPoint": "'.$decPoint.'"
   },
   "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"41":[47]}
 }
