@@ -40,7 +40,9 @@ class DOMCaster
 
     public static function castException(\DOMException $e, $a, $isNested, &$cut)
     {
-        $a["\0*\0code"] .= ' ('.self::$errorCodes[$code].')';
+        if (isset($a["\0*\0code"], self::$errorCodes[$a["\0*\0code"]])) {
+            $a["\0*\0code"] .= ' ('.self::$errorCodes[$a["\0*\0code"]].')';
+        }
 
         return $a;
     }

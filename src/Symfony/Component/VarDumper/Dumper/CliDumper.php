@@ -172,7 +172,7 @@ class CliDumper extends AbstractDumper
                 }
 
                 if ($m) {
-                    $this->line .= '  ';
+                    $this->line .= $this->indentPad;
                 }
                 $this->line .= $str;
 
@@ -202,7 +202,7 @@ class CliDumper extends AbstractDumper
      */
     public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
     {
-        $this->enterHash($cursor, '[', $hasChild);
+        $this->enterHash($cursor, $count ? $this->style('note', 'array:'.$count).' [' : '[', $hasChild);
     }
 
     /**
@@ -218,10 +218,7 @@ class CliDumper extends AbstractDumper
      */
     public function enterObject(Cursor $cursor, $class, $hasChild)
     {
-        if ('stdClass' === $class) {
-            $class = '';
-        }
-        $this->enterHash($cursor, $this->style('note', $class).'{', $hasChild);
+        $this->enterHash($cursor, 'stdClass' !== $class ? $this->style('note', $class).' {' : '{', $hasChild);
     }
 
     /**
@@ -237,7 +234,7 @@ class CliDumper extends AbstractDumper
      */
     public function enterResource(Cursor $cursor, $res, $hasChild)
     {
-        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).'{', $hasChild);
+        $this->enterHash($cursor, 'resource:'.$this->style('note', $res).' {', $hasChild);
     }
 
     /**

@@ -26,6 +26,7 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
     protected $lineDumper;
     protected $outputStream;
     protected $decimalPoint; // This is locale dependent
+    protected $indentPad = '  ';
 
     /**
      * @param callable|resource|string|null $outputStream A line dumper callable, an opened stream or an output path, defaults to static::$defaultOutputStream.
@@ -59,6 +60,21 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
     {
         $prev = $this->lineDumper;
         $this->lineDumper = $callback;
+
+        return $prev;
+    }
+
+    /**
+     * Sets the indentation pad string.
+     *
+     * @param string $pad A string the will be prepended to dumped lines, repeated by nesting level.
+     *
+     * @return string The indent pad.
+     */
+    public function setIndentPad($pad)
+    {
+        $prev = $this->indentPad;
+        $this->indentPad = $pad;
 
         return $prev;
     }
@@ -101,9 +117,7 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
     protected function echoLine($line, $depth)
     {
         if (false !== $depth) {
-            fwrite($this->outputStream, "\n".str_repeat('  ', $depth).$line);
-        } else {
-            fwrite($this->outputStream, "\n");
+            fwrite($this->outputStream, str_repeat($this->indentPad, $depth).$line."\n");
         }
     }
 }

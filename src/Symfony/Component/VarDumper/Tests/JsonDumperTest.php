@@ -106,7 +106,8 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
       "eof": false,
       "options": []
     },
-    "*:decimalPoint": "'.$decPoint.'"
+    "*:decimalPoint": "'.$decPoint.'",
+    "*:indentPad": "  "
   },
   "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"41":[47]}
 }

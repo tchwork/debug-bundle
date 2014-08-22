@@ -36,8 +36,7 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(
             <<<EOTXT
-
-[
+array:25 [
   "number" => 1
   0 => null #1
   "const" => 1.1
@@ -50,7 +49,7 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
   "str" => "déjà"
   7 => b"é"
   "[]" => []
-  "res" => resource:stream{
+  "res" => resource:stream {
     wrapper_type: "plainfile"
     stream_type: "dir"
     mode: "r"
@@ -61,12 +60,12 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
     eof: false
     options: []
   }
-  8 => resource:Unknown{}
-  "obj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo{ #2
+  8 => resource:Unknown {}
+  "obj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo { #2
     foo: "foo"
     "bar": "bar"
   }
-  "closure" => Closure{
+  "closure" => Closure {
     reflection: """
       Closure [ <user> {$closureLabel} Symfony\Component\VarDumper\Tests\Fixture\{closure} ] {
         @@ {$var['file']} {$var['line']} - {$var['line']}
@@ -79,14 +78,14 @@ class CliDumperTest extends \PHPUnit_Framework_TestCase
       """
   }
   "line" => {$var['line']}
-  "nobj" => [
+  "nobj" => array:1 [
     0 => {} #3
   ]
-  "recurs" => [ #4
-    0 => [&4]
+  "recurs" => array:1 [ #4
+    0 => array:1 [&4]
   ]
   9 => null &1
-  "sobj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo{@2}
+  "sobj" => Symfony\Component\VarDumper\Tests\Fixture\DumbFoo {@2}
   "snobj" => {&3}
   "snobj2" => {@3}
   "file" => "{$var['file']}"
