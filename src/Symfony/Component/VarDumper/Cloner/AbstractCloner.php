@@ -60,11 +60,12 @@ abstract class AbstractCloner implements ClonerInterface
         'o:PDO'            => 'Symfony\Component\VarDumper\Caster\PdoCaster::castPdo',
         'o:PDOStatement'   => 'Symfony\Component\VarDumper\Caster\PdoCaster::castPdoStatement',
 
-        'o:SplDoublyLinkedList' => 'Symfony\Component\VarDumper\Caster\SplCaster::castSplDoublyLinkedList',
-        'o:SplFixedArray'       => 'Symfony\Component\VarDumper\Caster\SplCaster::castSplFixedArray',
-        'o:SplHeap'             => 'Symfony\Component\VarDumper\Caster\SplCaster::castSplIterator',
-        'o:SplObjectStorage'    => 'Symfony\Component\VarDumper\Caster\SplCaster::castSplObjectStorage',
-        'o:SplPriorityQueue'    => 'Symfony\Component\VarDumper\Caster\SplCaster::castSplIterator',
+        'o:ArrayObject'         => 'Symfony\Component\VarDumper\Caster\SplCaster::castArrayObject',
+        'o:SplDoublyLinkedList' => 'Symfony\Component\VarDumper\Caster\SplCaster::castDoublyLinkedList',
+        'o:SplFixedArray'       => 'Symfony\Component\VarDumper\Caster\SplCaster::castFixedArray',
+        'o:SplHeap'             => 'Symfony\Component\VarDumper\Caster\SplCaster::castHeap',
+        'o:SplObjectStorage'    => 'Symfony\Component\VarDumper\Caster\SplCaster::castObjectStorage',
+        'o:SplPriorityQueue'    => 'Symfony\Component\VarDumper\Caster\SplCaster::castHeap',
 
         'r:curl'           => 'Symfony\Component\VarDumper\Caster\ResourceCaster::castCurl',
         'r:dba'            => 'Symfony\Component\VarDumper\Caster\ResourceCaster::castDba',
