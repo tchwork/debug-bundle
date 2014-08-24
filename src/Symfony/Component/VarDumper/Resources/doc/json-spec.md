@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Last updated on April. 4, 2014
+October 4, 2011 - Last updated on Aug. 24, 2014
 
 Introduction
 ============
@@ -230,6 +230,7 @@ added rules:
 * keys for protected properties of objects are prefixed by `*:`
 * keys for private properties of objects are prefixed by the class name they are
   bind to followed by a `:`
+* keys for dynamic properties (run-time added properties) are prefixed by `+:`
 * keys for public properties of objects are prefixed by a `:` when they collide
   with a reserved key or when they contain a `:`
 * keys for meta-data of objects/resources are prefixed by `~:`. Meta-data can be
