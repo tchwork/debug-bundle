@@ -29,7 +29,7 @@ class DebugBundle extends Bundle
         if ($this->container->getParameter('kernel.debug')) {
             $container = $this->container;
 
-            // This code is here to lazy load the debug stack. This default
+            // This code is here to lazy load the dump stack. This default
             // configuration for CLI mode is overridden in HTTP mode on
             // 'kernel.request' event
             static::setHandler(function ($var) use ($container) {
@@ -44,7 +44,7 @@ class DebugBundle extends Bundle
         }
     }
 
-    public static function debug($var)
+    public static function dump($var)
     {
         if (null === self::$handler) {
             $cloner = extension_loaded('symfony_debug') ? new ExtCloner() : new PhpCloner();

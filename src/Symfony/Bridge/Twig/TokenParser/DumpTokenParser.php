@@ -9,23 +9,23 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DebugBundle\Twig\TokenParser;
+namespace Symfony\Bridge\Twig\TokenParser;
 
-use Symfony\Bundle\DebugBundle\Twig\Node\DebugNode;
+use Symfony\Bridge\Twig\Node\DumpNode;
 
 /**
- * Token Parser for the 'debug' tag.
+ * Token Parser for the 'dump' tag.
  *
- * Debug variables with:
+ * Dump variables with:
  * <pre>
- *  {% debug %}
- *  {% debug foo %}
- *  {% debug foo, bar %}
+ *  {% dump %}
+ *  {% dump foo %}
+ *  {% dump foo, bar %}
  * </pre>
  *
  * @author Julien Galenski <julien.galenski@gmail.com>
  */
-class DebugTokenParser extends \Twig_TokenParser
+class DumpTokenParser extends \Twig_TokenParser
 {
     /**
      * {@inheritdoc}
@@ -38,7 +38,7 @@ class DebugTokenParser extends \Twig_TokenParser
         }
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new DebugNode($values, $token->getLine(), $this->getTag());
+        return new DumpNode($values, $token->getLine(), $this->getTag());
     }
 
     /**
@@ -46,6 +46,6 @@ class DebugTokenParser extends \Twig_TokenParser
      */
     public function getTag()
     {
-        return 'debug';
+        return 'dump';
     }
 }

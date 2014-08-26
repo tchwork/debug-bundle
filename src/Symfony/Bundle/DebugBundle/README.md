@@ -1,7 +1,7 @@
-debug() function
+dump() function
 ================
 
-This bundle provides a better `debug()` function, that you can use instead of
+This bundle provides a better `dump()` function, that you can use instead of
 `var_dump()`, *better* being for:
 
 - per object and resource types specialized view: e.g. filter out Doctrine noise
@@ -19,4 +19,4 @@ This bundle provides a better `debug()` function, that you can use instead of
 - full exposure of the internal mechanisms used for walking through an arbitrary
   PHP data structure.
 
-Calling `debug($myVvar)` works in all PHP code and `{% debug myVar %}` in Twig templates.
+Calling `dump($myVvar)` works in all PHP code and `{% dump myVar %}` in Twig templates.

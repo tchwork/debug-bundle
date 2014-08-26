@@ -20,10 +20,12 @@
     },
     "autoload": {
         "files": [
-            "src/Symfony/Bundle/DebugBundle/Resources/functions/debug.php"
+            "src/Symfony/Bundle/DebugBundle/Resources/functions/dump.php"
         ],
         "psr-0": {
             "Symfony\\Bundle\\DebugBundle\\": "src",
+            "Symfony\\Bridge\\Twig\\": "src",
+            "Symfony\\Component\\HttpKernel\\": "src",
             "Symfony\\Component\\VarDumper\\": "src"
         }
     },

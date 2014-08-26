@@ -9,24 +9,24 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DebugBundle\Twig;
+namespace Symfony\Bridge\Twig\Extension;
 
-use Symfony\Bundle\DebugBundle\DebugBundle;
+use Symfony\Bridge\Twig\TokenParser\DumpTokenParser;
 
 /**
- * Provides integration of the debug() function with Twig.
+ * Provides integration of the dump() function with Twig.
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class DebugExtension extends \Twig_Extension
+class DumpExtension extends \Twig_Extension
 {
     public function getTokenParsers()
     {
-        return array(new TokenParser\DebugTokenParser());
+        return array(new DumpTokenParser());
     }
 
     public function getName()
     {
-        return 'symfony_debug';
+        return 'dump';
     }
 }

@@ -43,7 +43,7 @@ class DebugExtension extends Extension
             ->addMethodCall('setMaxItems',  array($config['max_items']))
             ->addMethodCall('setMaxString', array($config['max_string_length']));
 
-        $collectorDef = $container->getDefinition('data_collector.debug');
+        $collectorDef = $container->getDefinition('data_collector.dump');
         $collectorTag = $collectorDef->getTag('data_collector');
         $collectorDef->clearTag('data_collector');
         if ($config['profiler_template']) {

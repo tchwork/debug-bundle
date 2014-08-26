@@ -27,7 +27,7 @@
     },
     "autoload": {
         "psr-0": { "Symfony\\Bundle\\DebugBundle\\": "" },
-        "files": [ "Resources/functions/debug.php" ]
+        "files": [ "Resources/functions/dump.php" ]
     },
     "target-dir": "Symfony/Bundle/DebugBundle",
     "minimum-stability": "dev",

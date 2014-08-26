@@ -5,25 +5,25 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="twig.extension.symfony_debug.class">Symfony\Bundle\DebugBundle\Twig\DebugExtension</parameter>
-        <parameter key="data_collector.debug.class">Symfony\Bundle\DebugBundle\DataCollector\DebugDataCollector</parameter>
-        <parameter key="debug.debug_listener.class">Symfony\Bundle\DebugBundle\EventListener\DebugListener</parameter>
+        <parameter key="twig.extension.dump.class">Symfony\Bridge\Twig\Extension\DumpExtension</parameter>
+        <parameter key="data_collector.dump.class">Symfony\Component\HttpKernel\DataCollector\DumpDataCollector</parameter>
+        <parameter key="debug.dump_listener.class">Symfony\Component\HttpKernel\EventListener\DumpListener</parameter>
     </parameters>
 
     <services>
-        <service id="twig.extension.symfony_debug" class="%twig.extension.symfony_debug.class%">
+        <service id="twig.extension.dump" class="%twig.extension.dump.class%">
             <tag name="twig.extension" />
         </service>
 
-        <service id="data_collector.debug" class="%data_collector.debug.class%">
-            <tag name="data_collector" id="debug" />
+        <service id="data_collector.dump" class="%data_collector.dump.class%">
+            <tag name="data_collector" id="dump" />
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
         </service>
 
-        <service id="debug.debug_listener" class="%debug.debug_listener.class%">
+        <service id="debug.dump_listener" class="%debug.dump_listener.class%">
             <tag name="kernel.event_subscriber" />
             <argument type="service" id="service_container" />
-            <argument>data_collector.debug</argument>
+            <argument>data_collector.dump</argument>
         </service>
 
         <service id="var_dumper.cloner" class="%var_dumper.cloner.class%" />

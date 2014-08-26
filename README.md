@@ -1,7 +1,7 @@
 High accuracy and flexible dumping for PHP variables
 ====================================================
 
-This package provides a better `debug()` function, that you can use instead of
+This package provides a better `dump()` function, that you can use instead of
 `var_dump()`, *better* being for:
 
 - per object and resource types specialized view: e.g. filter out Doctrine noise
@@ -32,7 +32,7 @@ command to install it:
         }
     }
 
-Then enjoy debugging with `debug($var)`.
+Then enjoy debugging with `dump($var)`.
 
 More advanced usages are possible. Please check the source code or open issues on
 GitHub to get *how-to* answers.
@@ -40,11 +40,11 @@ GitHub to get *how-to* answers.
 Symfony2 bundle
 ---------------
 
-For Symfony2 users, a bundle is also available. The bundle creates a `debug()`
+For Symfony2 users, a bundle is also available. The bundle creates a `dump()`
 function that is available both in your PHP code and in your Twig templates.
 
 In console mode, variables are dumped on *stderr*. In web mode, variables are
-dumped in a new `debug()` tab in the debug toolbar.
+dumped in a new `dump()` tab in the debug toolbar.
 
 Enabling only needs a line in your `app/AppKernel.php`:
 
@@ -64,7 +64,7 @@ Example
 **In your Twig templates:**
 
 ```twig
-{% debug myVar %}
+{% dump myVar %}
 ```
 
 **In your Php code:**
@@ -75,10 +75,10 @@ Example
 require __DIR__ . '/vendor/autoload.php';
 
 $var = 1.0;
-debug($var);
+dump($var);
 
 $var = fopen(__FILE__, 'rb');
-debug($var);
+dump($var);
 
 class foo
 {
@@ -89,11 +89,11 @@ class foo
 
 $foo = new foo;
 $var = array($foo, $foo);
-debug($var);
+dump($var);
 
 $var = array($foo);
 $var[1] =& $var[0];
-debug($var);
+dump($var);
 ```
 
 ![Example output](doc/cli-example.png)

@@ -9,11 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DebugBundle\DataCollector;
+namespace Symfony\Component\HttpKernel\DataCollector;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarDumper\Dumper\JsonDumper;
@@ -24,7 +23,7 @@ use Symfony\Component\VarDumper\Dumper\DataDumperInterface;
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class DebugDataCollector extends DataCollector implements DataDumperInterface
+class DumpDataCollector extends DataCollector implements DataDumperInterface
 {
     private $stopwatch;
     private $isCollected = true;
@@ -46,7 +45,7 @@ class DebugDataCollector extends DataCollector implements DataDumperInterface
     public function dump(Data $data)
     {
         if ($this->stopwatch) {
-           $this->stopwatch->start('debug');
+           $this->stopwatch->start('dump');
         }
         if ($this->clonesRoot->isCollected) {
             $this->clonesRoot->isCollected = false;
@@ -67,7 +66,7 @@ class DebugDataCollector extends DataCollector implements DataDumperInterface
 
         for ($i = 1; $i < 6; ++$i) {
             if (isset($trace[$i]['class'], $trace[$i]['function'])
-                && 'debug' === $trace[$i]['function']
+                && 'dump' === $trace[$i]['function']
                 && 'Symfony\Bundle\DebugBundle\DebugBundle' === $trace[$i]['class']
             ) {
                 $file = $trace[$i]['file'];
@@ -110,7 +109,7 @@ class DebugDataCollector extends DataCollector implements DataDumperInterface
         $this->clonesRoot->data[] = compact('data', 'name', 'file', 'line', 'fileExcerpt');
 
         if ($this->stopwatch) {
-            $this->stopwatch->stop('debug');
+            $this->stopwatch->stop('dump');
         }
     }
 
@@ -207,7 +206,7 @@ class DebugDataCollector extends DataCollector implements DataDumperInterface
 
     public function getName()
     {
-        return 'debug';
+        return 'dump';
     }
 
     public function flushDumps()
@@ -240,7 +239,7 @@ class DebugDataCollector extends DataCollector implements DataDumperInterface
                     if ('' !== $dump['file']) {
                         $dump['name'] = "<abbr title=\"{$dump['file']}\">{$dump['name']}</abbr>";
                     }
-                    echo "\n<br><span class=\"sf-var-debug-meta\">in {$dump['name']} on line {$dump['line']}:</span>";
+                    echo "\n<br><span class=\"sf-dump-meta\">in {$dump['name']} on line {$dump['line']}:</span>";
                 } else {
                     echo "\nin {$dump['name']} on line {$dump['line']}:\n\n";
                 }

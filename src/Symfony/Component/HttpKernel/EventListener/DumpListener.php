@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DebugBundle\EventListener;
+namespace Symfony\Component\HttpKernel\EventListener;
 
 use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -17,11 +17,11 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Configures debug() handler.
+ * Configures dump() handler.
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class DebugListener implements EventSubscriberInterface
+class DumpListener implements EventSubscriberInterface
 {
     private $container;
     private $dumper;
@@ -55,7 +55,7 @@ class DebugListener implements EventSubscriberInterface
 
     public static function getSubscribedEvents()
     {
-        // Register early to have a working debug() as early as possible
+        // Register early to have a working dump() as early as possible
         return array(KernelEvents::REQUEST => array('configure', 1024));
     }
 }

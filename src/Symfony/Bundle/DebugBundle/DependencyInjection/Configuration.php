@@ -43,7 +43,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('profiler_template')
                     ->info('The template used for theming the debub panel in the profiler')
-                    ->defaultValue('@Debug/Profiler/Patchwork/debug.html.twig')
+                    ->defaultValue('@Debug/Profiler/Patchwork/dump.html.twig')
                 ->end()
             ->end();
 

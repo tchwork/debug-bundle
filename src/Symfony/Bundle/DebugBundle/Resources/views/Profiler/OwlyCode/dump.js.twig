@@ -1,16 +1,16 @@
 "use strict";
 
 (function(window) {
-    window.VarDebug = window.VarDebug || {};
+    window.VarDump = window.VarDump || {};
 
-    VarDebug.BuildMetaData = function (parser, offset)
+    VarDump.BuildMetaData = function (parser, offset)
     {
         this.offset = offset;
         this.parser = parser;
         this.counter = offset;
     };
 
-    VarDebug.Parser = function()
+    VarDump.Parser = function()
     {
         var __self = this;
 
@@ -68,34 +68,34 @@
             }
 
             if (data === null) {
-                output = new VarDebug.PhpUndefined(buildData);
+                output = new VarDump.PhpUndefined(buildData);
             } else if (data instanceof Array) {
-                output = new VarDebug.PhpArray(data, buildData);
+                output = new VarDump.PhpArray(data, buildData);
             } else if (typeof(data) == "string") {
                 if (data.indexOf('R`') == 0) {
                     var position = data.replace('R`', '');
                     position = position.split(':')[0];
-                    output = new VarDebug.PhpReference(position, buildData.parser.getAmpersand(position), buildData);
+                    output = new VarDump.PhpReference(position, buildData.parser.getAmpersand(position), buildData);
                 } else if (data.indexOf('r`') == 0) {
                     var position = data.replace('r`', '');
                     position = parseInt(position.split(':')[0]);
-                    output = new VarDebug.PhpReference(position, false, buildData);
+                    output = new VarDump.PhpReference(position, false, buildData);
                 } else {
-                    output = new VarDebug.PhpScalar(data, buildData);
+                    output = new VarDump.PhpScalar(data, buildData);
                 }
             } else if (data.length == 0) {
-                output = new VarDebug.PhpArray(data, buildData);
+                output = new VarDump.PhpArray(data, buildData);
             } else if (typeof(data) == 'object' && data.hasOwnProperty('_')) { // @todo check for virtualobjects
                 var identifier = data._.split(':');
                 if (identifier[1] == 'array') {
-                    output = new VarDebug.PhpArray(data, buildData);
+                    output = new VarDump.PhpArray(data, buildData);
                 } else if (identifier[1] == 'resource') {
-                    output = new VarDebug.PhpResource(data, buildData);
+                    output = new VarDump.PhpResource(data, buildData);
                 } else {
-                    output = new VarDebug.PhpObject(data, buildData);
+                    output = new VarDump.PhpObject(data, buildData);
                 }
             } else {
-                output = new VarDebug.PhpScalar(data, buildData);
+                output = new VarDump.PhpScalar(data, buildData);
             }
 
             if (!ignoreCount) {
@@ -110,7 +110,7 @@
             var parsed = [];
 
             for (var i in raws) {
-                var buildData = new VarDebug.BuildMetaData(__self, parseInt(i));
+                var buildData = new VarDump.BuildMetaData(__self, parseInt(i));
                 parsed.push(__self.parseOne(raws[i], buildData));
             }
             return parsed;
@@ -136,12 +136,12 @@
         };
     };
 
-    VarDebug.PhpObject = function (data, buildData)
+    VarDump.PhpObject = function (data, buildData)
     {
         var __self = this;
         var meta = data._.split(':');
         __self.traversable = true;
-        __self.classId = VarDebug.untickString(meta[1]);
+        __self.classId = VarDump.untickString(meta[1]);
         __self.cutBy = data.__cutBy;
 
         if (typeof(value) == "string" && value.indexOf('u`') != -1) {
@@ -152,14 +152,14 @@
             value = value.substr(position + 2, value.length);
         }
 
-        __self.attrs = new VarDebug.ChildrenContainer(data, buildData);
+        __self.attrs = new VarDump.ChildrenContainer(data, buildData);
 
         __self.count = function() {
             return __self.attrs.count();
         }
     };
 
-    VarDebug.PhpResource = function (data, buildData)
+    VarDump.PhpResource = function (data, buildData)
     {
         var __self = this;
 
@@ -167,10 +167,10 @@
         __self.traversable = true;
         __self.type = meta[2];
         __self.cutBy = data.__cutBy;
-        __self.attrs = new VarDebug.ChildrenContainer(data, buildData, 'resource');
+        __self.attrs = new VarDump.ChildrenContainer(data, buildData, 'resource');
     }
 
-    VarDebug.PhpAttribute = function (key, value)
+    VarDump.PhpAttribute = function (key, value)
     {
         var __self = this;
         __self.traversable = false;
@@ -196,12 +196,12 @@
         __self.value = value;
     };
 
-    VarDebug.PhpArray = function (data, buildData)
+    VarDump.PhpArray = function (data, buildData)
     {
         var __self = this;
         __self.cutBy = data.__cutBy;
 
-        __self.attrs = new VarDebug.ChildrenContainer(data, buildData, 'array');
+        __self.attrs = new VarDump.ChildrenContainer(data, buildData, 'array');
 
         __self.traversable = __self.attrs.count() > 0;
 
@@ -223,7 +223,7 @@
 
         __self.containsScalarsOnly = function() {
             for (var i in __self.attrs.storage) {
-                if(!(__self.attrs.storage[i] instanceof VarDebug.PhpScalar)) {
+                if(!(__self.attrs.storage[i] instanceof VarDump.PhpScalar)) {
                     return false;
                 }
             }
@@ -232,7 +232,7 @@
         }
     };
 
-    VarDebug.PhpScalar = function (value)
+    VarDump.PhpScalar = function (value)
     {
         var __self = this;
 
@@ -288,7 +288,7 @@
         };
     };
 
-    VarDebug.PhpReference = function (target, ampersand)
+    VarDump.PhpReference = function (target, ampersand)
     {
         var __self = this;
         __self.traversable = true;
@@ -300,12 +300,12 @@
         };
     };
 
-    VarDebug.PhpUndefined = function ()
+    VarDump.PhpUndefined = function ()
     {
         this.traversable = false;
     };
 
-    VarDebug.ChildrenContainer = function(data, buildData, mode, ignoreCount)
+    VarDump.ChildrenContainer = function(data, buildData, mode, ignoreCount)
     {
         var __self = this;
 
@@ -318,7 +318,7 @@
             if (i != "_" && i != "__proto__" && i != '__refs' && i != "__cutBy") {
                 var value = buildData.parser.parseOne(data[i], buildData);
                 if (__self.mode === 'object') {
-                    var attribute = new VarDebug.PhpAttribute(i, value);
+                    var attribute = new VarDump.PhpAttribute(i, value);
                     __self.storage[attribute.name] = attribute;
                     __self.keys[attribute.name] = attribute.name;
                 } else {
@@ -342,30 +342,30 @@
         };
     };
 
-    VarDebug.untickString = function (value) {
+    VarDump.untickString = function (value) {
         return (value.indexOf('b`') === 0 || value.indexOf('u`') === 0) ? value.substr(2, value.length) : value;
     };
 
-    window.VarDebug = VarDebug;
+    window.VarDump = VarDump;
 })(window);
 
 
 (function (window) {
-    var VarDebug = window.VarDebug || {};
+    var VarDump = window.VarDump || {};
 
-    VarDebug.maxStringSize = 128;
+    VarDump.maxStringSize = 128;
 
-    VarDebug.Renderer = function (parser)
+    VarDump.Renderer = function (parser)
     {
         var __self = this;
         __self.parser = parser;
         var node;
 
         __self.renderScalar = function(entity, mode) {
-            if (mode === 'short' && entity.type === 'string' && entity.value.length > VarDebug.maxStringSize) {
+            if (mode === 'short' && entity.type === 'string' && entity.value.length > VarDump.maxStringSize) {
                 var node = document.createElement('span');
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
-                node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, VarDebug.maxStringSize)) + '..."');
+                node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, VarDump.maxStringSize)) + '..."');
                 if (entity.cut > 0) {
                     node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
@@ -377,7 +377,7 @@
             var node = document.createElement('span');
             node.className = 'occurrence-' + entity.index;
             if (entity.type == 'string') {
-                if((entity.value.length > VarDebug.maxStringSize) && !entity.expanded) {
+                if((entity.value.length > VarDump.maxStringSize) && !entity.expanded) {
                     node.appendChild(__self.renderNode(entity));
                     return node;
                 }
@@ -560,25 +560,25 @@
             entity = entity || parser.getEntryPoint();
             mode = mode || "full";
 
-            if (entity instanceof VarDebug.PhpScalar) {
+            if (entity instanceof VarDump.PhpScalar) {
                 node = __self.renderScalar(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpObject) {
+            if (entity instanceof VarDump.PhpObject) {
                 node = __self.renderObject(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpResource) {
+            if (entity instanceof VarDump.PhpResource) {
                 node = __self.renderResource(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpArray) {
+            if (entity instanceof VarDump.PhpArray) {
                 node = __self.renderArray(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpReference) {
+            if (entity instanceof VarDump.PhpReference) {
                 node = __self.renderReference(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpUndefined) {
+            if (entity instanceof VarDump.PhpUndefined) {
                 node = __self.renderUndefined(entity, mode);
             }
-            if (entity instanceof VarDebug.PhpAttribute) {
+            if (entity instanceof VarDump.PhpAttribute) {
                 node = __self.renderAttribute(entity, mode);
             }
 
@@ -614,7 +614,7 @@
 
             entity.attrs.iterate(function(i, child){
                 var li = document.createElement('li');
-                if(child instanceof VarDebug.PhpAttribute) {
+                if(child instanceof VarDump.PhpAttribute) {
                     li.appendChild(__self.render(child));
                     ul.appendChild(li);
                 } else {
@@ -633,7 +633,7 @@
 
             if (entity.cutBy) {
                 var li = document.createElement('li');
-                var elementLabel = entity instanceof VarDebug.PhpArray ? 'elements' : 'attributes';
+                var elementLabel = entity instanceof VarDump.PhpArray ? 'elements' : 'attributes';
                 li.innerHTML = '<span class="truncated">' + entity.cutBy + ' truncated ' + elementLabel + '</span>'
                 ul.appendChild(li);
             }
@@ -642,17 +642,17 @@
         }
 
         __self.renderNode = function (entity) {
-            var forceTraversable = entity instanceof VarDebug.PhpScalar && entity.type === "string" && entity.value.length > VarDebug.maxStringSize;
+            var forceTraversable = entity instanceof VarDump.PhpScalar && entity.type === "string" && entity.value.length > VarDump.maxStringSize;
 
             var span = document.createElement('span');
-            if ((forceTraversable || entity.traversable) && !(entity instanceof VarDebug.PhpReference)) {
+            if ((forceTraversable || entity.traversable) && !(entity instanceof VarDump.PhpReference)) {
                 var link = document.createElement('a');
                 var content = document.createElement('span');
                 content.appendChild(__self.render(entity, 'short'));
                 link.innerHTML = ' ⊞ ';
                 link.style.cursor = 'pointer';
                 var count = typeof entity.count == 'function' ? entity.count() : 0;
-                var elementLabel = entity instanceof VarDebug.PhpArray ? 'element' : 'attribute';
+                var elementLabel = entity instanceof VarDump.PhpArray ? 'element' : 'attribute';
                 if(entity.cutBy) {
                     if(count) {
                         link.setAttribute('data-helper', ' ' + entity.cutBy + '/' + count + ' truncated ' + elementLabel + (entity.count() > 1 ? 's' : ''));
@@ -679,12 +679,12 @@
                     target = document.getElementById(identifier);
                     target.innerHTML = '';
                     target.appendChild(content);
-                    VarDebug.bindHover();
+                    VarDump.bindHover();
                 };
                 content.setAttribute('id', identifier);
                 span.appendChild(link);
                 span.appendChild(content);
-            } else if (entity instanceof VarDebug.PhpScalar) {
+            } else if (entity instanceof VarDump.PhpScalar) {
                 span.appendChild(__self.render(entity, 'short'));
             } else {
                 span.appendChild(__self.render(entity, 'full'));
@@ -699,7 +699,7 @@
         }
     };
 
-    VarDebug.bindHover = function() {
+    VarDump.bindHover = function() {
         var elements = document.getElementsByClassName('reference');
         [].forEach.call(elements, function (element) {
             element.onmouseover = function() {
@@ -717,28 +717,28 @@
         });
     };
 
-    window.VarDebug = VarDebug;
+    window.VarDump = VarDump;
 })(window);
 
 
 (function (window) {
-    var VarDebug = window.VarDebug || {};
+    var VarDump = window.VarDump || {};
 
-    VarDebug.run = function (json) {
-        var parser = new VarDebug.Parser();
+    VarDump.run = function (json) {
+        var parser = new VarDump.Parser();
         parser.parse(json);
 
-        var renderer = new VarDebug.Renderer(parser);
+        var renderer = new VarDump.Renderer(parser);
         var html = document.getElementById('dumper-content');
         var node = document.createElement('div');
 
         node.className = 'dump-blackbox';
         node.appendChild(renderer.render());
         html.appendChild(node);
-        VarDebug.bindHover();
+        VarDump.bindHover();
     }
 
-    window.VarDebug = VarDebug;
+    window.VarDump = VarDump;
 
     window.arrayToggle = function (a)
     {

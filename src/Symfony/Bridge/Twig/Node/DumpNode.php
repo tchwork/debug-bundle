@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DebugBundle\Twig\Node;
+namespace Symfony\Bridge\Twig\Node;
 
 /**
  * @author Julien Galenski <julien.galenski@gmail.com>
  */
-class DebugNode extends \Twig_Node
+class DumpNode extends \Twig_Node
 {
     public function __construct(\Twig_NodeInterface $values = null, $lineno, $tag = null)
     {
@@ -47,19 +47,19 @@ class DebugNode extends \Twig_Node
                 ->outdent()
                 ->write("}\n")
                 ->addDebugInfo($this)
-                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug($vars);'."\n")
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::dump($vars);'."\n")
             ;
         } elseif (1 === $values->count()) {
             $compiler
                 ->addDebugInfo($this)
-                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug(')
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::dump(')
                 ->subcompile($values->getNode(0))
                 ->raw(");\n")
             ;
         } else {
             $compiler
                 ->addDebugInfo($this)
-                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::debug(array(')
+                ->write('\Symfony\Bundle\DebugBundle\DebugBundle::dump(array(')
                 ->indent()
             ;
             foreach ($values as $node) {

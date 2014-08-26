@@ -11,14 +11,14 @@
 
 use Symfony\Bundle\DebugBundle\DebugBundle;
 
-if (!function_exists('debug')) {
+if (!function_exists('dump')) {
     /**
      * @author Nicolas Grekas <p@tchwork.com>
      */
-    function debug($var)
+    function dump($var)
     {
         foreach (func_get_args() as $var) {
-            $var = DebugBundle::debug($var);
+            $var = DebugBundle::dump($var);
         }
 
         return $var;
