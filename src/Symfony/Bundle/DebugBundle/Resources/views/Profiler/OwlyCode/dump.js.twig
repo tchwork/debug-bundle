@@ -1,17 +1,17 @@
-"use strict";
+(function (scope, document) {
+    "use strict";
 
-(function(window) {
-    window.VarDump = window.VarDump || {};
+    var dump = scope.dump || {};
+    scope.dump = dump;
+    dump.maxStringSize = 128;
 
-    VarDump.BuildMetaData = function (parser, offset)
-    {
+    dump.BuildMetaData = function (parser, offset) {
         this.offset = offset;
         this.parser = parser;
         this.counter = offset;
     };
 
-    VarDump.Parser = function()
-    {
+    dump.Parser = function () {
         var __self = this;
 
         __self.references = [];
@@ -38,9 +38,9 @@
             return __self.ampersands[key];
         };
 
-        __self.isAmpersanded = function (key) {
+        __self.isAmpersanded = function (index) {
             for (var i in __self.ampersands) {
-                if (__self.ampersands[i] === key) {
+                if (__self.ampersands[i] === index) {
                     return true;
                 }
             }
@@ -58,8 +58,7 @@
             __self.storage = __self.parseAll(preparedJson);
         };
 
-        __self.parseOne = function (data, buildData, ignoreCount)
-        {
+        __self.parseOne = function (data, buildData, ignoreCount) {
             var index = buildData.counter;
             var output;
 
@@ -68,34 +67,34 @@
             }
 
             if (data === null) {
-                output = new VarDump.PhpUndefined(buildData);
+                output = new dump.PhpUndefined(buildData);
             } else if (data instanceof Array) {
-                output = new VarDump.PhpArray(data, buildData);
+                output = new dump.PhpArray(data, buildData);
             } else if (typeof(data) == "string") {
                 if (data.indexOf('R`') == 0) {
                     var position = data.replace('R`', '');
                     position = position.split(':')[0];
-                    output = new VarDump.PhpReference(position, buildData.parser.getAmpersand(position), buildData);
+                    output = new dump.PhpReference(position, buildData.parser.getAmpersand(position), buildData);
                 } else if (data.indexOf('r`') == 0) {
                     var position = data.replace('r`', '');
                     position = parseInt(position.split(':')[0]);
-                    output = new VarDump.PhpReference(position, false, buildData);
+                    output = new dump.PhpReference(position, false, buildData);
                 } else {
-                    output = new VarDump.PhpScalar(data, buildData);
+                    output = new dump.PhpScalar(data, buildData);
                 }
             } else if (data.length == 0) {
-                output = new VarDump.PhpArray(data, buildData);
-            } else if (typeof(data) == 'object' && data.hasOwnProperty('_')) { // @todo check for virtualobjects
+                output = new dump.PhpArray(data, buildData);
+            } else if (typeof(data) == 'object' && data.hasOwnProperty('_')) {
                 var identifier = data._.split(':');
                 if (identifier[1] == 'array') {
-                    output = new VarDump.PhpArray(data, buildData);
+                    output = new dump.PhpArray(data, buildData);
                 } else if (identifier[1] == 'resource') {
-                    output = new VarDump.PhpResource(data, buildData);
+                    output = new dump.PhpResource(data, buildData);
                 } else {
-                    output = new VarDump.PhpObject(data, buildData);
+                    output = new dump.PhpObject(data, buildData);
                 }
             } else {
-                output = new VarDump.PhpScalar(data, buildData);
+                output = new dump.PhpScalar(data, buildData);
             }
 
             if (!ignoreCount) {
@@ -105,19 +104,18 @@
             return output;
         };
 
-        __self.parseAll = function (raws, callback)
-        {
+        __self.parseAll = function (raws, callback) {
             var parsed = [];
 
             for (var i in raws) {
-                var buildData = new VarDump.BuildMetaData(__self, parseInt(i));
+                var buildData = new dump.BuildMetaData(__self, parseInt(i));
                 parsed.push(__self.parseOne(raws[i], buildData));
             }
+
             return parsed;
         };
 
-        __self.prepareJson = function (json)
-        {
+        __self.prepareJson = function (json) {
             var tokens = [];
 
             tokens.push(json);
@@ -136,12 +134,11 @@
         };
     };
 
-    VarDump.PhpObject = function (data, buildData)
-    {
+    dump.PhpObject = function (data, buildData) {
         var __self = this;
         var meta = data._.split(':');
         __self.traversable = true;
-        __self.classId = VarDump.untickString(meta[1]);
+        __self.classId = dump.untickString(meta[1]);
         __self.cutBy = data.__cutBy;
 
         if (typeof(value) == "string" && value.indexOf('u`') != -1) {
@@ -149,29 +146,27 @@
             if (position !== 0) {
                 __self.cut = parseInt(value.substr(0, position));
             }
-            value = value.substr(position + 2, value.length);
+            value = value.substr(position + 2);
         }
 
-        __self.attrs = new VarDump.ChildrenContainer(data, buildData);
+        __self.attrs = new dump.ChildrenContainer(data, buildData);
 
-        __self.count = function() {
+        __self.count = function () {
             return __self.attrs.count();
         }
     };
 
-    VarDump.PhpResource = function (data, buildData)
-    {
+    dump.PhpResource = function (data, buildData) {
         var __self = this;
 
         var meta = data._.split(':');
         __self.traversable = true;
         __self.type = meta[2];
         __self.cutBy = data.__cutBy;
-        __self.attrs = new VarDump.ChildrenContainer(data, buildData, 'resource');
+        __self.attrs = new dump.ChildrenContainer(data, buildData, 'resource');
     }
 
-    VarDump.PhpAttribute = function (key, value)
-    {
+    dump.PhpAttribute = function (key, value) {
         var __self = this;
         __self.traversable = false;
 
@@ -196,34 +191,33 @@
         __self.value = value;
     };
 
-    VarDump.PhpArray = function (data, buildData)
-    {
+    dump.PhpArray = function (data, buildData) {
         var __self = this;
         __self.cutBy = data.__cutBy;
 
-        __self.attrs = new VarDump.ChildrenContainer(data, buildData, 'array');
+        __self.attrs = new dump.ChildrenContainer(data, buildData, 'array');
 
         __self.traversable = __self.attrs.count() > 0;
 
-        __self.isEmpty = function() {
+        __self.isEmpty = function () {
             return __self.attrs.count() === 0;
         };
 
-        __self.isShort = function() {
+        __self.isShort = function () {
             return (__self.attrs.storage.join().length + Object.keys(__self.attrs.storage).join().length) < 50;
         };
 
-        __self.isFullyTruncated = function() {
+        __self.isFullyTruncated = function () {
             return __self.attrs.count() === 0 && __self.cutBy;
         }
 
-        __self.count = function() {
+        __self.count = function () {
             return __self.attrs.count() + (isNaN(__self.cutBy) ? 0 : __self.cutBy);
         }
 
-        __self.containsScalarsOnly = function() {
+        __self.containsScalarsOnly = function () {
             for (var i in __self.attrs.storage) {
-                if(!(__self.attrs.storage[i] instanceof VarDump.PhpScalar)) {
+                if (!(__self.attrs.storage[i] instanceof dump.PhpScalar)) {
                     return false;
                 }
             }
@@ -232,8 +226,7 @@
         }
     };
 
-    VarDump.PhpScalar = function (value)
-    {
+    dump.PhpScalar = function (value) {
         var __self = this;
 
         __self.traversable = false;
@@ -246,7 +239,7 @@
                 __self.cut = parseInt(value.substr(0, position));
             }
             __self.utf8 = false;
-            value = value.substr(position+2, value.length);
+            value = value.substr(position+2);
         }
 
         if (typeof(value) == "string" && value.indexOf('u`') != -1) {
@@ -254,22 +247,22 @@
             if (position !== 0) {
                 __self.cut = parseInt(value.substr(0, position));
             }
-            value = value.substr(position + 2, value.length);
+            value = value.substr(position + 2);
         }
 
         switch (value) {
             case 'n`NAN':
                 __self.value = 'NAN';
                 __self.type = "double";
-            break;
+                break;
             case 'n`INF':
                 __self.value = 'INF';
                 __self.type = "double";
-            break;
+                break;
             case 'n`-INF':
                 __self.value = '-INF';
                 __self.type = "double";
-            break;
+                break;
             default:
                 if (typeof(value) == "string" && value.indexOf('n`') === 0) {
                     __self.value = value.replace('n`', '');
@@ -283,30 +276,27 @@
                 }
         }
 
-        __self.getValue = function(){
+        __self.getValue = function () {
             return __self.value;
         };
     };
 
-    VarDump.PhpReference = function (target, ampersand)
-    {
+    dump.PhpReference = function (target, ampersand) {
         var __self = this;
         __self.traversable = true;
         __self.target = target;
         __self.ampersand = ampersand || false;
 
-        __self.resolve = function(parser) {
+        __self.resolve = function (parser) {
             return parser.getReference(__self.target);
         };
     };
 
-    VarDump.PhpUndefined = function ()
-    {
+    dump.PhpUndefined = function () {
         this.traversable = false;
     };
 
-    VarDump.ChildrenContainer = function(data, buildData, mode, ignoreCount)
-    {
+    dump.ChildrenContainer = function (data, buildData, mode, ignoreCount) {
         var __self = this;
 
         __self.storage = [];
@@ -318,7 +308,7 @@
             if (i != "_" && i != "__proto__" && i != '__refs' && i != "__cutBy") {
                 var value = buildData.parser.parseOne(data[i], buildData);
                 if (__self.mode === 'object') {
-                    var attribute = new VarDump.PhpAttribute(i, value);
+                    var attribute = new dump.PhpAttribute(i, value);
                     __self.storage[attribute.name] = attribute;
                     __self.keys[attribute.name] = attribute.name;
                 } else {
@@ -333,7 +323,7 @@
             return Object.keys(__self.storage).length;
         }
 
-        __self.iterate = function(callback) {
+        __self.iterate = function (callback) {
             var count = __self.count();
             var counter = 0;
             for (var i in __self.storage) {
@@ -342,30 +332,20 @@
         };
     };
 
-    VarDump.untickString = function (value) {
-        return (value.indexOf('b`') === 0 || value.indexOf('u`') === 0) ? value.substr(2, value.length) : value;
+    dump.untickString = function (value) {
+        return (value.indexOf('b`') === 0 || value.indexOf('u`') === 0) ? value.substr(2) : value;
     };
 
-    window.VarDump = VarDump;
-})(window);
-
-
-(function (window) {
-    var VarDump = window.VarDump || {};
-
-    VarDump.maxStringSize = 128;
-
-    VarDump.Renderer = function (parser)
-    {
+    dump.Renderer = function (parser) {
         var __self = this;
         __self.parser = parser;
         var node;
 
-        __self.renderScalar = function(entity, mode) {
-            if (mode === 'short' && entity.type === 'string' && entity.value.length > VarDump.maxStringSize) {
+        __self.renderScalar = function (entity, mode) {
+            if (mode === 'short' && entity.type === 'string' && entity.value.length > dump.maxStringSize) {
                 var node = document.createElement('span');
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
-                node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, VarDump.maxStringSize)) + '..."');
+                node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, dump.maxStringSize)) + '..."');
                 if (entity.cut > 0) {
                     node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
@@ -377,8 +357,9 @@
             var node = document.createElement('span');
             node.className = 'occurrence-' + entity.index;
             if (entity.type == 'string') {
-                if((entity.value.length > VarDump.maxStringSize) && !entity.expanded) {
+                if ((entity.value.length > dump.maxStringSize) && !entity.expanded) {
                     node.appendChild(__self.renderNode(entity));
+
                     return node;
                 }
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
@@ -387,23 +368,22 @@
                     node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
                 node.className += ' string';
+            } else if (typeof(entity.value) == 'boolean') {
+                node.innerHTML = entity.value ? 'true' : 'false';
+                node.className += ' const';
             } else {
-                if(typeof(entity.value) == 'boolean') {
-                    node.innerHTML = entity.value ? 'true' : 'false';
-                    node.className += ' const';
-                } else {
-                    node.innerHTML = entity.value;
-                    node.className += ' const';
-                }
+                node.innerHTML = entity.value;
+                node.className += ' const';
             }
+
             return node;
         };
 
-        __self.renderObject = function(entity, mode) {
-
+        __self.renderObject = function (entity, mode) {
             if (mode === 'short') {
                 var element = document.createElement('span');
                 element.innerHTML = entity.classId;
+
                 return element;
             }
 
@@ -424,7 +404,7 @@
             return node;
         };
 
-        __self.renderArray = function(entity, mode) {
+        __self.renderArray = function (entity, mode) {
 
             if (mode === 'short') {
                 return __self.renderArrayShort(entity);
@@ -455,7 +435,7 @@
                 ul.style.display = 'inline';
                 ul.style.padding = 0;
 
-                entity.attrs.iterate(function(i, child, last){
+                entity.attrs.iterate(function (i, child, last) {
                     var li = document.createElement('li');
                     var key = document.createElement('span');
                     var arrow = document.createElement('span');
@@ -497,15 +477,16 @@
                 var element = document.createElement('span');
                 var text = entity.count() > 0 ? '...' : '';
                 element.innerHTML = '[ ' + text + ' ]';
+
                 return element;
             }
         };
 
-        __self.renderResource = function(entity, mode) {
-
+        __self.renderResource = function (entity, mode) {
             if (mode === 'short') {
                 var element = document.createElement('span');
                 element.innerHTML = entity.type;
+
                 return element;
             }
 
@@ -526,20 +507,22 @@
             return node;
         };
 
-        __self.renderReference = function(entity, mode) {
+        __self.renderReference = function (entity, mode) {
             var node = document.createElement('span');
             node.appendChild(__self.renderNode(entity.resolve(__self.parser)));
+
             return node;
         };
 
-        __self.renderUndefined = function(entity, mode) {
+        __self.renderUndefined = function (entity, mode) {
             var node = document.createElement('span');
             node.innerHTML = 'null';
             node.className = 'undefined';
+
             return node;
         };
 
-        __self.renderAttribute = function(entity, mode) {
+        __self.renderAttribute = function (entity, mode) {
             if (mode === 'short') {
                 throw "Class attributes have no short representation.";
             }
@@ -553,6 +536,7 @@
             visibility.className = entity.visibility;
             node.appendChild(visibility);
             node.appendChild(__self.renderNode(entity.value));
+
             return node;
         };
 
@@ -560,25 +544,25 @@
             entity = entity || parser.getEntryPoint();
             mode = mode || "full";
 
-            if (entity instanceof VarDump.PhpScalar) {
+            if (entity instanceof dump.PhpScalar) {
                 node = __self.renderScalar(entity, mode);
             }
-            if (entity instanceof VarDump.PhpObject) {
+            if (entity instanceof dump.PhpObject) {
                 node = __self.renderObject(entity, mode);
             }
-            if (entity instanceof VarDump.PhpResource) {
+            if (entity instanceof dump.PhpResource) {
                 node = __self.renderResource(entity, mode);
             }
-            if (entity instanceof VarDump.PhpArray) {
+            if (entity instanceof dump.PhpArray) {
                 node = __self.renderArray(entity, mode);
             }
-            if (entity instanceof VarDump.PhpReference) {
+            if (entity instanceof dump.PhpReference) {
                 node = __self.renderReference(entity, mode);
             }
-            if (entity instanceof VarDump.PhpUndefined) {
+            if (entity instanceof dump.PhpUndefined) {
                 node = __self.renderUndefined(entity, mode);
             }
-            if (entity instanceof VarDump.PhpAttribute) {
+            if (entity instanceof dump.PhpAttribute) {
                 node = __self.renderAttribute(entity, mode);
             }
 
@@ -612,9 +596,9 @@
                 ul.style.padding = 0;
             }
 
-            entity.attrs.iterate(function(i, child){
+            entity.attrs.iterate(function (i, child) {
                 var li = document.createElement('li');
-                if(child instanceof VarDump.PhpAttribute) {
+                if (child instanceof dump.PhpAttribute) {
                     li.appendChild(__self.render(child));
                     ul.appendChild(li);
                 } else {
@@ -633,7 +617,7 @@
 
             if (entity.cutBy) {
                 var li = document.createElement('li');
-                var elementLabel = entity instanceof VarDump.PhpArray ? 'elements' : 'attributes';
+                var elementLabel = entity instanceof dump.PhpArray ? 'elements' : 'attributes';
                 li.innerHTML = '<span class="truncated">' + entity.cutBy + ' truncated ' + elementLabel + '</span>'
                 ul.appendChild(li);
             }
@@ -642,19 +626,19 @@
         }
 
         __self.renderNode = function (entity) {
-            var forceTraversable = entity instanceof VarDump.PhpScalar && entity.type === "string" && entity.value.length > VarDump.maxStringSize;
+            var forceTraversable = entity instanceof dump.PhpScalar && entity.type === "string" && entity.value.length > dump.maxStringSize;
 
             var span = document.createElement('span');
-            if ((forceTraversable || entity.traversable) && !(entity instanceof VarDump.PhpReference)) {
+            if ((forceTraversable || entity.traversable) && !(entity instanceof dump.PhpReference)) {
                 var link = document.createElement('a');
                 var content = document.createElement('span');
                 content.appendChild(__self.render(entity, 'short'));
                 link.innerHTML = ' ⊞ ';
                 link.style.cursor = 'pointer';
                 var count = typeof entity.count == 'function' ? entity.count() : 0;
-                var elementLabel = entity instanceof VarDump.PhpArray ? 'element' : 'attribute';
-                if(entity.cutBy) {
-                    if(count) {
+                var elementLabel = entity instanceof dump.PhpArray ? 'element' : 'attribute';
+                if (entity.cutBy) {
+                    if (count) {
                         link.setAttribute('data-helper', ' ' + entity.cutBy + '/' + count + ' truncated ' + elementLabel + (entity.count() > 1 ? 's' : ''));
                     } else {
                         link.setAttribute('data-helper', ' ' + entity.cutBy + ' truncated ' + elementLabel + (entity.count() > 1 ? 's' : ''));
@@ -663,7 +647,7 @@
                     link.setAttribute('data-helper', ' ' + count + ' ' + elementLabel + (count > 1 ? 's' : ''));
                 }
                 var identifier = 'element' + (Math.random() + '').replace('0.', '');
-                link.onclick = function(e) {
+                link.onclick = function (e) {
                     var target, content;
                     e.preventDefault();
                     link.opened = typeof(link.opened) == 'undefined' ? false : !link.opened;
@@ -679,82 +663,70 @@
                     target = document.getElementById(identifier);
                     target.innerHTML = '';
                     target.appendChild(content);
-                    VarDump.bindHover();
+                    dump.bindHover();
                 };
                 content.setAttribute('id', identifier);
                 span.appendChild(link);
                 span.appendChild(content);
-            } else if (entity instanceof VarDump.PhpScalar) {
+            } else if (entity instanceof dump.PhpScalar) {
                 span.appendChild(__self.render(entity, 'short'));
             } else {
                 span.appendChild(__self.render(entity, 'full'));
             }
+
             return span;
         };
 
         __self.htmlEncode = function (s) {
             var span = document.createElement('span');
             span.innerText = span.textContent = s;
+
             return span.innerHTML;
         }
     };
 
-    VarDump.bindHover = function() {
+    dump.bindHover = function () {
         var elements = document.getElementsByClassName('reference');
-        [].forEach.call(elements, function (element) {
-            element.onmouseover = function() {
-                var targets = document.getElementsByClassName(element.hoverTarget);
-                [].forEach.call(targets, function (target) {
-                    target.className += ' hovered';
-                });
+        for (var i in elements) {
+            elements[i].onmouseover = function () {
+                var targets = document.getElementsByClassName(this.hoverTarget);
+                for (var i in targets) {
+                    targets[i].className += ' hovered';
+                };
             }
-            element.onmouseout = function() {
-                var targets = document.getElementsByClassName(element.hoverTarget);
-                [].forEach.call(targets, function (target) {
-                    target.className = target.className.replace('hovered', '');
-                });
+            elements[i].onmouseout = function () {
+                var targets = document.getElementsByClassName(this.hoverTarget);
+                for (var i in targets) {
+                    targets[i].className = targets[i].className.replace(' hovered', '');
+                };
             }
         });
     };
 
-    window.VarDump = VarDump;
-})(window);
-
-
-(function (window) {
-    var VarDump = window.VarDump || {};
-
-    VarDump.run = function (json) {
-        var parser = new VarDump.Parser();
+    dump.run = function (json) {
+        var parser = new dump.Parser();
         parser.parse(json);
 
-        var renderer = new VarDump.Renderer(parser);
+        var renderer = new dump.Renderer(parser);
         var html = document.getElementById('dumper-content');
         var node = document.createElement('div');
 
         node.className = 'dump-blackbox';
         node.appendChild(renderer.render());
         html.appendChild(node);
-        VarDump.bindHover();
+        dump.bindHover();
     }
 
-    window.VarDump = VarDump;
-
-    window.arrayToggle = function (a)
-    {
-
+    dump.arrayToggle = function (a) {
         var s = a.nextElementSibling.nextElementSibling;
 
-        if ('array-compact' == s.className)
-        {
+        if ('array-compact' == s.className) {
             a.innerHTML = ' ⊟ ';
             s.className = 'array-expanded';
-        }
-        else
-        {
+        } else {
             a.innerHTML = ' ⊞ ';
             s.className = 'array-compact';
         }
     }
 
-})(window);
+})(Sfjs, document);

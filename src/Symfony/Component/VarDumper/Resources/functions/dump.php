@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use Symfony\Bundle\DebugBundle\DebugBundle;
+use Symfony\Component\VarDumper\VarDumper;
 
 if (!function_exists('dump')) {
     /**
@@ -18,9 +18,7 @@ if (!function_exists('dump')) {
     function dump($var)
     {
         foreach (func_get_args() as $var) {
-            $var = DebugBundle::dump($var);
+            VarDumper::dump($var);
         }
-
-        return $var;
     }
 }

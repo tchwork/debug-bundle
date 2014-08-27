@@ -20,7 +20,7 @@
     },
     "autoload": {
         "files": [
-            "src/Symfony/Bundle/DebugBundle/Resources/functions/dump.php"
+            "src/Symfony/Component/VarDumper/Resources/functions/dump.php"
         ],
         "psr-0": {
             "Symfony\\Bundle\\DebugBundle\\": "src",

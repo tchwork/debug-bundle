@@ -11,7 +11,7 @@
     </parameters>
 
     <services>
-        <service id="twig.extension.dump" class="%twig.extension.dump.class%">
+        <service id="twig.extension.dump" class="%twig.extension.dump.class%" public="false">
             <tag name="twig.extension" />
         </service>
 

@@ -44,11 +44,11 @@ class DebugExtension extends Extension
             ->addMethodCall('setMaxString', array($config['max_string_length']));
 
         $collectorDef = $container->getDefinition('data_collector.dump');
-        $collectorTag = $collectorDef->getTag('data_collector');
+        $collectorTags = $collectorDef->getTag('data_collector');
         $collectorDef->clearTag('data_collector');
         if ($config['profiler_template']) {
-            $collectorTag[0]['template'] = $config['profiler_template'];
-            $collectorDef->addTag('data_collector', $collectorTag[0]);
+            $collectorTags[0]['template'] = $config['profiler_template'];
+            $collectorDef->addTag('data_collector', $collectorTags[0]);
         }
     }
 }
