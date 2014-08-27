@@ -5,8 +5,9 @@
 >
     <testsuites>
         <testsuite name="Patchwork Dumper Test Suite">
-            <directory>./src/Symfony/Component/*/Tests/</directory>
+            <directory>./src/Symfony/Bridge/*/Tests/</directory>
             <directory>./src/Symfony/Bundle/*/Tests/</directory>
+            <directory>./src/Symfony/Component/*/Tests/</directory>
         </testsuite>
     </testsuites>
 </phpunit>

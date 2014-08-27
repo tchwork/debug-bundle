@@ -38,7 +38,7 @@ class VarDumper
 
     public static function setHandler($callable)
     {
-        if (!is_callable($callable, true)) {
+        if (null !== $callable && !is_callable($callable, true)) {
             throw new \InvalidArgumentException('Invalid PHP callback.');
         }
 

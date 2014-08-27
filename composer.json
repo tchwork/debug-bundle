@@ -18,6 +18,9 @@
         "symfony/event-dispatcher": "~2.3",
         "symfony/http-kernel": "~2.3"
     },
+    "require-dev": {
+        "twig/twig": "~1.12"
+    },
     "autoload": {
         "files": [
             "src/Symfony/Component/VarDumper/Resources/functions/dump.php"
@@ -29,7 +32,6 @@
             "Symfony\\Component\\VarDumper\\": "src"
         }
     },
-    "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
             "dev-master": "1.2-dev"
