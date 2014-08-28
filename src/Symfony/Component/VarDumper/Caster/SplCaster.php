@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\VarDumper\Caster;
 
+use Symfony\Component\VarDumper\Cloner\Stub;
+
 /**
  * Casts SPL related classes to array representation.
  *
@@ -18,7 +20,7 @@ namespace Symfony\Component\VarDumper\Caster;
  */
 class SplCaster
 {
-    public static function castArrayObject(\ArrayObject $c, array $a)
+    public static function castArrayObject(\ArrayObject $c, array $a, Stub $stub, $isNested)
     {
         $class = get_class($c);
         $flags = $c->getFlags();
@@ -55,7 +57,7 @@ class SplCaster
         return $a;
     }
 
-    public static function castHeap(\Iterator $c, array $a)
+    public static function castHeap(\Iterator $c, array $a, Stub $stub, $isNested)
     {
         $a += array(
             "\0~\0heap" => iterator_to_array(clone $c),
@@ -64,7 +66,7 @@ class SplCaster
         return $a;
     }
 
-    public static function castDoublyLinkedList(\SplDoublyLinkedList $c, array $a)
+    public static function castDoublyLinkedList(\SplDoublyLinkedList $c, array $a, Stub $stub, $isNested)
     {
         $mode = $c->getIteratorMode();
         $c->setIteratorMode(\SplDoublyLinkedList::IT_MODE_KEEP | $mode & ~\SplDoublyLinkedList::IT_MODE_DELETE);
@@ -78,7 +80,7 @@ class SplCaster
         return $a;
     }
 
-    public static function castFixedArray(\SplFixedArray $c, array $a)
+    public static function castFixedArray(\SplFixedArray $c, array $a, Stub $stub, $isNested)
     {
         $a += array(
             "\0~\0storage" => $c->toArray(),
@@ -87,7 +89,7 @@ class SplCaster
         return $a;
     }
 
-    public static function castObjectStorage(\SplObjectStorage $c, array $a)
+    public static function castObjectStorage(\SplObjectStorage $c, array $a, Stub $stub, $isNested)
     {
         $storage = array();
         unset($a["\0+\0\0gcdata"]); // Don't hit https://bugs.php.net/65967

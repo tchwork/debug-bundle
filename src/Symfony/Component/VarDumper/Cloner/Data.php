@@ -49,29 +49,29 @@ class Data
      * @param DumperInternalsInterface $dumper The dumper being used for dumping.
      * @param Cursor                   $cursor A cursor used for tracking dumper state position.
      * @param array                    &$refs  A map of all references discovered while dumping.
-     * @param mixed                    $item   A stub stdClass or the original value being dumped.
+     * @param mixed                    $item   A Stub object or the original value being dumped.
      */
     private function dumpItem($dumper, $cursor, &$refs, $item)
     {
         $cursor->refIndex = $cursor->refTo = $cursor->refIsHard = false;
 
-        if ($item instanceof \stdClass) {
-            if (property_exists($item, 'val')) {
-                if (isset($item->ref)) {
-                    if (isset($refs[$r = $item->ref])) {
-                        $cursor->refTo = $refs[$r];
-                        $cursor->refIsHard = true;
-                    } else {
-                        $cursor->refIndex = $refs[$r] = ++$refs[0];
-                    }
+        if ($item instanceof Stub && Stub::TYPE_REF === $item->type) {
+            if ($item->refs) {
+                if (isset($refs[$r = $item->refs])) {
+                    $cursor->refTo = $refs[$r];
+                    $cursor->refIsHard = true;
+                } else {
+                    $cursor->refIndex = $refs[$r] = ++$refs[0];
                 }
-                $item = $item->val;
             }
-            if (isset($item->ref)) {
-                if (isset($refs[$r = $item->ref])) {
+            $item = $item->value;
+        }
+        if ($item instanceof Stub) {
+            if ($item->refs) {
+                if (isset($refs[$r = $item->refs])) {
                     if (false === $cursor->refTo) {
                         $cursor->refTo = $refs[$r];
-                        $cursor->refIsHard = isset($item->count);
+                        $cursor->refIsHard = Stub::TYPE_ARRAY === $item->type;
                     }
                 } elseif (false !== $cursor->refIndex) {
                     $refs[$r] = $cursor->refIndex;
@@ -79,10 +79,10 @@ class Data
                     $cursor->refIndex = $refs[$r] = ++$refs[0];
                 }
             }
-            $cut = isset($item->cut) ? $item->cut : 0;
+            $cut = $item->cut;
 
-            if (isset($item->pos) && false === $cursor->refTo) {
-                $children = $this->data[$item->pos];
+            if ($item->position && false === $cursor->refTo) {
+                $children = $this->data[$item->position];
 
                 if ($cursor->stop) {
                     if ($cut >= 0) {
@@ -93,35 +93,30 @@ class Data
             } else {
                 $children = array();
             }
-            switch (true) {
-                case isset($item->bin):
-                    $dumper->dumpString($cursor, $item->bin, true, $cut);
+            switch ($item->type) {
+                case Stub::TYPE_STRING:
+                    $dumper->dumpString($cursor, $item->value, Stub::STRING_BINARY === $item->class, $cut);
 
                     return;
 
-                case isset($item->str):
-                    $dumper->dumpString($cursor, $item->str, false, $cut);
+                case Stub::TYPE_ARRAY:
+                    $dumper->enterArray($cursor, $item->value, Stub::ARRAY_INDEXED === $item->class, (bool) $children);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $item->class);
+                    $dumper->leaveArray($cursor, $item->value, Stub::ARRAY_INDEXED === $item->class, (bool) $children, $cut);
 
                     return;
 
-                case isset($item->count):
-                    $dumper->enterArray($cursor, $item->count, !empty($item->indexed), (bool) $children);
-                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, empty($item->indexed) ? $cursor::HASH_ASSOC : $cursor::HASH_INDEXED);
-                    $dumper->leaveArray($cursor, $item->count, !empty($item->indexed), (bool) $children, $cut);
-
-                    return;
-
-                case isset($item->class):
+                case Stub::TYPE_OBJECT:
                     $dumper->enterObject($cursor, $item->class, (bool) $children);
-                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $cursor::HASH_OBJECT);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, Cursor::HASH_OBJECT);
                     $dumper->leaveObject($cursor, $item->class, (bool) $children, $cut);
 
                     return;
 
-                case isset($item->res):
-                    $dumper->enterResource($cursor, $item->res, (bool) $children);
-                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $cursor::HASH_RESOURCE);
-                    $dumper->leaveResource($cursor, $item->res, (bool) $children, $cut);
+                case Stub::TYPE_RESOURCE:
+                    $dumper->enterResource($cursor, $item->class, (bool) $children);
+                    $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, Cursor::HASH_RESOURCE);
+                    $dumper->leaveResource($cursor, $item->class, (bool) $children, $cut);
 
                     return;
             }
@@ -143,7 +138,7 @@ class Data
      * @param array                    &$refs        A map of all references discovered while dumping.
      * @param array                    $children     The children to dump.
      * @param int                      $hashCut      The number of items removed from the original hash.
-     * @param int                      $hashType     A Cursor::HASH_* const.
+     * @param string                   $hashType     A Cursor::HASH_* const.
      *
      * @return int The final number of removed items.
      */

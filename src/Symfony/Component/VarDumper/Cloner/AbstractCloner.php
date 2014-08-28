@@ -171,15 +171,16 @@ abstract class AbstractCloner implements ClonerInterface
     /**
      * Casts an object to an array representation.
      *
-     * @param string $class    The class of the object.
      * @param object $obj      The object itself.
+     * @param Stub   $stub     The Stub for the casted object.
      * @param bool   $isNested True if the object is nested in the dumped structure.
-     * @param int    &$cut     After the cast, number of items removed from $obj.
      *
      * @return array The object casted as array.
      */
-    protected function castObject($class, $obj, $isNested, &$cut)
+    protected function castObject($obj, Stub $stub, $isNested)
     {
+        $class = $stub->class;
+
         if (isset($this->classInfo[$class])) {
             $classInfo = $this->classInfo[$class];
         } else {
@@ -193,11 +194,10 @@ abstract class AbstractCloner implements ClonerInterface
         }
 
         if ($classInfo[0]) {
-            $a = $this->callCaster(array($obj, '__debugInfo'), $obj, array(), $isNested);
+            $a = $this->callCaster(array($obj, '__debugInfo'), $obj, array(), null, $isNested);
         } else {
             $a = (array) $obj;
         }
-        $cut = 0;
 
         foreach ($a as $k => $p) {
             if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[1]->hasProperty($k))) {
@@ -209,7 +209,7 @@ abstract class AbstractCloner implements ClonerInterface
         foreach ($classInfo[2] as $p) {
             if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
                 foreach ($this->casters[$p] as $p) {
-                    $a = $this->callCaster($p, $obj, $a, $isNested, $cut);
+                    $a = $this->callCaster($p, $obj, $a, $stub, $isNested);
                 }
             }
         }
@@ -220,19 +220,20 @@ abstract class AbstractCloner implements ClonerInterface
     /**
      * Casts a resource to an array representation.
      *
-     * @param string   $type     The type of the resource.
      * @param resource $res      The resource.
+     * @param Stub     $stub     The Stub for the casted resource.
      * @param bool     $isNested True if the object is nested in the dumped structure.
      *
      * @return array The resource casted as array.
      */
-    protected function castResource($type, $res, $isNested)
+    protected function castResource($res, Stub $stub, $isNested)
     {
         $a = array();
+        $type = $stub->class;
 
         if (!empty($this->casters['r:'.$type])) {
             foreach ($this->casters['r:'.$type] as $c) {
-                $a = $this->callCaster($c, $res, $a, $isNested);
+                $a = $this->callCaster($c, $res, $a, $stub, $isNested);
             }
         }
 
@@ -245,15 +246,15 @@ abstract class AbstractCloner implements ClonerInterface
      * @param callable        $callback The caster.
      * @param object|resource $obj      The object/resource being casted.
      * @param array           $a        The result of the previous cast for chained casters.
+     * @param Stub            $stub     The Stub for the casted object/resource.
      * @param bool            $isNested True if $obj is nested in the dumped structure.
-     * @param int             &$cut     After the cast, number of items removed from $obj.
      *
      * @return array The casted object/resource.
      */
-    private function callCaster($callback, $obj, $a, $isNested, &$cut = 0)
+    private function callCaster($callback, $obj, $a, $stub, $isNested)
     {
         try {
-            $cast = call_user_func_array($callback, array($obj, $a, $isNested, &$cut));
+            $cast = call_user_func($callback, $obj, $a, $stub, $isNested);
 
             if (is_array($cast)) {
                 $a = $cast;

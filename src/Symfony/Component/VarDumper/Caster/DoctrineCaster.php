@@ -15,6 +15,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Proxy\Proxy as CommonProxy;
 use Doctrine\ORM\Proxy\Proxy as OrmProxy;
 use Doctrine\ORM\PersistentCollection;
+use Symfony\Component\VarDumper\Cloner\Stub;
 
 /**
  * Casts Doctrine related classes to array representation.
@@ -23,33 +24,33 @@ use Doctrine\ORM\PersistentCollection;
  */
 class DoctrineCaster
 {
-    public static function castCommonProxy(CommonProxy $proxy, array $a, $isNested, &$cut)
+    public static function castCommonProxy(CommonProxy $proxy, array $a, Stub $stub, $isNested)
     {
         unset(
             $a['__cloner__'],
             $a['__initializer__']
         );
-        $cut += 2;
+        $stub->cut += 2;
 
         return $a;
     }
 
-    public static function castOrmProxy(OrmProxy $proxy, array $a, $isNested, &$cut)
+    public static function castOrmProxy(OrmProxy $proxy, array $a, Stub $stub, $isNested)
     {
         $prefix = "\0Doctrine\\ORM\\Proxy\\Proxy\0";
         unset(
             $a[$prefix.'_entityPersister'],
             $a[$prefix.'_identifier']
         );
-        $cut += 2;
+        $stub->cut += 2;
 
         return $a;
     }
 
-    public static function castObjectManager(ObjectManager $manager, array $a, $isNested, &$cut)
+    public static function castObjectManager(ObjectManager $manager, array $a, Stub $stub, $isNested)
     {
         if ($isNested) {
-            $cut += count($a);
+            $stub->cut += count($a);
 
             return array();
         }
@@ -57,7 +58,7 @@ class DoctrineCaster
         return $a;
     }
 
-    public static function castPersistentCollection(PersistentCollection $coll, array $a, $isNested, &$cut)
+    public static function castPersistentCollection(PersistentCollection $coll, array $a, Stub $stub, $isNested)
     {
         $prefix = "\0Doctrine\\ORM\\PersistentCollection\0";
         unset(
@@ -66,7 +67,7 @@ class DoctrineCaster
             $a[$prefix.'em'],
             $a[$prefix.'typeClass']
         );
-        $cut += 4;
+        $stub->cut += 4;
 
         return $a;
     }
