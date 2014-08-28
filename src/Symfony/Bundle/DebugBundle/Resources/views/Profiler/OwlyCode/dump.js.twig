@@ -9,7 +9,7 @@
         this.offset = offset;
         this.parser = parser;
         this.counter = offset;
-    };
+    }
 
     dump.Parser = function () {
         var __self = this;
@@ -28,7 +28,7 @@
                     __self.references[Math.abs(position)] = parseInt(i) - 1;
                 }
             }
-        };
+        }
 
         __self.getEntryPoint = function () {
             return __self.storage[0];
@@ -36,7 +36,7 @@
 
         __self.getAmpersand = function (key) {
             return __self.ampersands[key];
-        };
+        }
 
         __self.isAmpersanded = function (index) {
             for (var i in __self.ampersands) {
@@ -46,17 +46,17 @@
             }
 
             return false;
-        };
+        }
 
         __self.getReference = function (key) {
             return __self.storage[__self.references[key]];
-        };
+        }
 
         __self.parse = function (json) {
             var preparedJson = __self.prepareJson(json);
             __self.buildReferences(preparedJson[0]);
             __self.storage = __self.parseAll(preparedJson);
-        };
+        }
 
         __self.parseOne = function (data, buildData, ignoreCount) {
             var index = buildData.counter;
@@ -102,7 +102,7 @@
             }
 
             return output;
-        };
+        }
 
         __self.parseAll = function (raws, callback) {
             var parsed = [];
@@ -113,7 +113,7 @@
             }
 
             return parsed;
-        };
+        }
 
         __self.prepareJson = function (json) {
             var tokens = [];
@@ -131,8 +131,8 @@
             }
 
             return tokens;
-        };
-    };
+        }
+    }
 
     dump.PhpObject = function (data, buildData) {
         var __self = this;
@@ -154,7 +154,7 @@
         __self.count = function () {
             return __self.attrs.count();
         }
-    };
+    }
 
     dump.PhpResource = function (data, buildData) {
         var __self = this;
@@ -189,7 +189,7 @@
             __self.name = properties[1];
         }
         __self.value = value;
-    };
+    }
 
     dump.PhpArray = function (data, buildData) {
         var __self = this;
@@ -201,11 +201,11 @@
 
         __self.isEmpty = function () {
             return __self.attrs.count() === 0;
-        };
+        }
 
         __self.isShort = function () {
             return (__self.attrs.storage.join().length + Object.keys(__self.attrs.storage).join().length) < 50;
-        };
+        }
 
         __self.isFullyTruncated = function () {
             return __self.attrs.count() === 0 && __self.cutBy;
@@ -224,7 +224,7 @@
 
             return true;
         }
-    };
+    }
 
     dump.PhpScalar = function (value) {
         var __self = this;
@@ -278,8 +278,8 @@
 
         __self.getValue = function () {
             return __self.value;
-        };
-    };
+        }
+    }
 
     dump.PhpReference = function (target, ampersand) {
         var __self = this;
@@ -289,12 +289,12 @@
 
         __self.resolve = function (parser) {
             return parser.getReference(__self.target);
-        };
-    };
+        }
+    }
 
     dump.PhpUndefined = function () {
         this.traversable = false;
-    };
+    }
 
     dump.ChildrenContainer = function (data, buildData, mode, ignoreCount) {
         var __self = this;
@@ -329,12 +329,12 @@
             for (var i in __self.storage) {
                 callback(__self.keys[i], __self.storage[i], counter++ == count - 1);
             }
-        };
-    };
+        }
+    }
 
     dump.untickString = function (value) {
         return (value.indexOf('b`') === 0 || value.indexOf('u`') === 0) ? value.substr(2) : value;
-    };
+    }
 
     dump.Renderer = function (parser) {
         var __self = this;
@@ -377,7 +377,7 @@
             }
 
             return node;
-        };
+        }
 
         __self.renderObject = function (entity, mode) {
             if (mode === 'short') {
@@ -402,7 +402,7 @@
             node.appendChild(suffix);
 
             return node;
-        };
+        }
 
         __self.renderArray = function (entity, mode) {
 
@@ -425,7 +425,7 @@
             node.appendChild(suffix);
 
             return node;
-        };
+        }
 
         __self.renderArrayShort = function (entity) {
             if (entity.isShort() && entity.containsScalarsOnly()) {
@@ -480,7 +480,7 @@
 
                 return element;
             }
-        };
+        }
 
         __self.renderResource = function (entity, mode) {
             if (mode === 'short') {
@@ -505,14 +505,14 @@
             node.appendChild(suffix);
 
             return node;
-        };
+        }
 
         __self.renderReference = function (entity, mode) {
             var node = document.createElement('span');
             node.appendChild(__self.renderNode(entity.resolve(__self.parser)));
 
             return node;
-        };
+        }
 
         __self.renderUndefined = function (entity, mode) {
             var node = document.createElement('span');
@@ -520,7 +520,7 @@
             node.className = 'undefined';
 
             return node;
-        };
+        }
 
         __self.renderAttribute = function (entity, mode) {
             if (mode === 'short') {
@@ -538,7 +538,7 @@
             node.appendChild(__self.renderNode(entity.value));
 
             return node;
-        };
+        }
 
         __self.render = function (entity, mode) {
             entity = entity || parser.getEntryPoint();
@@ -664,7 +664,7 @@
                     target.innerHTML = '';
                     target.appendChild(content);
                     dump.bindHover();
-                };
+                }
                 content.setAttribute('id', identifier);
                 span.appendChild(link);
                 span.appendChild(content);
@@ -675,7 +675,7 @@
             }
 
             return span;
-        };
+        }
 
         __self.htmlEncode = function (s) {
             var span = document.createElement('span');
@@ -683,7 +683,7 @@
 
             return span.innerHTML;
         }
-    };
+    }
 
     dump.bindHover = function () {
         var elements = document.getElementsByClassName('reference');
@@ -692,16 +692,16 @@
                 var targets = document.getElementsByClassName(this.hoverTarget);
                 for (var i in targets) {
                     targets[i].className += ' hovered';
-                };
+                }
             }
             elements[i].onmouseout = function () {
                 var targets = document.getElementsByClassName(this.hoverTarget);
                 for (var i in targets) {
                     targets[i].className = targets[i].className.replace(' hovered', '');
-                };
+                }
             }
-        });
-    };
+        }
+    }
 
     dump.run = function (json) {
         var parser = new dump.Parser();
