@@ -12,6 +12,7 @@
 namespace Symfony\Bridge\Twig\Extension;
 
 use Symfony\Bridge\Twig\TokenParser\DumpTokenParser;
+use Symfony\Bridge\Twig\TokenParser\DebugTokenParser;
 
 /**
  * Provides integration of the dump() function with Twig.
@@ -22,7 +23,7 @@ class DumpExtension extends \Twig_Extension
 {
     public function getTokenParsers()
     {
-        return array(new DumpTokenParser());
+        return array(new DumpTokenParser(), new DebugTokenParser());
     }
 
     public function getName()

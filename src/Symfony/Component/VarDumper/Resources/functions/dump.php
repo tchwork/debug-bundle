@@ -22,3 +22,15 @@ if (!function_exists('dump')) {
         }
     }
 }
+
+if (!function_exists('debug')) {
+    /**
+     * @deprecated use dump() instead
+     */
+    function debug($var)
+    {
+        foreach (func_get_args() as $var) {
+            VarDumper::debug($var);
+        }
+    }
+}

@@ -23,6 +23,22 @@ class VarDumper
 {
     private static $handler;
 
+    /**
+     * @deprecated use dump() instead
+     */
+    public static function debug($var)
+    {
+        if (null === self::$handler) {
+            $cloner = extension_loaded('symfony_debug') ? new ExtCloner() : new PhpCloner();
+            $dumper = 'cli' === PHP_SAPI ? new CliDumper() : new HtmlDumper();
+            self::$handler = function ($var) use ($cloner, $dumper) {
+                $dumper->dump($cloner->cloneVar($var));
+            };
+        }
+
+        return call_user_func(self::$handler, ['debug() is deprecated, use dump() instead' => $var]);
+    }
+
     public static function dump($var)
     {
         if (null === self::$handler) {
