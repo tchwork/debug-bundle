@@ -27,8 +27,8 @@ class Cursor
 
     public $depth = 0;
     public $refIndex = false;
-    public $refTo = false;
-    public $refIsHard = false;
+    public $softRefTo = false;
+    public $hardRefTo = false;
     public $hashType;
     public $hashKey;
     public $hashIndex = 0;

@@ -124,10 +124,6 @@ class CliDumper extends AbstractDumper
 
         $this->line .= $this->style($style, $val);
 
-        if (false !== $cursor->refTo) {
-            $this->line .= ' '.$this->style('ref', '&'.$cursor->refTo);
-        }
-
         $this->endLine($cursor);
     }
 
@@ -140,9 +136,6 @@ class CliDumper extends AbstractDumper
 
         if ('' === $str) {
             $this->line .= '""';
-            if (false !== $cursor->refTo) {
-                $this->line .= ' '.$this->style('ref', '&'.$cursor->refTo);
-            }
             $this->endLine($cursor);
         } else {
             $str = explode("\n", $str);
@@ -155,9 +148,6 @@ class CliDumper extends AbstractDumper
 
             if ($m) {
                 $this->line .= '"""';
-                if (false !== $cursor->refTo) {
-                    $this->line .= $this->style('ref', '&'.$cursor->refTo);
-                }
                 $this->endLine($cursor);
             } else {
                 $this->line .= '"';
@@ -186,9 +176,6 @@ class CliDumper extends AbstractDumper
                         $this->line .= '"""';
                     } else {
                         $this->line .= '"';
-                    }
-                    if (!$m && false !== $cursor->refTo) {
-                        $this->line .= $this->style('ref', '&'.$cursor->refTo);
                     }
                 }
 
@@ -257,8 +244,10 @@ class CliDumper extends AbstractDumper
         $this->dumpKey($cursor);
 
         $this->line .= $prefix;
-        if (false !== $cursor->refTo) {
-            $this->line .= $this->style('ref', ($cursor->refIsHard ? '&' : '@').$cursor->refTo);
+        if (false !== $cursor->softRefTo) {
+            $this->line .= $this->style('ref', '@'.$cursor->softRefTo);
+        } elseif (false !== $cursor->hardRefTo) {
+            $this->line .= $this->style('ref', '@'.$cursor->hardRefTo);
         } elseif ($hasChild) {
             $this->endLine($cursor);
         }
@@ -274,7 +263,7 @@ class CliDumper extends AbstractDumper
      */
     protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
-        if ($cut && false === $cursor->refTo) {
+        if ($cut && false === $cursor->softRefTo && false === $cursor->hardRefTo) {
             $this->line .= '…';
             if (0 < $cut) {
                 $this->line .= $cut;
@@ -335,6 +324,10 @@ class CliDumper extends AbstractDumper
                         $this->line .= $bin.'"'.$this->style('private', $key).'": ';
                     }
                     break;
+            }
+
+            if (false !== $cursor->hardRefTo) {
+                $this->line .= $this->style('ref', '&'.$cursor->hardRefTo).' ';
             }
         }
     }

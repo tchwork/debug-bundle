@@ -97,11 +97,11 @@ span.sf-dump-meta {color:#005FFF}
     <span class=sf-dump-2><span class=sf-dump-meta>0</span> => {} <a class=sf-dump-ref name="sf-dump-ref3">#3</a>
   </span>]
   "<span class=sf-dump-meta>recurs</span>" => <span class=sf-dump-note>array:1</span> [ <a class=sf-dump-ref name="sf-dump-ref4">#4</a>
-    <span class=sf-dump-2><span class=sf-dump-meta>0</span> => <span class=sf-dump-note>array:1</span> [<a class=sf-dump-ref href="#sf-dump-ref4">&4</a>]
+    <span class=sf-dump-2><span class=sf-dump-meta>0</span> => <a class=sf-dump-ref href="#sf-dump-ref4">&4</a> <span class=sf-dump-note>array:1</span> [<a class=sf-dump-ref href="#sf-dump-ref4">@4</a>]
   </span>]
-  <span class=sf-dump-meta>9</span> => <span class=sf-dump-const>null</span> <a class=sf-dump-ref href="#sf-dump-ref1">&1</a>
+  <span class=sf-dump-meta>9</span> => <a class=sf-dump-ref href="#sf-dump-ref1">&1</a> <span class=sf-dump-const>null</span>
   "<span class=sf-dump-meta>sobj</span>" => <span class=sf-dump-note>Symfony\Component\VarDumper\Tests\Fixture\DumbFoo</span> {<a class=sf-dump-ref href="#sf-dump-ref2">@2</a>}
-  "<span class=sf-dump-meta>snobj</span>" => {<a class=sf-dump-ref href="#sf-dump-ref3">&3</a>}
+  "<span class=sf-dump-meta>snobj</span>" => <a class=sf-dump-ref href="#sf-dump-ref3">&3</a> {<a class=sf-dump-ref href="#sf-dump-ref3">@3</a>}
   "<span class=sf-dump-meta>snobj2</span>" => {<a class=sf-dump-ref href="#sf-dump-ref3">@3</a>}
   "<span class=sf-dump-meta>file</span>" => "<span class=sf-dump-str>{$var['file']}</span>"
   b"<span class=sf-dump-meta>bin-key-é</span>" => ""

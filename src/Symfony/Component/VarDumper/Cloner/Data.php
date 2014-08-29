@@ -53,13 +53,12 @@ class Data
      */
     private function dumpItem($dumper, $cursor, &$refs, $item)
     {
-        $cursor->refIndex = $cursor->refTo = $cursor->refIsHard = false;
+        $cursor->refIndex = $cursor->softRefTo = $cursor->hardRefTo = false;
 
         if ($item instanceof Stub && Stub::TYPE_REF === $item->type) {
             if ($item->refs) {
                 if (isset($refs[$r = $item->refs])) {
-                    $cursor->refTo = $refs[$r];
-                    $cursor->refIsHard = true;
+                    $cursor->hardRefTo = $refs[$r];
                 } else {
                     $cursor->refIndex = $refs[$r] = ++$refs[0];
                 }
@@ -69,9 +68,12 @@ class Data
         if ($item instanceof Stub) {
             if ($item->refs) {
                 if (isset($refs[$r = $item->refs])) {
-                    if (false === $cursor->refTo) {
-                        $cursor->refTo = $refs[$r];
-                        $cursor->refIsHard = Stub::TYPE_ARRAY === $item->type;
+                    if (Stub::TYPE_ARRAY === $item->type) {
+                        if (false === $cursor->hardRefTo) {
+                            $cursor->hardRefTo = $refs[$r];
+                        }
+                    } elseif (false === $cursor->softRefTo) {
+                        $cursor->softRefTo = $refs[$r];
                     }
                 } elseif (false !== $cursor->refIndex) {
                     $refs[$r] = $cursor->refIndex;
@@ -81,7 +83,7 @@ class Data
             }
             $cut = $item->cut;
 
-            if ($item->position && false === $cursor->refTo) {
+            if ($item->position && false === $cursor->softRefTo && false === $cursor->hardRefTo) {
                 $children = $this->data[$item->position];
 
                 if ($cursor->stop) {
