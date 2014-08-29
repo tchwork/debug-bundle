@@ -21,6 +21,8 @@ use Symfony\Component\VarDumper\Exception\ThrowingCasterException;
 abstract class AbstractCloner implements ClonerInterface
 {
     public static $defaultCasters = array(
+        'o:Symfony\Component\VarDumper\Caster\CasterStub' => 'Symfony\Component\VarDumper\Caster\StubCaster::castStub',
+
         'o:Closure'        => 'Symfony\Component\VarDumper\Caster\ReflectionCaster::castClosure',
         'o:Reflector'      => 'Symfony\Component\VarDumper\Caster\ReflectionCaster::castReflector',
 

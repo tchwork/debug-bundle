@@ -98,14 +98,23 @@ class PhpCloner extends AbstractCloner
 
                     case 'object':
                         if (empty($softRefs[$h = spl_object_hash($v)])) {
-                            $stub = $softRefs[$h] = new Stub();
+                            $stub = new Stub();
                             $stub->type = Stub::TYPE_OBJECT;
                             $stub->class = get_class($v);
-                            if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castObject($v, $stub, 0 < $i);
-                            } else {
-                                $stub->cut = -1;
+                            $stub->value = $h;
+                            $a = $this->castObject($v, $stub, 0 < $i);
+                            if (Stub::TYPE_OBJECT !== $stub->type) {
+                                $a = array();
+                                break;
                             }
+                            $h = $stub->value;
+                            if (0 <= $maxItems && $maxItems <= $pos) {
+                                $stub->cut = count($a);
+                                $a = array();
+                            }
+                        }
+                        if (empty($softRefs[$h])) {
+                            $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
                             $stub->refs = ++$refs;
@@ -115,14 +124,23 @@ class PhpCloner extends AbstractCloner
                     case 'resource':
                     case 'unknown type':
                         if (empty($softRefs[$h = (int) $v])) {
-                            $stub = $softRefs[$h] = new Stub();
+                            $stub = new Stub();
                             $stub->type = Stub::TYPE_RESOURCE;
-                            $stub->class = @get_resource_type($v);
-                            if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castResource($v, $stub, 0 < $i);
-                            } else {
-                                $stub->cut = -1;
+                            $stub->class = get_resource_type($v);
+                            $stub->value = $h;
+                            $a = $this->castResource($v, $stub, 0 < $i);
+                            if (Stub::TYPE_RESOURCE !== $stub->type) {
+                                $a = array();
+                                break;
                             }
+                            $h = $stub->value;
+                            if (0 <= $maxItems && $maxItems <= $pos) {
+                                $stub->cut = count($a);
+                                $a = array();
+                            }
+                        }
+                        if (empty($softRefs[$h])) {
+                            $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
                             $stub->refs = ++$refs;

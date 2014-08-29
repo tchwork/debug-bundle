@@ -92,14 +92,23 @@ class ExtCloner extends AbstractCloner
 
                     case 'object':
                         if (empty($softRefs[$h = $zval['object_hash']])) {
-                            $stub = $softRefs[$h] = new Stub();
+                            $stub = new Stub();
                             $stub->type = Stub::TYPE_OBJECT;
                             $stub->class = $zval['object_class'];
-                            if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castObject($v, $stub, 0 < $i);
-                            } else {
-                                $stub->cut = -1;
+                            $stub->value = $h;
+                            $a = $this->castObject($v, $stub, 0 < $i);
+                            if (Stub::TYPE_OBJECT !== $stub->type) {
+                                $a = array();
+                                break;
                             }
+                            $h = $stub->value;
+                            if (0 <= $maxItems && $maxItems <= $pos) {
+                                $stub->cut = count($a);
+                                $a = array();
+                            }
+                        }
+                        if (empty($softRefs[$h])) {
+                            $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
                             $stub->refs = ++$refs;
@@ -107,15 +116,24 @@ class ExtCloner extends AbstractCloner
                         break;
 
                     case 'resource':
-                        if (empty($softRefs[$h = $zval['resource_id']])) {
-                            $stub = $softRefs[$h] = new Stub();
+                        if (empty($softRefs[$h = (int) $v])) {
+                            $stub = new Stub();
                             $stub->type = Stub::TYPE_RESOURCE;
                             $stub->class = $zval['resource_type'];
-                            if (0 > $maxItems || $pos < $maxItems) {
-                                $a = $this->castResource($v, $stub, 0 < $i);
-                            } else {
-                                $stub->cut = -1;
+                            $stub->value = $h;
+                            $a = $this->castResource($v, $stub, 0 < $i);
+                            if (Stub::TYPE_RESOURCE !== $stub->type) {
+                                $a = array();
+                                break;
                             }
+                            $h = $stub->value;
+                            if (0 <= $maxItems && $maxItems <= $pos) {
+                                $stub->cut = count($a);
+                                $a = array();
+                            }
+                        }
+                        if (empty($softRefs[$h])) {
+                            $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
                             $stub->refs = ++$refs;

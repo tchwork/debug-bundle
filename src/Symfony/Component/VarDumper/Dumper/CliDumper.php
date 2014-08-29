@@ -140,7 +140,7 @@ class CliDumper extends AbstractDumper
         } else {
             $str = explode("\n", $str);
             $m = count($str) - 1;
-            $i = 0;
+            $i = $lineCut = 0;
 
             if ($bin) {
                 $this->line .= 'b';
@@ -155,28 +155,30 @@ class CliDumper extends AbstractDumper
 
             foreach ($str as $str) {
                 if (0 < $this->maxStringWidth && $this->maxStringWidth < $len = iconv_strlen($str, 'UTF-8')) {
-                    $str = iconv_substr($str, 0, $this->maxStringWidth - 1, 'UTF-8');
-                    $str = $this->style('str', $str).'…';
-                } else {
-                    $str = $this->style('str', $str);
+                    $str = iconv_substr($str, 0, $this->maxStringWidth, 'UTF-8');
+                    $lineCut = $len - $this->maxStringWidth;
                 }
 
                 if ($m) {
                     $this->line .= $this->indentPad;
                 }
-                $this->line .= $str;
+                $this->line .= $this->style('str', $str);
 
                 if ($i++ == $m) {
-                    if ($cut) {
-                        if (0 >= $this->maxStringWidth || $this->maxStringWidth >= $len) {
-                            $this->line .= '…';
-                        }
-                        $this->line .= $cut;
-                    } elseif ($m) {
-                        $this->line .= '"""';
-                    } else {
-                        $this->line .= '"';
+                    $this->line .= '"';
+                    if ($m) {
+                        $this->line .= '""';
                     }
+                    if ($cut < 0) {
+                        $this->line .= '…';
+                        $lineCut = 0;
+                    } elseif ($cut) {
+                        $lineCut += $cut;
+                    }
+                }
+                if ($lineCut) {
+                    $this->line .= '…'.$lineCut;
+                    $lineCut = 0;
                 }
 
                 $this->endLine($cursor, !$m);

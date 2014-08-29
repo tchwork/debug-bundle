@@ -61,13 +61,10 @@ class DoctrineCaster
     public static function castPersistentCollection(PersistentCollection $coll, array $a, Stub $stub, $isNested)
     {
         $prefix = "\0Doctrine\\ORM\\PersistentCollection\0";
-        unset(
-            $a[$prefix.'snapshot'],
-            $a[$prefix.'association'],
-            $a[$prefix.'em'],
-            $a[$prefix.'typeClass']
-        );
-        $stub->cut += 4;
+
+        $a[$prefix.'snapshot'] = new CasterStub($a[$prefix.'snapshot']);
+        $a[$prefix.'association'] = new CasterStub($a[$prefix.'association']);
+        $a[$prefix.'typeClass'] = new CasterStub($a[$prefix.'typeClass']);
 
         return $a;
     }

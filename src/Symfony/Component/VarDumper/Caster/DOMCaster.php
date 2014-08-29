@@ -70,27 +70,24 @@ class DOMCaster
 
     public static function castNode(\DOMNode $dom, array $a, Stub $stub, $isNested)
     {
-        // Commented lines denote properties that exist but are better not dumped for clarity.
-
         $a += array(
             'nodeName' => $dom->nodeName,
-            //'nodeValue' => $dom->nodeValue,
+            'nodeValue' => new CasterStub($dom->nodeValue),
             'nodeType' => $dom->nodeType,
-            //'parentNode' => $dom->parentNode,
+            'parentNode' => new CasterStub($dom->parentNode),
             'childNodes' => $dom->childNodes,
-            //'firstChild' => $dom->firstChild,
-            //'lastChild' => $dom->lastChild,
-            //'previousSibling' => $dom->previousSibling,
-            //'nextSibling' => $dom->nextSibling,
+            'firstChild' => new CasterStub($dom->firstChild),
+            'lastChild' => new CasterStub($dom->lastChild),
+            'previousSibling' => new CasterStub($dom->previousSibling),
+            'nextSibling' => new CasterStub($dom->nextSibling),
             'attributes' => $dom->attributes,
-            //'ownerDocument' => $dom->ownerDocument,
+            'ownerDocument' => new CasterStub($dom->ownerDocument),
             'namespaceURI' => $dom->namespaceURI,
             'prefix' => $dom->prefix,
             'localName' => $dom->localName,
             'baseURI' => $dom->baseURI,
-            //'textContent' => $dom->textContent,
+            'textContent' => new CasterStub($dom->textContent),
         );
-        $stub->cut += 8;
 
         return $a;
     }
@@ -101,15 +98,14 @@ class DOMCaster
 
         $a += array(
             'nodeName' => $dom->nodeName,
-            //'nodeValue' => $dom->nodeValue,
+            'nodeValue' => new CasterStub($dom->nodeValue),
             'nodeType' => $dom->nodeType,
             'prefix' => $dom->prefix,
             'localName' => $dom->localName,
             'namespaceURI' => $dom->namespaceURI,
-            //'ownerDocument' => $dom->ownerDocument,
-            //'parentNode' => $dom->parentNode,
+            'ownerDocument' => new CasterStub($dom->ownerDocument),
+            'parentNode' => new CasterStub($dom->parentNode),
         );
-        $stub->cut += 3;
 
         return $a;
     }
@@ -122,7 +118,7 @@ class DOMCaster
         $a += array(
             'doctype' => $dom->doctype,
             'implementation' => $dom->implementation,
-            'documentElement' => $dom->documentElement,
+            'documentElement' => new CasterStub($dom->documentElement),
             'actualEncoding' => $dom->actualEncoding,
             'encoding' => $dom->encoding,
             'xmlEncoding' => $dom->xmlEncoding,
