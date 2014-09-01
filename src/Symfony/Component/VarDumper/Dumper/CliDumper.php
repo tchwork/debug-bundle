@@ -93,7 +93,7 @@ class CliDumper extends AbstractDumper
         $style = 'const';
 
         switch ($type) {
-            case 'int':
+            case 'integer':
                 $style = 'num';
                 break;
 

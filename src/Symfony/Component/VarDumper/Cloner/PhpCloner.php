@@ -104,10 +104,10 @@ class PhpCloner extends AbstractCloner
                             $stub->value = $h;
                             $a = $this->castObject($v, $stub, 0 < $i);
                             if (Stub::TYPE_OBJECT !== $stub->type) {
-                                $a = array();
                                 break;
                             }
                             $h = $stub->value;
+                            $stub->value = '';
                             if (0 <= $maxItems && $maxItems <= $pos) {
                                 $stub->cut = count($a);
                                 $a = array();
@@ -130,10 +130,10 @@ class PhpCloner extends AbstractCloner
                             $stub->value = $h;
                             $a = $this->castResource($v, $stub, 0 < $i);
                             if (Stub::TYPE_RESOURCE !== $stub->type) {
-                                $a = array();
                                 break;
                             }
                             $h = $stub->value;
+                            $stub->value = '';
                             if (0 <= $maxItems && $maxItems <= $pos) {
                                 $stub->cut = count($a);
                                 $a = array();

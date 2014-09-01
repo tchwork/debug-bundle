@@ -72,7 +72,7 @@ class PdoCaster
             try {
                 $a[$attr] = 'ERRMODE' === $attr ? $errmode : $c->getAttribute(constant("PDO::ATTR_{$attr}"));
                 if (isset($values[$a[$attr]])) {
-                    $a[$attr] = $values[$a[$attr]];
+                    $a[$attr] = new CasterStub($values[$a[$attr]], 'const');
                 }
             } catch (\Exception $m) {
             }

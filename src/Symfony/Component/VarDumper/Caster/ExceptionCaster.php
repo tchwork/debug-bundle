@@ -61,7 +61,7 @@ class ExceptionCaster
     public static function castErrorException(\ErrorException $e, array $a, Stub $stub, $isNested)
     {
         if (isset($a[$s = "\0*\0severity"], self::$errorTypes[$a[$s]])) {
-            $a[$s] = self::$errorTypes[$a[$s]];
+            $a[$s] = new CasterStub(self::$errorTypes[$a[$s]], 'const');
         }
 
         return $a;

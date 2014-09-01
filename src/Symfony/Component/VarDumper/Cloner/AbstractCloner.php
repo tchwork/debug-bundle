@@ -185,8 +185,10 @@ abstract class AbstractCloner implements ClonerInterface
 
         if (isset($this->classInfo[$class])) {
             $classInfo = $this->classInfo[$class];
+            $stub->class = $classInfo[0];
         } else {
             $classInfo = array(
+                $class,
                 method_exists($class, '__debugInfo'),
                 new \ReflectionClass($class),
                 array_reverse(array($class => $class) + class_parents($class) + class_implements($class) + array('*' => '*')),
@@ -195,20 +197,20 @@ abstract class AbstractCloner implements ClonerInterface
             $this->classInfo[$class] = $classInfo;
         }
 
-        if ($classInfo[0]) {
+        if ($classInfo[1]) {
             $a = $this->callCaster(array($obj, '__debugInfo'), $obj, array(), null, $isNested);
         } else {
             $a = (array) $obj;
         }
 
         foreach ($a as $k => $p) {
-            if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[1]->hasProperty($k))) {
+            if (!isset($k[0]) || ("\0" !== $k[0] && !$classInfo[2]->hasProperty($k))) {
                 unset($a[$k]);
                 $a["\0+\0".$k] = $p;
             }
         }
 
-        foreach ($classInfo[2] as $p) {
+        foreach ($classInfo[3] as $p) {
             if (!empty($this->casters[$p = 'o:'.strtolower($p)])) {
                 foreach ($this->casters[$p] as $p) {
                     $a = $this->callCaster($p, $obj, $a, $stub, $isNested);

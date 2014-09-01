@@ -46,15 +46,29 @@ class JsonDumper extends AbstractDumper
             return;
         }
 
-        switch (true) {
-            case null === $val: $this->line .= 'null'; break;
-            case true === $val: $this->line .= 'true'; break;
-            case false === $val: $this->line .= 'false'; break;
-            case INF === $val: $this->line .= '"n`INF"'; break;
-            case -INF === $val: $this->line .= '"n`-INF"'; break;
-            case is_nan($val): $this->line .= '"n`NAN"'; break;
-            case $val > 9007199254740992 && is_int($val): $val = '"n`'.$val.'"'; // JavaScript max integer is 2^53
-            default: $this->line .= (string) $val; break;
+        switch ($type) {
+            case 'NULL': $this->line .= 'null'; break;
+            case 'boolean': $this->line .= $val ? 'true' : 'false'; break;
+            case 'integer':
+                // JavaScript max integer is 2^53
+                $this->line .= $val > 9007199254740992 ? '"n`'.$val.'"' : $val;
+                break;
+            case 'double':
+                if (is_nan($val)) {
+                    $val = 'NAN';
+                } elseif (INF === $val) {
+                    $val = 'INF';
+                } elseif (-INF === $val) {
+                    $val = '-INF';
+                } else {
+                    $this->line .= json_encode($val);
+                    break;
+                }
+                // No break;
+            default:
+            case 'const':
+                $this->line .= '"n`'.$val.'"';
+                break;
         }
 
         $this->endLine($cursor);

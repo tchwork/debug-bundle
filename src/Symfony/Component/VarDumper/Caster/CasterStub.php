@@ -20,29 +20,20 @@ use Symfony\Component\VarDumper\Cloner\Stub;
  */
 class CasterStub extends Stub
 {
-    public function __construct($value)
+    public function __construct($value, $class = '')
     {
         switch (gettype($value)) {
-            case 'string':
-                $this->type = self::TYPE_STRING;
-                $this->class = preg_match('//u', $value) ? self::STRING_UTF8 : self::STRING_BINARY;
-                $this->cut = self::STRING_BINARY === $this->class ? strlen($value) : (function_exists('iconv_strlen') ? iconv_strlen($value, 'UTF-8') : -1);
-
+            case 'object':
+                $this->type = self::TYPE_OBJECT;
+                $this->class = get_class($value);
+                $this->value = spl_object_hash($value);
+                $this->cut = -1;
                 break;
 
             case 'array':
                 $this->type = self::TYPE_ARRAY;
                 $this->class = self::ARRAY_ASSOC;
                 $this->cut = $this->value = count($value);
-
-                break;
-
-            case 'object':
-                $this->type = self::TYPE_OBJECT;
-                $this->class = get_class($value);
-                $this->value = spl_object_hash($value);
-                $this->cut = -1;
-
                 break;
 
             case 'resource':
@@ -51,12 +42,20 @@ class CasterStub extends Stub
                 $this->class = @get_resource_type($value);
                 $this->value = (int) $value;
                 $this->cut = -1;
-
                 break;
 
-            default:
-                $this->value = $value;
+            case 'string':
+                if ('' === $class) {
+                    $this->type = self::TYPE_STRING;
+                    $this->class = preg_match('//u', $value) ? self::STRING_UTF8 : self::STRING_BINARY;
+                    $this->cut = self::STRING_BINARY === $this->class ? strlen($value) : (function_exists('iconv_strlen') ? iconv_strlen($value, 'UTF-8') : -1);
+                    break;
+                }
+                // No break;
 
+            default:
+                $this->class = $class;
+                $this->value = $value;
                 break;
         }
     }

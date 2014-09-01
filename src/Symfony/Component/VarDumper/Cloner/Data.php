@@ -55,7 +55,9 @@ class Data
     {
         $cursor->refIndex = $cursor->softRefTo = $cursor->hardRefTo = false;
 
-        if ($item instanceof Stub && Stub::TYPE_REF === $item->type) {
+        if (!$item instanceof Stub) {
+            $type = gettype($item);
+        } elseif (Stub::TYPE_REF === $item->type) {
             if ($item->refs) {
                 if (isset($refs[$r = $item->refs])) {
                     $cursor->hardRefTo = $refs[$r];
@@ -63,6 +65,7 @@ class Data
                     $cursor->refIndex = $refs[$r] = ++$refs[0];
                 }
             }
+            $type = $item->class ?: gettype($item->value);
             $item = $item->value;
         }
         if ($item instanceof Stub) {
@@ -98,33 +101,30 @@ class Data
             switch ($item->type) {
                 case Stub::TYPE_STRING:
                     $dumper->dumpString($cursor, $item->value, Stub::STRING_BINARY === $item->class, $cut);
-
-                    return;
+                    break;
 
                 case Stub::TYPE_ARRAY:
                     $dumper->enterArray($cursor, $item->value, Stub::ARRAY_INDEXED === $item->class, (bool) $children);
                     $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, $item->class);
                     $dumper->leaveArray($cursor, $item->value, Stub::ARRAY_INDEXED === $item->class, (bool) $children, $cut);
-
-                    return;
+                    break;
 
                 case Stub::TYPE_OBJECT:
                     $dumper->enterObject($cursor, $item->class, (bool) $children);
                     $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, Cursor::HASH_OBJECT);
                     $dumper->leaveObject($cursor, $item->class, (bool) $children, $cut);
-
-                    return;
+                    break;
 
                 case Stub::TYPE_RESOURCE:
                     $dumper->enterResource($cursor, $item->class, (bool) $children);
                     $cut = $this->dumpChildren($dumper, $cursor, $refs, $children, $cut, Cursor::HASH_RESOURCE);
                     $dumper->leaveResource($cursor, $item->class, (bool) $children, $cut);
+                    break;
 
-                    return;
+                default:
+                    throw new \RuntimeException(sprintf('Unexpected Stub type: %s', $item->type));
             }
-        }
-
-        if ('array' === $type = gettype($item)) {
+        } elseif ('array' === $type) {
             $dumper->enterArray($cursor, 0, true, 0, 0);
             $dumper->leaveArray($cursor, 0, true, 0, 0);
         } else {

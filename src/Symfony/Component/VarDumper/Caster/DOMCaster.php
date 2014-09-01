@@ -40,10 +40,31 @@ class DOMCaster
         DOM_VALIDATION_ERR => 'DOM_VALIDATION_ERR',
     );
 
+    private static $nodeTypes = array(
+        XML_ELEMENT_NODE => 'XML_ELEMENT_NODE',
+        XML_ATTRIBUTE_NODE => 'XML_ATTRIBUTE_NODE',
+        XML_TEXT_NODE => 'XML_TEXT_NODE',
+        XML_CDATA_SECTION_NODE => 'XML_CDATA_SECTION_NODE',
+        XML_ENTITY_REF_NODE => 'XML_ENTITY_REF_NODE',
+        XML_ENTITY_NODE => 'XML_ENTITY_NODE',
+        XML_PI_NODE => 'XML_PI_NODE',
+        XML_COMMENT_NODE => 'XML_COMMENT_NODE',
+        XML_DOCUMENT_NODE => 'XML_DOCUMENT_NODE',
+        XML_DOCUMENT_TYPE_NODE => 'XML_DOCUMENT_TYPE_NODE',
+        XML_DOCUMENT_FRAG_NODE => 'XML_DOCUMENT_FRAG_NODE',
+        XML_NOTATION_NODE => 'XML_NOTATION_NODE',
+        XML_HTML_DOCUMENT_NODE => 'XML_HTML_DOCUMENT_NODE',
+        XML_DTD_NODE => 'XML_DTD_NODE',
+        XML_ELEMENT_DECL_NODE => 'XML_ELEMENT_DECL_NODE',
+        XML_ATTRIBUTE_DECL_NODE => 'XML_ATTRIBUTE_DECL_NODE',
+        XML_ENTITY_DECL_NODE => 'XML_ENTITY_DECL_NODE',
+        XML_NAMESPACE_DECL_NODE => 'XML_NAMESPACE_DECL_NODE',
+    );
+
     public static function castException(\DOMException $e, array $a, Stub $stub, $isNested)
     {
         if (isset($a["\0*\0code"], self::$errorCodes[$a["\0*\0code"]])) {
-            $a["\0*\0code"] .= ' ('.self::$errorCodes[$a["\0*\0code"]].')';
+            $a["\0*\0code"] = new CasterStub(self::$errorCodes[$a["\0*\0code"]], 'const');
         }
 
         return $a;
@@ -73,7 +94,7 @@ class DOMCaster
         $a += array(
             'nodeName' => $dom->nodeName,
             'nodeValue' => new CasterStub($dom->nodeValue),
-            'nodeType' => $dom->nodeType,
+            'nodeType' => new CasterStub(self::$nodeTypes[$dom->nodeType], 'const'),
             'parentNode' => new CasterStub($dom->parentNode),
             'childNodes' => $dom->childNodes,
             'firstChild' => new CasterStub($dom->firstChild),
@@ -99,7 +120,7 @@ class DOMCaster
         $a += array(
             'nodeName' => $dom->nodeName,
             'nodeValue' => new CasterStub($dom->nodeValue),
-            'nodeType' => $dom->nodeType,
+            'nodeType' => new CasterStub(self::$nodeTypes[$dom->nodeType], 'const'),
             'prefix' => $dom->prefix,
             'localName' => $dom->localName,
             'namespaceURI' => $dom->namespaceURI,
