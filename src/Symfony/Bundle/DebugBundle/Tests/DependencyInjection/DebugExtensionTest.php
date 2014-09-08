@@ -13,7 +13,6 @@ namespace Symfony\Bundle\DebugBundle\Tests\DependencyInjection;
 
 use Symfony\Bundle\DebugBundle\DependencyInjection\DebugExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class DebugExtensionTest extends \PHPUnit_Framework_TestCase
@@ -29,7 +28,7 @@ class DebugExtensionTest extends \PHPUnit_Framework_TestCase
             array(
                 "id" => "dump",
                 "template" => "@Debug/Profiler/Patchwork/dump.html.twig",
-            )
+            ),
         );
 
         $this->assertSame($expectedTags, $container->getDefinition('data_collector.dump')->getTag('data_collector'));

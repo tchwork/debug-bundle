@@ -58,8 +58,8 @@ class Data
         if (!$item instanceof Stub) {
             $type = gettype($item);
         } elseif (Stub::TYPE_REF === $item->type) {
-            if ($item->refs) {
-                if (isset($refs[$r = $item->refs])) {
+            if ($item->ref) {
+                if (isset($refs[$r = $item->ref])) {
                     $cursor->hardRefTo = $refs[$r];
                 } else {
                     $cursor->refIndex = $refs[$r] = ++$refs[0];
@@ -69,8 +69,8 @@ class Data
             $item = $item->value;
         }
         if ($item instanceof Stub) {
-            if ($item->refs) {
-                if (isset($refs[$r = $item->refs])) {
+            if ($item->ref) {
+                if (isset($refs[$r = $item->ref])) {
                     if (Stub::TYPE_ARRAY === $item->type) {
                         if (false === $cursor->hardRefTo) {
                             $cursor->hardRefTo = $refs[$r];

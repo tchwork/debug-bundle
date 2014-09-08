@@ -53,7 +53,7 @@ class PhpCloner extends AbstractCloner
                     $queue[$i][$k] =& $stub;    // Break hard references to make $queue completely
                     unset($stub);               // independent from the original structure
                     if ($v instanceof Stub && isset($hardRefs[spl_object_hash($v)])) {
-                        $v->refs = ++$refs;
+                        $v->ref = ++$refs;
                         $step[$k] = $queue[$i][$k] = $v;
                         continue;
                     }
@@ -117,7 +117,7 @@ class PhpCloner extends AbstractCloner
                             $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
-                            $stub->refs = ++$refs;
+                            $stub->ref = ++$refs;
                         }
                         break;
 
@@ -143,7 +143,7 @@ class PhpCloner extends AbstractCloner
                             $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
-                            $stub->refs = ++$refs;
+                            $stub->ref = ++$refs;
                         }
                         break;
                 }

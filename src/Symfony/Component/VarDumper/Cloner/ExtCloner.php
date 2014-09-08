@@ -50,7 +50,7 @@ class ExtCloner extends AbstractCloner
                     $queue[$i][$k] =& $stub;    // Break hard references to make $queue completely
                     unset($stub);               // independent from the original structure
                     if (isset($hardRefs[$h = $zval['zval_hash']])) {
-                        $hardRefs[$h]->refs = ++$refs;
+                        $hardRefs[$h]->ref = ++$refs;
                         $queue[$i][$k] = $hardRefs[$h];
                         continue;
                     }
@@ -111,7 +111,7 @@ class ExtCloner extends AbstractCloner
                             $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
-                            $stub->refs = ++$refs;
+                            $stub->ref = ++$refs;
                         }
                         break;
 
@@ -136,7 +136,7 @@ class ExtCloner extends AbstractCloner
                             $softRefs[$h] = $stub;
                         } else {
                             $stub = $softRefs[$h];
-                            $stub->refs = ++$refs;
+                            $stub->ref = ++$refs;
                         }
                         break;
                 }
