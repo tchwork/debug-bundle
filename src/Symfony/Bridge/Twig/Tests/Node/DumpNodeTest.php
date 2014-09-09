@@ -52,10 +52,11 @@ EOTXT;
         $expected = <<<'EOTXT'
 if ($this->env->isDebug()) {
     // line 7
-    \Symfony\Component\VarDumper\VarDumper::dump((isset($context["foo"]) ? $context["foo"] : null));
+    \Symfony\Component\VarDumper\VarDumper::dump(%foo%);
 }
 
 EOTXT;
+        $expected = preg_replace('/%(.*?)%/', version_compare(PHP_VERSION, '5.4.0') >= 0 ? '(isset($context["$1"]) ? $context["$1"] : null)' : '$this->getContext($context, "$1")', $expected);
 
         $this->assertSame($expected, $compiler->compile($node)->getSource());
     }
@@ -75,12 +76,13 @@ EOTXT;
 if ($this->env->isDebug()) {
     // line 7
     \Symfony\Component\VarDumper\VarDumper::dump(array(
-        "foo" => (isset($context["foo"]) ? $context["foo"] : null),
-        "bar" => (isset($context["bar"]) ? $context["bar"] : null),
+        "foo" => %foo%,
+        "bar" => %bar%,
     ));
 }
 
 EOTXT;
+        $expected = preg_replace('/%(.*?)%/', version_compare(PHP_VERSION, '5.4.0') >= 0 ? '(isset($context["$1"]) ? $context["$1"] : null)' : '$this->getContext($context, "$1")', $expected);
 
         $this->assertSame($expected, $compiler->compile($node)->getSource());
     }
