@@ -1,8 +1,8 @@
-(function (scope, document) {
+{% include '@Debug/Profiler/Base/dump.js.twig' %}
+
+(function (dump, document) {
     "use strict";
 
-    var dump = scope.dump || {};
-    scope.dump = dump;
     dump.maxStringSize = 128;
 
     dump.BuildMetaData = function (parser, offset) {
@@ -717,16 +717,4 @@
         dump.bindHover();
     }
 
-    dump.arrayToggle = function (a) {
-        var s = a.nextElementSibling.nextElementSibling;
-
-        if ('array-compact' == s.className) {
-            a.innerHTML = ' ⊟ ';
-            s.className = 'array-expanded';
-        } else {
-            a.innerHTML = ' ⊞ ';
-            s.className = 'array-compact';
-        }
-    }
-
-})(Sfjs, document);
+})(Sfjs.dump, document);

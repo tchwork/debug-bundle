@@ -1,0 +1,21 @@
+(function (scope, document) {
+    "use strict";
+
+    var dump = scope.dump || {};
+    scope.dump = dump;
+
+    dump.arrayToggle = function(a) {
+        "use strict";
+
+        var s = a.nextElementSibling.nextElementSibling;
+
+        if ('array-compact' == s.className) {
+            a.innerHTML = ' ⊟ ';
+            s.className = 'array-expanded';
+        } else {
+            a.innerHTML = ' ⊞ ';
+            s.className = 'array-compact';
+        }
+    }
+
+})(Sfjs, document);
