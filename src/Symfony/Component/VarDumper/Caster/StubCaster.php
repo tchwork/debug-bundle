@@ -31,4 +31,15 @@ class StubCaster
             return array();
         }
     }
+
+    public static function castNestedFat($obj, array $a, Stub $stub, $isNested)
+    {
+        if ($isNested) {
+            $stub->cut += count($a);
+
+            return array();
+        }
+
+        return $a;
+    }
 }

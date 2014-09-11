@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\VarDumper\Caster;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Proxy\Proxy as CommonProxy;
 use Doctrine\ORM\Proxy\Proxy as OrmProxy;
 use Doctrine\ORM\PersistentCollection;
@@ -43,17 +42,6 @@ class DoctrineCaster
             $a[$prefix.'_identifier']
         );
         $stub->cut += 2;
-
-        return $a;
-    }
-
-    public static function castObjectManager(ObjectManager $manager, array $a, Stub $stub, $isNested)
-    {
-        if ($isNested) {
-            $stub->cut += count($a);
-
-            return array();
-        }
 
         return $a;
     }
