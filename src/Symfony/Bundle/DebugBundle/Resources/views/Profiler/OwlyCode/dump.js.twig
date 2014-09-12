@@ -347,15 +347,15 @@
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
                 node.innerHTML = ('"' + __self.htmlEncode(entity.value.substr(0, dump.maxStringSize)) + '..."');
                 if (entity.cut > 0) {
-                    node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
+                    node.innerHTML += '<span class="sf-dump-truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
-                node.className += ' string';
+                node.className += ' sf-dump-string';
 
                 return node;
             }
 
             var node = document.createElement('span');
-            node.className = 'occurrence-' + entity.index;
+            node.className = 'sf-dump-occurrence-' + entity.index;
             if (entity.type == 'string') {
                 if ((entity.value.length > dump.maxStringSize) && !entity.expanded) {
                     node.appendChild(__self.renderNode(entity));
@@ -365,15 +365,15 @@
                 node.setAttribute('data-helper', 'Length : ' + entity.value.length);
                 node.innerHTML = __self.htmlEncode('"' + entity.value + '"');
                 if (entity.cut > 0) {
-                    node.innerHTML += '<span class="truncated"> (' + entity.cut + ' truncated chars)</span>';
+                    node.innerHTML += '<span class="sf-dump-truncated"> (' + entity.cut + ' truncated chars)</span>';
                 }
-                node.className += ' string';
+                node.className += ' sf-dump-string';
             } else if (typeof(entity.value) == 'boolean') {
                 node.innerHTML = entity.value ? 'true' : 'false';
-                node.className += ' const';
+                node.className += ' sf-dump-const';
             } else {
                 node.innerHTML = entity.value;
-                node.className += ' const';
+                node.className += ' sf-dump-const';
             }
 
             return node;
@@ -388,7 +388,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurrence-' + entity.index;
+            node.className = 'sf-dump-occurrence-' + entity.index;
 
             var prefix = document.createElement('span');
             var suffix = document.createElement('span');
@@ -411,7 +411,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurrence-' + entity.index;
+            node.className = 'sf-dump-occurrence-' + entity.index;
             var ul = __self.renderChildrenContainer(entity);
 
             var prefix = document.createElement('span');
@@ -440,7 +440,7 @@
                     var key = document.createElement('span');
                     var arrow = document.createElement('span');
                     key.appendChild(__self.render(i));
-                    key.className = 'key';
+                    key.className = 'sf-dump-key';
                     arrow.innerHTML = ': ';
                     li.appendChild(key);
                     li.appendChild(arrow);
@@ -491,7 +491,7 @@
             }
 
             var node = document.createElement('span');
-            node.className = 'occurrence-' + entity.index;
+            node.className = 'sf-dump-occurrence-' + entity.index;
 
             var prefix = document.createElement('span');
             var suffix = document.createElement('span');
@@ -517,7 +517,7 @@
         __self.renderUndefined = function (entity, mode) {
             var node = document.createElement('span');
             node.innerHTML = 'null';
-            node.className = 'undefined';
+            node.className = 'sf-dump-undefined';
 
             return node;
         }
@@ -532,8 +532,8 @@
             var link = document.createElement('a');
             var content = document.createElement('span');
 
-            visibility.innerHTML = entity.name + '<span class="colon">:</span> ';
-            visibility.className = entity.visibility;
+            visibility.innerHTML = entity.name + '<span class="sf-dump-colon">:</span> ';
+            visibility.className = 'sf-dump-'+entity.visibility;
             node.appendChild(visibility);
             node.appendChild(__self.renderNode(entity.value));
 
@@ -568,20 +568,20 @@
 
             if (__self.parser.isAmpersanded(entity.index)) {
                 var refPrefix = document.createElement('span');
-                refPrefix.className = 'reference-marker';
+                refPrefix.className = 'sf-dump-reference-marker';
                 refPrefix.innerHTML = '&';
                 node.insertBefore(refPrefix, node.firstChild);
             }
             if (!entity.ampersand && __self.parser.isAmpersanded(entity.index) && entity.target) {
-                node.className += ' reference occurrence-' + entity.target;
-                node.hoverTarget = 'occurrence-' + entity.target;
+                node.className += ' sf-dump-reference sf-dump-occurrence-' + entity.target;
+                node.hoverTarget = 'sf-dump-occurrence-' + entity.target;
             } else if (!entity.ampersand && __self.parser.isAmpersanded(entity.index)) {
-                node.className += ' reference occurrence-' + entity.index;
-                node.hoverTarget = 'occurrence-' + entity.index;
+                node.className += ' sf-dump-reference sf-dump-occurrence-' + entity.index;
+                node.hoverTarget = 'sf-dump-occurrence-' + entity.index;
             }
             if (entity.ampersand) {
-                node.className += ' reference occurrence-' + entity.ampersand;
-                node.hoverTarget = 'occurrence-' + entity.ampersand;
+                node.className += ' sf-dump-reference sf-dump-occurrence-' + entity.ampersand;
+                node.hoverTarget = 'sf-dump-occurrence-' + entity.ampersand;
             }
 
             return node;
@@ -605,7 +605,7 @@
                     var key = document.createElement('span');
                     var arrow = document.createElement('span');
                     key.appendChild(__self.render(i));
-                    key.className = 'key';
+                    key.className = 'sf-dump-key';
                     arrow.innerHTML = ': ';
                     li.appendChild(key);
                     li.appendChild(arrow);
@@ -618,7 +618,7 @@
             if (entity.cutBy) {
                 var li = document.createElement('li');
                 var elementLabel = entity instanceof dump.PhpArray ? 'elements' : 'attributes';
-                li.innerHTML = '<span class="truncated">' + entity.cutBy + ' truncated ' + elementLabel + '</span>'
+                li.innerHTML = '<span class="sf-dump-truncated">' + entity.cutBy + ' truncated ' + elementLabel + '</span>'
                 ul.appendChild(li);
             }
 
@@ -686,18 +686,18 @@
     }
 
     dump.bindHover = function () {
-        var elements = document.getElementsByClassName('reference');
+        var elements = document.getElementsByClassName('sf-dump-reference');
         for (var i in elements) {
             elements[i].onmouseover = function () {
                 var targets = document.getElementsByClassName(this.hoverTarget);
                 for (var i in targets) {
-                    targets[i].className += ' hovered';
+                    targets[i].className += ' sf-dump-hovered';
                 }
             }
             elements[i].onmouseout = function () {
                 var targets = document.getElementsByClassName(this.hoverTarget);
                 for (var i in targets) {
-                    targets[i].className = targets[i].className.replace(' hovered', '');
+                    targets[i].className = targets[i].className.replace(' sf-dump-hovered', '');
                 }
             }
         }
@@ -711,7 +711,7 @@
         var html = document.getElementById('dumper-content');
         var node = document.createElement('div');
 
-        node.className = 'dump-blackbox';
+        node.className = 'sf-dump-blackbox';
         node.appendChild(renderer.render());
         html.appendChild(node);
         dump.bindHover();

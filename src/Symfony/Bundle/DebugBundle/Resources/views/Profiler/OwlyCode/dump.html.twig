@@ -13,11 +13,11 @@
 
     <div id="dumper-content">
         {% for dump in collector.getDumps('json') %}
-        <div class="dump sf-reset">
+        <div class="sf-dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
-            <a href="#" onclick="Sfjs.dump.arrayToggle(this); return false"> ⊞ </a><span class="key"></span>
-            <span class="array-compact">
+            <a href="#" onclick="Sfjs.dump.toggle(this); return false"> ⊞ </a><span class="sf-dump-key"></span>
+            <span class="sf-dump-compact">
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>
             <script>Sfjs.dump.run({{ dump.data|raw }})</script>

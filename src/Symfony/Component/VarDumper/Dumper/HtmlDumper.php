@@ -59,7 +59,7 @@ class HtmlDumper extends CliDumper
     }
 
     /**
-     * Sets an HTML header the will be dumped once in the output stream.
+     * Sets an HTML header that will be dumped once in the output stream.
      *
      * @param string $header An HTML string.
      */

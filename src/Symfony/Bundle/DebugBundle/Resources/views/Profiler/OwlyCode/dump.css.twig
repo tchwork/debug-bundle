@@ -1,15 +1,15 @@
-#var_dump pre
+#sf-dump pre
 {
     white-space: pre;
 }
 
-li.dump
+li.sf-dump
 {
     list-style-type: disc;
     border: none;
 }
 
-.dump>pre
+.sf-dump>pre
 {
     margin: 15px 0;
     padding-left: 11px;
@@ -17,17 +17,17 @@ li.dump
     overflow: hidden;
 }
 
-.dump ol>li
+.sf-dump ol>li
 {
     padding: 0;
 }
 
-.event br /* Hide Chrome inserted BR */
+.sf-dump-event br /* Hide Chrome inserted BR */
 {
     display: none;
 }
 
-.event
+.sf-dump-event
 {
     color: gray;
     margin: 0;
@@ -36,24 +36,24 @@ li.dump
     font-family: inherit;
 }
 
-.array-compact
+.sf-dump-compact
 {
     white-space: nowrap; /* This rule makes IE slow as hell */
 }
 
-.arrow,
-.const,
-.class,
-.alias,
-.handle,
-.string
+.sf-dump-arrow,
+.sf-dump-const,
+.sf-dump-class,
+.sf-dump-alias,
+.sf-dump-handle,
+.sf-dump-string
 {
     color: black;
     font-style: normal;
     font-family: sans-serif;
 }
 
-.dump a
+.sf-dump a
 {
     display: inline-block;
     position: relative;
@@ -66,85 +66,85 @@ li.dump
     text-decoration: none;
 }
 
-.dump>a
+.sf-dump>a
 {
     right: 0;
 }
 
-.const,
-.dump a:hover
+.sf-dump-const,
+.sf-dump a:hover
 {
     color: blue;
     text-decoration: none;
 }
 
-.string
+.sf-dump-string
 {
     color: purple;
 }
 
-.empty.string
+.sf-dump-empty.sf-dump-string
 {
     width: 3px;
     height: 1em;
     display: inline-block;
 }
 
-.key, .key *
+.sf-dump-key, .sf-dump-key *
 {
     color: gray;
     font-style: italic;
 }
 
-.public
+.sf-dump-public
 {
     color: green;
 }
 
-.protected
+.sf-dump-protected
 {
     color: orange;
 }
 
-.private
+.sf-dump-private
 {
     color: red;
 }
 
-.arrow
+.sf-dump-arrow
 {
     color: gray;
     background-color: white;
 }
 
-.event.silenced>.array-compact span
+.sf-dump-event.sf-dump-silenced>.sf-dump-compact span
 {
     color: silver;
     background-color: white;
 }
 
-.array-compact a,
-.array-compact .key
+.sf-dump-compact a,
+.sf-dump-compact .sf-dump-key
 {
     display: none;
 }
 
-.key.string
+.sf-dump-key.sf-dump-string
 {
     display: inline;
 }
 
-.array-compact>ol
+.sf-dump-compact>ol
 {
     display: none;
 }
 
-.undefined {
+.sf-dump-undefined {
     color: gray;
     font-style: italic;
 }
 
-.dump-blackbox {
+.sf-dump-blackbox {
     background-color: black;
     margin: 20px 0;
     color: white;
@@ -153,40 +153,40 @@ li.dump
     word-wrap: break-word;
 }
 
-.dump-blackbox * {
+.sf-dump-blackbox * {
     font-family: Arial;
 }
 
-.dump-blackbox li{
+.sf-dump-blackbox li{
     padding-bottom: 0;
 }
 
-.colon {
+.sf-dump-colon {
     color: white;
 }
 
-.truncated {
+.sf-dump-truncated {
     font-style: italic;
     color: #CCC;
 }
 
-.reference-marker {
+.sf-dump-reference-marker {
     color: gray;
     padding: 0 2px;
     margin-right: 1px;
 }
 
-.hovered {
+.sf-dump-hovered {
     cursor: help;
 }
 
-.hovered .reference-marker {
+.sf-dump-hovered .sf-dump-reference-marker {
     color: yellow;
     background-color: #333;
     border-radius: 2px;
 }
 
-a[data-helper]:hover:after, span.string[data-helper]:hover:after {
+a[data-helper]:hover:after, span.sf-dump-string[data-helper]:hover:after {
   content: attr(data-helper);
   position: absolute;
   background-color: white;

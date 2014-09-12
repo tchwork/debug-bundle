@@ -1,15 +1,15 @@
-#var_dump pre
+#sf-dump pre
 {
     white-space: pre;
 }
 
-li.dump
+li.sf-dump
 {
     list-style-type: disc;
     border: none;
 }
 
-.dump>pre
+.sf-dump>pre
 {
     margin: 15px 0;
     padding-left: 11px;
@@ -17,17 +17,17 @@ li.dump
     overflow: hidden;
 }
 
-.dump ol>li
+.sf-dump ol>li
 {
     padding: 0;
 }
 
-.event br /* Hide Chrome inserted BR */
+.sf-dump-event br /* Hide Chrome inserted BR */
 {
     display: none;
 }
 
-.event
+.sf-dump-event
 {
     color: gray;
     margin: 0;
@@ -36,24 +36,41 @@ li.dump
     font-family: inherit;
 }
 
-.array-compact
+.sf-dump-compact
 {
     white-space: nowrap; /* This rule makes IE slow as hell */
 }
 
-.arrow,
-.const,
-.class,
-.alias,
-.handle,
-.string
+.sf-dump-arrow,
+.sf-dump-const,
+.sf-dump-class,
+.sf-dump-alias,
+.sf-dump-handle,
+.sf-dump-string
 {
     color: black;
     font-style: normal;
     font-family: sans-serif;
 }
 
-.dump a
+.sf-dump-class
+{
+    color: #D7AF00;
+}
+
+.sf-dump-const
+{
+    font-weight:bold;
+    color:#0087FF;
+}
+
+.sf-dump-alias,
+.sf-dump-handle
+{
+    color: #444444;
+}
+
+.sf-dump a
 {
     display: inline-block;
     position: relative;
@@ -66,76 +83,79 @@ li.dump
     text-decoration: none;
 }
 
-.dump>a
+.sf-dump>a
 {
     right: 0;
 }
 
-.const,
-.dump a:hover
+.sf-dump-const,
+.sf-dump a:hover
 {
     color: blue;
     text-decoration: none;
 }
 
-.string
+.sf-dump-string
 {
-    color: purple;
+    font-weight:bold;
+    color:#00D7FF;
     background-color: #F9F9F9;
 }
 
-.empty.string
+.sf-dump-empty.sf-dump-string
 {
     width: 3px;
     height: 1em;
     display: inline-block;
 }
 
-.key
+.sf-dump-key
 {
     font-family: monospace;
+    font-weight:normal;
     background-color: white;
+    color: #005FFF;
 }
 
-.public
+.sf-dump-public
 {
-    color: green;
+    color: #008700;
 }
 
-.protected
+.sf-dump-protected
 {
-    color: orange;
+    color: #D75F00;
 }
 
-.private
+.sf-dump-private
 {
-    color: red;
+    color: #D70000;
 }
 
-.arrow
+.sf-dump-arrow
 {
     color: gray;
     background-color: white;
 }
 
-.event.silenced>.array-compact span
+.sf-dump-event.sf-dump-silenced>.sf-dump-compact span
 {
     color: silver;
     background-color: white;
 }
 
-.array-compact a,
-.array-compact .key
+.sf-dump-compact a,
+.sf-dump-compact .sf-dump-key
 {
     display: none;
 }
 
-.key.string
+.sf-dump-key.sf-dump-string
 {
     display: inline;
 }
 
-.array-compact>ol
+.sf-dump-compact>ol
 {
     display: none;
 }

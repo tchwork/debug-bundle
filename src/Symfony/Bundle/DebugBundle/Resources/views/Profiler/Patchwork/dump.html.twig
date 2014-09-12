@@ -11,13 +11,13 @@
         {% include '@Debug/Profiler/Patchwork/dump.js.twig' %}
     </script>
 
-    <ul id="var_dump" class="alt">
+    <ul id="sf-dump" class="alt">
         {% for dump in collector.getDumps('json') %}
-        <li class="dump sf-reset">
+        <li class="sf-dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
-            <a onclick="Sfjs.dump.arrayToggle(this)"> ⊞ </a><span class="key"></span>
-            <span class="array-compact">
+            <a onclick="Sfjs.dump.toggle(this)"> ⊞ </a><span class="sf-dump-key"></span>
+            <span class="sf-dump-compact">
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>
 

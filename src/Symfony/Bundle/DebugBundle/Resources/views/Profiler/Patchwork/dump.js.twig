@@ -28,6 +28,9 @@
         }
 
         function push(data, tags, title) {
+            if (tags) {
+                tags = 'sf-dump-' + tags.replace(/ +/, ' sf-dump-');
+            }
             if (title && title.length) {
                 tags += '" title="' + title.join(', ');
             }
@@ -44,9 +47,9 @@
             if (refs[counter]) {
                 push('#' + counter, 'ref target');
             } else if (iRefs[counter]) {
-                push('r' + iRefs[counter], 'ref handle');
+                push('@' + iRefs[counter], 'ref handle');
             } else if (iRefs[-counter]) {
-                push('R' + iRefs[-counter], 'ref alias');
+                push('&' + iRefs[-counter], 'ref alias');
             }
 
             switch (true) {
@@ -104,8 +107,8 @@
             case 'object' === typeof data:
 
                 if (1 === depth) {
-                    buffer.push('<a onclick="Sfjs.dump.arrayToggle(this)"> ⊟ </a><span class="key"></span>');
-                    buffer.push('<span class="array-expanded">');
+                    buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ⊟ </a><span class="sf-dump-key"></span>');
+                    buffer.push('<span class="sf-dump-expanded">');
                 }
 
                 b = ['[', ']'];
@@ -184,7 +187,7 @@
                     }
 
                     if ('object' === typeof data[i] && null !== data[i] && 'compact' === b[2]) {
-                        buffer.push('<a onclick="Sfjs.dump.arrayToggle(this)"> ⊞ </a>');
+                        buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ⊞ </a>');
                     }
 
                     t[0] = counter;
@@ -197,7 +200,7 @@
                     buffer.push('</span>');
 
                     if ('object' === typeof data[i] && null !== data[i]) {
-                        buffer.push('<span class="array-' + b[2] + '">');
+                        buffer.push('<span class="sf-dump-' + b[2] + '">');
                         htmlizeData(data[i], '', []);
                         buffer.push('</span>');
                     } else {

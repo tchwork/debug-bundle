@@ -4,17 +4,17 @@
     var dump = scope.dump || {};
     scope.dump = dump;
 
-    dump.arrayToggle = function(a) {
+    dump.toggle = function(a) {
         "use strict";
 
         var s = a.nextElementSibling.nextElementSibling;
 
-        if ('array-compact' == s.className) {
+        if ('sf-dump-compact' == s.className) {
             a.innerHTML = ' ⊟ ';
-            s.className = 'array-expanded';
+            s.className = 'sf-dump-expanded';
         } else {
             a.innerHTML = ' ⊞ ';
-            s.className = 'array-compact';
+            s.className = 'sf-dump-compact';
         }
     }
 
