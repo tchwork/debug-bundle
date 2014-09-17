@@ -34,7 +34,7 @@ class DumpDataCollectorTest extends \PHPUnit_Framework_TestCase
 
         $xDump = array(
             array(
-              'data' => "<!DOCTYPE html><style> pre.sf-dump { background-color: #300a24; white-space: pre; line-height: 1.2em; color: #eee8d5; font-family: monospace, sans-serif; padding: 5px; } .sf-dump span { display: inline; }a.sf-dump-ref {color:#444444}span.sf-dump-num {font-weight:bold;color:#0087FF}span.sf-dump-const {font-weight:bold;color:#0087FF}span.sf-dump-str {font-weight:bold;color:#00D7FF}span.sf-dump-cchr {font-style: italic}span.sf-dump-note {color:#D7AF00}span.sf-dump-ref {color:#444444}span.sf-dump-public {color:#008700}span.sf-dump-protected {color:#D75F00}span.sf-dump-private {color:#D70000}span.sf-dump-meta {color:#005FFF}</style><pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-num>123</span>\n</pre>\n",
+              'data' => "<style> pre.sf-dump { background-color: #300a24; white-space: pre; line-height: 1.2em; color: #eee8d5; font-family: monospace, sans-serif; padding: 5px; } .sf-dump span { display: inline; }a.sf-dump-ref {color:#444444}span.sf-dump-num {font-weight:bold;color:#0087FF}span.sf-dump-const {font-weight:bold;color:#0087FF}span.sf-dump-str {font-weight:bold;color:#00D7FF}span.sf-dump-cchr {font-style: italic}span.sf-dump-note {color:#D7AF00}span.sf-dump-ref {color:#444444}span.sf-dump-public {color:#008700}span.sf-dump-protected {color:#D75F00}span.sf-dump-private {color:#D70000}span.sf-dump-meta {color:#005FFF}</style><pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-num>123</span>\n</span></pre>\n",
               'name' => 'DumpDataCollectorTest.php',
               'file' => __FILE__,
               'line' => $line,

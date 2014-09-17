@@ -19,4 +19,5 @@ This bundle provides a better `dump()` function, that you can use instead of
 - full exposure of the internal mechanisms used for walking through an arbitrary
   PHP data structure.
 
-Calling `dump($myVvar)` works in all PHP code and `{% dump myVar %}` in Twig templates.
+Calling `dump($myVvar)` works in all PHP code and `{% dump myVar %}` or
+`{{ dump(myVar) }}` in Twig templates.

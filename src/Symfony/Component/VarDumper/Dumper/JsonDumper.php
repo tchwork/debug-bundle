@@ -282,7 +282,7 @@ class JsonDumper extends AbstractDumper
     {
         parent::dumpLine($depth);
 
-        if (false === $depth) {
+        if (-1 === $depth) {
             $this->refsPos = array();
             $this->refs = array();
             $this->position = 0;

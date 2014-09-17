@@ -13,6 +13,7 @@
     <services>
         <service id="twig.extension.dump" class="%twig.extension.dump.class%" public="false">
             <tag name="twig.extension" />
+            <argument type="service" id="var_dumper.cloner" />
         </service>
 
         <service id="data_collector.dump" class="%data_collector.dump.class%">

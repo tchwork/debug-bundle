@@ -87,14 +87,22 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
      */
     public function dump(Data $data, $lineDumper = null)
     {
-        $this->decimalPoint = (string) 0.5;
-        $this->decimalPoint = $this->decimalPoint[1];
-        $dumper = clone $this;
+        $exception = null;
         if ($lineDumper) {
-            $dumper->setLineDumper($lineDumper);
+            $prevLineDumper = $this->setLineDumper($lineDumper);
         }
-        $data->dump($dumper);
-        $dumper->dumpLine(false);
+        try {
+            $data->dump($this);
+            $this->dumpLine(-1);
+        } catch (\Exception $exception) {
+            // Re-thrown below
+        }
+        if ($lineDumper) {
+            $this->setLineDumper($prevLineDumper);
+        }
+        if (null !== $exception) {
+            throw $exception;
+        }
     }
 
     /**
@@ -116,7 +124,7 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInt
      */
     protected function echoLine($line, $depth)
     {
-        if (false !== $depth) {
+        if (-1 !== $depth) {
             fwrite($this->outputStream, str_repeat($this->indentPad, $depth).$line."\n");
         }
     }

@@ -89,7 +89,7 @@ class HtmlDumper extends CliDumper
 
         $p = 'sf-dump';
         $line = <<<EOHTML
-<!DOCTYPE html><style>
+<style>
 pre.sf-dump {
     background-color: #300a24;
     white-space: pre;
@@ -148,7 +148,6 @@ EOHTML;
      */
     protected function dumpLine($depth)
     {
-
         switch ($this->lastDepth - $depth) {
             case +1: $this->line = '</span>'.$this->line; break;
             case -1: $this->line = "<span class=sf-dump-$depth>$this->line"; break;
@@ -161,13 +160,11 @@ EOHTML;
             $this->line = $this->getDumpHeader().$this->line;
         }
 
-        if (false === $depth) {
-            $this->lastDepth = -1;
+        if (-1 === $depth) {
             $this->line .= $this->dumpSuffix;
             parent::dumpLine(0);
-        } else {
-            $this->lastDepth = $depth;
         }
+        $this->lastDepth = $depth;
 
         parent::dumpLine($depth);
     }

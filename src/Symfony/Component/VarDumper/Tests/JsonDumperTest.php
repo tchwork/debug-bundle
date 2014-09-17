@@ -34,7 +34,9 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
 
         $json = array();
         $dumper->dump($data, function ($line, $depth) use (&$json) {
-            $json[] = str_repeat('  ', $depth).$line;
+            if (-1 !== $depth) {
+                $json[] = str_repeat('  ', $depth).$line;
+            }
         });
         $json = implode("\n", $json);
         $closureLabel = PHP_VERSION_ID >= 50400 ? 'public method' : 'function';
@@ -110,8 +112,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
     "*:indentPad": "  "
   },
   "__refs": {"33":[-34],"3":[-35],"25":[36],"32":[-37,38],"41":[47]}
-}
-',
+}',
             $json
         );
     }
