@@ -3,7 +3,7 @@ JSON convention to dump any PHP variable with high accuracy
 ===========================================================
 
 Nicolas Grekas - nicolas.grekas, gmail.com  
-October 4, 2011 - Last updated on Aug. 24, 2014
+October 4, 2011 - Last updated on Sept. 18, 2014
 
 Introduction
 ============
@@ -25,7 +25,7 @@ variables in the middle of the page on which we work. However, this practice is
 not recommended because it can break the output of the application. In the case
 of simple HTML pages, it is usually fine, but as soon as pages become more
 complex, when PHP is used to generate other content types (JavaScript, PDF, ZIP,
-etc.), this way of debugging is no more appropriate.
+etc.), this way of debugging is no longer appropriate.
 
 If a human being is always the final reader, a powerful debug system therefore
 needs an intermediate representation to convey the state of a variable to the
@@ -44,7 +44,7 @@ Scalars gather integers, floats, special constants `true`, `false`, `null`,
 `NAN`, `INF`, `-INF` and strings.
 
 Strings in PHP are simple sequences of bytes that may contain binary data,
-although UTF-8 is used quite often those days for text.
+although UTF-8 is used quite often nowadays for text.
 
 Arrays
 ------
@@ -57,7 +57,7 @@ Objects
 -------
 
 Objects use the same ordered hash table structure as arrays with one exception:
-the name of an object property can not start with the NUL character ("\x00").
+the name of an object property can not start with the *NUL* character ("\x00").
 Each object also has a primary class and properties with a visibility, either
 public, protected or private.
 
@@ -68,14 +68,14 @@ details).
 Resources
 ---------
 
-Resources in PHP have a type, returned by `get_resource_type()`. Some resource
+Resources in PHP are typed, as exposed by `get_resource_type()`. Some resource
 types have internal properties that can be read with appropriate functions. For
 example, it is possible to get more information about resources of type `stream`
 by calling `stream_get_meta_data()`, and with `proc_get_status()` for the
 `process` type. Resources also have an internal identifier which is accessed by
-turning them into string.
-For example: `echo (string) opendir('.');` may display `Resource id #2`, where
-`2` is the internal identifier of the resource returned by `opendir()`.
+casting them to integer.
+For example: `echo (int) opendir('.');` may display `2`. This is the internal
+identifier of the resource returned by `opendir()`.
 
 Resources are therefore very similar to PHP objects: they are passed "by
 soft reference", have a type and properties.
@@ -99,8 +99,8 @@ Internal aliases can also be made at positions that do not necessarily led to
 recursion, such as in this code where $b[0] and $b[1] are bound by reference
 `$a = 123; $b = array(&$a, &$a)`.
 
-References used for the transmission of objects/resources allows the same
-object/resource to exist at many places in a nested structure.
+References used for the transmission of objects/resources allow the same
+object/resource to exist in many places within a nested structure.
 
 The desired representation must reflect the presence of these two types of
 references, otherwise it would be impossible to dump a recursive structure
@@ -144,7 +144,7 @@ Considering interoperability:
 * the output of `serialize` is intended to be read by `unserialize`, native to
   PHP and virtually unreadable to a human being
 * `json_encode` generates interoperable output, possibly human readable,
-  although encoded characters bother reading
+  although encoded characters make reading difficult
 
 In terms of speed and memory usage, all these functions are equivalent.
 
@@ -165,7 +165,7 @@ Thus, no native function combine the fundamental qualities we look for.
 Detailed JSON convention
 ========================
 
-For the criterion of clarity and especially interoperability, JSON seems most
+For the criteria of clarity and especially interoperability, JSON seems most
 appropriate.
 
 On its own, JSON is not enough to represent the range of types that PHP has.

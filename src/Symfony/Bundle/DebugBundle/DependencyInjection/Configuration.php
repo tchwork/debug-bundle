@@ -42,10 +42,11 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(-1)
                 ->end()
                 ->scalarNode('profiler_template')
-                    ->info('The template used for theming the debub panel in the profiler')
+                    ->info('The template used for theming the dump panel in the profiler')
                     ->defaultValue('@Debug/Profiler/Patchwork/dump.html.twig')
                 ->end()
-            ->end();
+            ->end()
+        ;
 
         return $treeBuilder;
     }

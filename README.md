@@ -2,7 +2,7 @@ High accuracy and flexible dumping for PHP variables
 ====================================================
 
 This package provides a better `dump()` function, that you can use instead of
-`var_dump()`, *better* being for:
+`var_dump()`, *better* meaning:
 
 - per object and resource types specialized view: e.g. filter out Doctrine noise
   while dumping a single proxy entity, or get more insight on opened files with
