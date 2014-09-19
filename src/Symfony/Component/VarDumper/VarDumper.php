@@ -36,7 +36,7 @@ class VarDumper
             };
         }
 
-        return call_user_func(self::$handler, ['debug() is deprecated, use dump() instead' => $var]);
+        return call_user_func(self::$handler, array('debug() is deprecated, use dump() instead' => $var));
     }
 
     public static function dump($var)
