@@ -1,6 +1,10 @@
 High accuracy and flexible dumping for PHP variables
 ====================================================
 
+[![Latest Stable Version](https://poser.pugx.org/patchwork/dumper/v/stable.png)](https://packagist.org/packages/patchwork/dumper)
+[![Total Downloads](https://poser.pugx.org/patchwork/dumper/downloads.png)](https://packagist.org/packages/patchwork/dumper)
+[![Build Status](https://secure.travis-ci.org/nicolas-grekas/Patchwork-Dumper.png?branch=master)](http://travis-ci.org/nicolas-grekas/Patchwork-Dumper)
+
 This package provides a better `dump()` function, that you can use instead of
 `var_dump()`, *better* meaning:
 
