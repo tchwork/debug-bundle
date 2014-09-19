@@ -12,13 +12,14 @@
 namespace Symfony\Component\VarDumper\Dumper;
 
 use Symfony\Component\VarDumper\Cloner\Data;
+use Symfony\Component\VarDumper\Cloner\DataDumperInterface;
 
 /**
  * Abstract mechanism for dumping a Data object.
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-abstract class AbstractDumper implements DataDumperInterface, DumperInternalsInterface
+abstract class AbstractDumper implements DataDumperInterface, DumperInterface
 {
     public static $defaultOutputStream = 'php://output';
 

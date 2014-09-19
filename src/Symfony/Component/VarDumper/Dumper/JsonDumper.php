@@ -12,6 +12,7 @@
 namespace Symfony\Component\VarDumper\Dumper;
 
 use Symfony\Component\VarDumper\Cloner\Data;
+use Symfony\Component\VarDumper\Cloner\Cursor;
 
 /**
  * JsonDumper implements the JSON convention to dump any PHP variable with high accuracy.

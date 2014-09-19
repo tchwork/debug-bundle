@@ -11,9 +11,6 @@
 
 namespace Symfony\Component\VarDumper\Cloner;
 
-use Symfony\Component\VarDumper\Dumper\DumperInternalsInterface;
-use Symfony\Component\VarDumper\Dumper\Cursor;
-
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
@@ -57,9 +54,9 @@ class Data
     }
 
     /**
-     * Dumps data with a DumperInternalsInterface dumper.
+     * Dumps data with a DataDumperInterface dumper.
      */
-    public function dump(DumperInternalsInterface $dumper)
+    public function dump(DataDumperInterface $dumper)
     {
         $refs = array(0);
         $this->dumpItem($dumper, new Cursor, $refs, $this->data[0][0]);
@@ -68,10 +65,10 @@ class Data
     /**
      * Breadth-first dumping of items.
      *
-     * @param DumperInternalsInterface $dumper The dumper being used for dumping.
-     * @param Cursor                   $cursor A cursor used for tracking dumper state position.
-     * @param array                    &$refs  A map of all references discovered while dumping.
-     * @param mixed                    $item   A Stub object or the original value being dumped.
+     * @param DataDumperInterface $dumper The dumper being used for dumping.
+     * @param Cursor              $cursor A cursor used for tracking dumper state position.
+     * @param array               &$refs  A map of all references discovered while dumping.
+     * @param mixed               $item   A Stub object or the original value being dumped.
      */
     private function dumpItem($dumper, $cursor, &$refs, $item)
     {
@@ -157,12 +154,12 @@ class Data
     /**
      * Dumps children of hash structures.
      *
-     * @param DumperInternalsInterface $dumper
-     * @param Cursor                   $parentCursor The cursor of the parent hash.
-     * @param array                    &$refs        A map of all references discovered while dumping.
-     * @param array                    $children     The children to dump.
-     * @param int                      $hashCut      The number of items removed from the original hash.
-     * @param string                   $hashType     A Cursor::HASH_* const.
+     * @param DataDumperInterface $dumper
+     * @param Cursor              $parentCursor The cursor of the parent hash.
+     * @param array               &$refs        A map of all references discovered while dumping.
+     * @param array               $children     The children to dump.
+     * @param int                 $hashCut      The number of items removed from the original hash.
+     * @param string              $hashType     A Cursor::HASH_* const.
      *
      * @return int The final number of removed items.
      */

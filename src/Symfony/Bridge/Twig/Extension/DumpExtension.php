@@ -16,7 +16,6 @@ use Symfony\Bridge\Twig\TokenParser\DebugTokenParser;
 use Symfony\Component\VarDumper\Cloner\ClonerInterface;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
-
 /**
  * Provides integration of the dump() function with Twig.
  *

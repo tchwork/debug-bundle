@@ -90,7 +90,7 @@ class DumpExtensionTest extends \PHPUnit_Framework_TestCase
                 array(),
                 array(123, 456),
                 "<pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-num>123</span>\n</span></pre>\n"
-                ."<pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-num>456</span>\n</span></pre>\n"
+                ."<pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-num>456</span>\n</span></pre>\n",
             ),
             array(
                 array('foo' => 'bar'),
@@ -98,7 +98,7 @@ class DumpExtensionTest extends \PHPUnit_Framework_TestCase
                 "<pre class=sf-dump><span class=sf-dump-0><span class=sf-dump-note>array:1</span> [\n"
                 ."  <span class=sf-dump-1>\"<span class=sf-dump-meta>foo</span>\" => \"<span class=sf-dump-str>bar</span>\"\n"
                 ."</span>]\n"
-                ."</span></pre>\n"
+                ."</span></pre>\n",
             ),
         );
     }
