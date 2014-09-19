@@ -27,6 +27,13 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $decPoint = $decPoint[1];
         $dumper = new JsonDumper();
         $cloner = new PhpCloner();
+        $cloner->addCasters(array(
+            ':stream' => function ($res, $a) {
+                unset($a['uri']);
+
+                return $a;
+            }
+        ));
         $var['dumper'] = $dumper;
         $data = $cloner->cloneVar($var);
 
@@ -57,7 +64,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "[]": [],
   "res": {"_":"14:resource:stream",
     "wrapper_type": "plainfile",
-    "stream_type": "dir",
+    "stream_type": "STDIO",
     "mode": "r",
     "unread_bytes": 0,
     "seekable": true,
@@ -102,7 +109,6 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
       "mode": "wb",
       "unread_bytes": 0,
       "seekable": false,
-      "uri": "php://output",
       "timed_out": false,
       "blocked": true,
       "eof": false,

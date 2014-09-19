@@ -26,6 +26,13 @@ class HtmlDumperTest extends \PHPUnit_Framework_TestCase
         $dumper = new HtmlDumper('php://output');
         $dumper->setColors(false);
         $cloner = new PhpCloner();
+        $cloner->addCasters(array(
+            ':stream' => function ($res, $a) {
+                unset($a['uri']);
+
+                return $a;
+            }
+        ));
         $data = $cloner->cloneVar($var);
 
         ob_start();
@@ -52,7 +59,7 @@ class HtmlDumperTest extends \PHPUnit_Framework_TestCase
   "<span class=sf-dump-meta>[]</span>" => []
   "<span class=sf-dump-meta>res</span>" => resource:<span class=sf-dump-note>stream</span> {
     <span class=sf-dump-2><span class=sf-dump-meta>wrapper_type</span>: "<span class=sf-dump-str>plainfile</span>"
-    <span class=sf-dump-meta>stream_type</span>: "<span class=sf-dump-str>dir</span>"
+    <span class=sf-dump-meta>stream_type</span>: "<span class=sf-dump-str>STDIO</span>"
     <span class=sf-dump-meta>mode</span>: "<span class=sf-dump-str>r</span>"
     <span class=sf-dump-meta>unread_bytes</span>: <span class=sf-dump-num>0</span>
     <span class=sf-dump-meta>seekable</span>: <span class=sf-dump-const>true</span>

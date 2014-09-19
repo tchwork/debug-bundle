@@ -12,9 +12,9 @@ if (!class_exists('Symfony\Component\VarDumper\Tests\Fixture\DumbFoo')) {
 $foo = new DumbFoo();
 $foo->bar = 'bar';
 
-$g = opendir('.');
-$h = opendir('.');
-closedir($h);
+$g = fopen(__FILE__, 'r');
+$h = fopen(__FILE__, 'r');
+fclose($h);
 
 $var = array(
     'number' => 1, null,
