@@ -54,21 +54,21 @@ class Data
     }
 
     /**
-     * Dumps data with a DataDumperInterface dumper.
+     * Dumps data with a DumperInterface dumper.
      */
-    public function dump(DataDumperInterface $dumper)
+    public function dump(DumperInterface $dumper)
     {
         $refs = array(0);
         $this->dumpItem($dumper, new Cursor, $refs, $this->data[0][0]);
     }
 
     /**
-     * Breadth-first dumping of items.
+     * Depth-first dumping of items.
      *
-     * @param DataDumperInterface $dumper The dumper being used for dumping.
-     * @param Cursor              $cursor A cursor used for tracking dumper state position.
-     * @param array               &$refs  A map of all references discovered while dumping.
-     * @param mixed               $item   A Stub object or the original value being dumped.
+     * @param DumperInterface $dumper The dumper being used for dumping.
+     * @param Cursor          $cursor A cursor used for tracking dumper state position.
+     * @param array           &$refs  A map of all references discovered while dumping.
+     * @param mixed           $item   A Stub object or the original value being dumped.
      */
     private function dumpItem($dumper, $cursor, &$refs, $item)
     {
@@ -154,12 +154,12 @@ class Data
     /**
      * Dumps children of hash structures.
      *
-     * @param DataDumperInterface $dumper
-     * @param Cursor              $parentCursor The cursor of the parent hash.
-     * @param array               &$refs        A map of all references discovered while dumping.
-     * @param array               $children     The children to dump.
-     * @param int                 $hashCut      The number of items removed from the original hash.
-     * @param string              $hashType     A Cursor::HASH_* const.
+     * @param DumperInterface $dumper
+     * @param Cursor          $parentCursor The cursor of the parent hash.
+     * @param array           &$refs        A map of all references discovered while dumping.
+     * @param array           $children     The children to dump.
+     * @param int             $hashCut      The number of items removed from the original hash.
+     * @param string          $hashType     A Cursor::HASH_* const.
      *
      * @return int The final number of removed items.
      */

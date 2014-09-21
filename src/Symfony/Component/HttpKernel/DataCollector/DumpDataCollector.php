@@ -18,12 +18,12 @@ use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarDumper\Dumper\JsonDumper;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
-use Symfony\Component\VarDumper\Dumper\DumperInterface;
+use Symfony\Component\VarDumper\Dumper\DataDumperInterface;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class DumpDataCollector extends DataCollector implements DumperInterface
+class DumpDataCollector extends DataCollector implements DataDumperInterface
 {
     private $stopwatch;
     private $dataCount = 0;

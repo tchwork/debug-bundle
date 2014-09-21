@@ -12,7 +12,7 @@
 namespace Symfony\Component\VarDumper\Dumper;
 
 use Symfony\Component\VarDumper\Cloner\Data;
-use Symfony\Component\VarDumper\Cloner\DataDumperInterface;
+use Symfony\Component\VarDumper\Cloner\DumperInterface;
 
 /**
  * Abstract mechanism for dumping a Data object.

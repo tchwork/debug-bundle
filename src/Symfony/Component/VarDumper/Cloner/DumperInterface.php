@@ -16,7 +16,7 @@ namespace Symfony\Component\VarDumper\Cloner;
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-interface DataDumperInterface
+interface DumperInterface
 {
     /**
      * Dumps a scalar value.
