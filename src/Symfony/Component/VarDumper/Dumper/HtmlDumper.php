@@ -138,6 +138,10 @@ EOHTML;
                     $val = str_replace($c, "<span class=sf-dump-cchr>$r</span>", $val);
                 }
             }
+        } elseif ('note' === $style) {
+            if (false !== $c = strrpos($val, '\\')) {
+                $val = sprintf('<abbr title="%s">%s</abbr>', $val, substr($val, $c+1));
+            }
         }
 
         return "<span class=sf-dump-$style>$val</span>";
