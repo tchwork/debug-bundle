@@ -10,16 +10,19 @@
         {% endset %}
 
         {% set text %}
-            <div class="sf-toolbar-info-piece">
-                <b>dump()</b>
+            <div style="width: 450px; overflow: hidden;">
+                <div class="sf-toolbar-info-piece">
+                    <b>dump()</b>
+                </div>
+                {% for dump in collector.getDumps('html') %}
+                <div class="sf-toolbar-info-piece">
+                    in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
+                    line {{ dump.line }}:
+                    {{ dump.data|raw }}
+                </div>
+                {% endfor %}
+                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" onload="var h = this.parentNode.innerHTML, rx=/<script>(.*?)<\/script>/g, s; while (s = rx.exec(h)) {eval(s[1]);};" />
             </div>
-            {% for dump in collector.getDumps('html', 1, 3) %}
-            <div class="sf-toolbar-info-piece">
-                in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
-                line {{ dump.line }}:
-                {{ dump.data|raw }}
-            </div>
-            {% endfor %}
         {% endset %}
 
         {% include '@WebProfiler/Profiler/toolbar_item.html.twig' with { 'link': true } %}
@@ -44,18 +47,26 @@
     <h2>dump()</h2>
 
     <style>
-        {% include '@Debug/Profiler/Base/dump.css.twig' %}
+        li.sf-dump {
+            list-style-type: disc;
+        }
+        .sf-dump ol>li {
+            padding: 0;
+        }
+        .sf-dump a {
+            cursor: pointer;
+        }
+        .sf-dump-compact {
+            display: none;
+        }
     </style>
-    <script>
-        {% include '@Debug/Profiler/Base/dump.js.twig' %}
-    </script>
 
-    <ul id="sf-dump" class="alt">
+    <ul class="alt">
         {% for dump in collector.getDumps('html') %}
         <li class="sf-dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
-            <a onclick="Sfjs.dump.toggle(this)"> ⊞ </a><span class="sf-dump-key"></span>
+            <a onclick="Sfjs.dump.toggle(this)">▶</a>
             <span class="sf-dump-compact">
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>

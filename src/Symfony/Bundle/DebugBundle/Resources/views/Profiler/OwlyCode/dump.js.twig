@@ -1,9 +1,19 @@
-{% include '@Debug/Profiler/Base/dump.js.twig' %}
-
 (function (dump, document) {
     "use strict";
 
     dump.maxStringSize = 128;
+
+    dump.toggle = function(a) {
+        var s = a.nextElementSibling.nextElementSibling;
+
+        if ('sf-dump-compact' == s.className) {
+            a.innerHTML = ' ▼ ';
+            s.className = 'sf-dump-expanded';
+        } else {
+            a.innerHTML = ' ▶ ';
+            s.className = 'sf-dump-compact';
+        }
+    }
 
     dump.BuildMetaData = function (parser, offset) {
         this.offset = offset;
@@ -633,7 +643,7 @@
                 var link = document.createElement('a');
                 var content = document.createElement('span');
                 content.appendChild(__self.render(entity, 'short'));
-                link.innerHTML = ' ⊞ ';
+                link.innerHTML = ' ▶ ';
                 link.style.cursor = 'pointer';
                 var count = typeof entity.count == 'function' ? entity.count() : 0;
                 var elementLabel = entity instanceof dump.PhpArray ? 'element' : 'attribute';
@@ -652,11 +662,11 @@
                     e.preventDefault();
                     link.opened = typeof(link.opened) == 'undefined' ? false : !link.opened;
                     if (link.opened) {
-                        link.innerHTML = ' ⊞ ';
+                        link.innerHTML = ' ▶ ';
                         entity.expanded = false;
                         content = __self.render(entity, 'short');
                     } else {
-                        link.innerHTML = ' ⊟ ';
+                        link.innerHTML = ' ▼ ';
                         entity.expanded = true;
                         content = __self.render(entity, 'full');
                     }

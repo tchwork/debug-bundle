@@ -16,7 +16,7 @@
         <li class="sf-dump sf-reset">
             in {% if dump.file %}<abbr title="{{ dump.file }}">{{ dump.name }}</abbr>{% else %}{{ dump.name }}{% endif %}
             line {{ dump.line }}:
-            <a onclick="Sfjs.dump.toggle(this)"> ⊞ </a><span class="sf-dump-key"></span>
+            <a onclick="Sfjs.dump.toggle(this)"> ▶ </a><span class="sf-dump-key"></span>
             <span class="sf-dump-compact">
             {% if dump.fileExcerpt %}{{ dump.fileExcerpt|raw }}{% else %}{{ dump.file|file_excerpt(dump.line) }}{% endif %}
             </span>

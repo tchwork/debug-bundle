@@ -1,7 +1,17 @@
-{% include '@Debug/Profiler/Base/dump.js.twig' %}
-
 (function (dump, document) {
     "use strict";
+
+    dump.toggle = function(a) {
+        var s = a.nextElementSibling.nextElementSibling;
+
+        if ('sf-dump-compact' == s.className) {
+            a.innerHTML = ' ▼ ';
+            s.className = 'sf-dump-expanded';
+        } else {
+            a.innerHTML = ' ▶ ';
+            s.className = 'sf-dump-compact';
+        }
+    }
 
     dump.htmlize = function (data, refs, filter) {
         var iRefs = {},
@@ -107,7 +117,7 @@
             case 'object' === typeof data:
 
                 if (1 === depth) {
-                    buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ⊟ </a><span class="sf-dump-key"></span>');
+                    buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ▼ </a><span class="sf-dump-key"></span>');
                     buffer.push('<span class="sf-dump-expanded">');
                 }
 
@@ -187,7 +197,7 @@
                     }
 
                     if ('object' === typeof data[i] && null !== data[i] && 'compact' === b[2]) {
-                        buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ⊞ </a>');
+                        buffer.push('<a onclick="Sfjs.dump.toggle(this)"> ▶ </a>');
                     }
 
                     t[0] = counter;
