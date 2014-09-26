@@ -45,7 +45,8 @@ class Configuration implements ConfigurationInterface
                     ->info('The template used for theming the dump panel in the profiler')
                     ->defaultValue('@Debug/Profiler/Patchwork/dump.html.twig')
                 ->end()
-            ->end();
+            ->end()
+        ;
 
         return $treeBuilder;
     }
