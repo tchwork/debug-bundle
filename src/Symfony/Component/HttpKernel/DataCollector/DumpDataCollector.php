@@ -76,7 +76,7 @@ class DumpDataCollector extends DataCollector implements DataDumperInterface
 
         for ($i = 1; $i < 7; ++$i) {
             if (isset($trace[$i]['class'], $trace[$i]['function'])
-                && ('dump' === $trace[$i]['function'] || 'debug' === $trace[$i]['function'])
+                && 'dump' === $trace[$i]['function']
                 && 'Symfony\Component\VarDumper\VarDumper' === $trace[$i]['class']
             ) {
                 $file = $trace[$i]['file'];

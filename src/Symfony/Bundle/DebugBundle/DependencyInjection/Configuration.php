@@ -41,10 +41,6 @@ class Configuration implements ConfigurationInterface
                     ->min(-1)
                     ->defaultValue(-1)
                 ->end()
-                ->scalarNode('profiler_template')
-                    ->info('The template used for theming the dump panel in the profiler')
-                    ->defaultValue('@Debug/Profiler/Patchwork/dump.html.twig')
-                ->end()
             ->end()
         ;
 

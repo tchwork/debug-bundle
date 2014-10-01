@@ -32,7 +32,7 @@ command to install it:
 
     {
         "require": {
-            "patchwork/dumper": "~1.2"
+            "patchwork/dumper": "~1.3"
         }
     }
 

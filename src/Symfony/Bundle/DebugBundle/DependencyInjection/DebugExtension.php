@@ -42,13 +42,5 @@ class DebugExtension extends Extension
         $container->getDefinition('var_dumper.cloner')
             ->addMethodCall('setMaxItems',  array($config['max_items']))
             ->addMethodCall('setMaxString', array($config['max_string_length']));
-
-        $collectorDef = $container->getDefinition('data_collector.dump');
-        $collectorTags = $collectorDef->getTag('data_collector');
-        $collectorDef->clearTag('data_collector');
-        if ($config['profiler_template']) {
-            $collectorTags[0]['template'] = $config['profiler_template'];
-            $collectorDef->addTag('data_collector', $collectorTags[0]);
-        }
     }
 }

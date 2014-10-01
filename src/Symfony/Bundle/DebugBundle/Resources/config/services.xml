@@ -17,7 +17,7 @@
         </service>
 
         <service id="data_collector.dump" class="%data_collector.dump.class%">
-            <tag name="data_collector" id="dump" />
+            <tag name="data_collector" id="dump" template="@Debug/Profiler/Base/dump.html.twig" />
             <argument type="service" id="debug.stopwatch" on-invalid="ignore" />
             <argument>%templating.helper.code.file_link_format%</argument>
         </service>

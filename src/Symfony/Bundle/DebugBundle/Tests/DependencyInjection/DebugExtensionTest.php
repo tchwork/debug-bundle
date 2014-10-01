@@ -27,23 +27,9 @@ class DebugExtensionTest extends \PHPUnit_Framework_TestCase
         $expectedTags = array(
             array(
                 "id" => "dump",
-                "template" => "@Debug/Profiler/Patchwork/dump.html.twig",
+                "template" => "@Debug/Profiler/Base/dump.html.twig",
             ),
         );
-
-        $this->assertSame($expectedTags, $container->getDefinition('data_collector.dump')->getTag('data_collector'));
-    }
-
-    public function testLoadNoProfilerConfiguration()
-    {
-        $container = $this->createContainer();
-        $container->registerExtension(new DebugExtension());
-        $container->loadFromExtension('debug', array(
-            'profiler_template' => '',
-        ));
-        $this->compileContainer($container);
-
-        $expectedTags = array();
 
         $this->assertSame($expectedTags, $container->getDefinition('data_collector.dump')->getTag('data_collector'));
     }
