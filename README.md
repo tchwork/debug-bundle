@@ -47,7 +47,7 @@ Symfony2 bundle
 For Symfony2 users, a bundle is also available. The bundle creates a `dump()`
 function that is available both in your PHP code and in your Twig templates.
 
-In console mode, variables are dumped on *stderr*. In web mode, variables are
+In console mode, variables are dumped on *stdout*. In web mode, variables are
 dumped in a new `dump()` tab in the debug toolbar.
 
 Enabling only needs a line in your `app/AppKernel.php`:

@@ -16,7 +16,8 @@
         "symfony/config": "~2.3",
         "symfony/dependency-injection": "~2.2",
         "symfony/event-dispatcher": "~2.3",
-        "symfony/http-kernel": "~2.3"
+        "symfony/http-kernel": "~2.3",
+        "symfony/var-dumper": "~2.6@dev"
     },
     "require-dev": {
         "twig/twig": "~1.12"
