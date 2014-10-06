@@ -32,18 +32,19 @@ class DumpDataCollectorTest extends \PHPUnit_Framework_TestCase
         $collector->dump($data); $line = __LINE__;
         $this->assertSame(1, $collector->getDumpsCount());
 
-        $xDump = array(
-            array(
-              'data' => "<pre id=sf-dump><span class=sf-dump-0><span class=sf-dump-num>123</span>\n</span></pre><script>Sfjs.dump.instrument()</script>\n",
-              'name' => 'DumpDataCollectorTest.php',
-              'file' => __FILE__,
-              'line' => $line,
-              'fileExcerpt' => false,
-            ),
-        );
         $dump = $collector->getDumps('html');
         $this->assertTrue(isset($dump[0]['data']));
         $dump[0]['data'] = preg_replace('/^.*?<pre/', '<pre', $dump[0]['data']);
+
+        $xDump = array(
+            array(
+                'data' => "<pre class=sf-dump><span class=sf-dump-num>123</span>\n</pre><script>Sfdump.instrument()</script>\n",
+                'name' => 'DumpDataCollectorTest.php',
+                'file' => __FILE__,
+                'line' => $line,
+                'fileExcerpt' => false,
+            ),
+        );
         $this->assertSame($xDump, $dump);
 
         $this->assertStringStartsWith(

@@ -11,7 +11,7 @@
 
 namespace Symfony\Component\VarDumper\Tests;
 
-use Symfony\Component\VarDumper\Cloner\PhpCloner;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\JsonDumper;
 
 /**
@@ -26,7 +26,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
         $decPoint = (string) 0.5;
         $decPoint = $decPoint[1];
         $dumper = new JsonDumper();
-        $cloner = new PhpCloner();
+        $cloner = new VarCloner();
         $cloner->addCasters(array(
             ':stream' => function ($res, $a) {
                 unset($a['uri']);
