@@ -192,7 +192,10 @@ class JsonDumper extends AbstractDumper
      */
     protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
     {
-        if (false !== $cursor->softRefTo || false !== $cursor->hardRefTo) {
+        if ($cursor->hardRefTo && $cursor->hardRefTo !== $cursor->refIndex) {
+            return;
+        }
+        if ($cursor->softRefTo && $cursor->softRefTo !== $cursor->refIndex) {
             return;
         }
         if (!$hasChild && $cut) {
@@ -256,19 +259,20 @@ class JsonDumper extends AbstractDumper
 
             $this->line .= $this->encodeString($key).': ';
         }
-        if (false !== $cursor->refIndex) {
+        if ($cursor->refIndex) {
             $this->refsPos[$cursor->refIndex] = $this->position;
         }
-        if (false !== $cursor->hardRefTo) {
+        $ref = false;
+        if ($cursor->hardRefTo && $cursor->hardRefTo !== $cursor->refIndex) {
             $ref = $this->refsPos[$cursor->hardRefTo];
             $this->refs[$ref][] = -$this->position;
             $ref = 'R`'.$this->position.':'.$ref;
-        } elseif (false !== $cursor->softRefTo) {
+        } elseif ($cursor->softRefTo && $cursor->softRefTo !== $cursor->refIndex) {
             $ref = $this->refsPos[$cursor->softRefTo];
             $this->refs[$ref][] = $this->position;
             $ref = 'r`'.$this->position.':'.$ref;
         }
-        if (false !== $cursor->softRefTo || false !== $cursor->hardRefTo) {
+        if (false !== $ref) {
             $this->line .= $this->encodeString($ref);
             $this->endLine($cursor);
 

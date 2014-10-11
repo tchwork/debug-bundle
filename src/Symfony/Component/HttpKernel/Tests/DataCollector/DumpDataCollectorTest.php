@@ -38,7 +38,7 @@ class DumpDataCollectorTest extends \PHPUnit_Framework_TestCase
 
         $xDump = array(
             array(
-                'data' => "<pre class=sf-dump><span class=sf-dump-num>123</span>\n</pre><script>Sfdump.instrument()</script>\n",
+                'data' => "<pre class=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>123</span>\n</pre><script>Sfdump()</script>\n",
                 'name' => 'DumpDataCollectorTest.php',
                 'file' => __FILE__,
                 'line' => $line,
