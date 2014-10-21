@@ -86,20 +86,20 @@ class DumpExtensionTest extends \PHPUnit_Framework_TestCase
     {
         return array(
             array(array(), array(), '', false),
-            array(array(), array(), "<pre class=sf-dump data-indent-pad=\"  \">[]\n</pre><script>Sfdump()</script>\n"),
+            array(array(), array(), "<pre class=sf-dump id=sf-dump data-indent-pad=\"  \">[]\n</pre><script>Sfdump(\"sf-dump\")</script>\n"),
             array(
                 array(),
                 array(123, 456),
-                "<pre class=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>123</span>\n</pre><script>Sfdump()</script>\n"
-                ."<pre class=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>456</span>\n</pre><script>Sfdump()</script>\n",
+                "<pre class=sf-dump id=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>123</span>\n</pre><script>Sfdump(\"sf-dump\")</script>\n"
+                ."<pre class=sf-dump id=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>456</span>\n</pre><script>Sfdump(\"sf-dump\")</script>\n",
             ),
             array(
                 array('foo' => 'bar'),
                 array(),
-                "<pre class=sf-dump data-indent-pad=\"  \"><span class=sf-dump-note>array:1</span> [<span name=sf-dump-child>\n"
-                ."  \"<span class=sf-dump-meta>foo</span>\" => \"<span class=sf-dump-str>bar</span>\"\n"
-                ."</span>]\n"
-                ."</pre><script>Sfdump()</script>\n",
+                "<pre class=sf-dump id=sf-dump data-indent-pad=\"  \"><span class=sf-dump-note>array:1</span> [<samp>\n"
+                ."  \"<span class=sf-dump-meta>foo</span>\" => \"<span class=sf-dump-str title=\"3 characters\">bar</span>\"\n"
+                ."</samp>]\n"
+                ."</pre><script>Sfdump(\"sf-dump\")</script>\n",
             ),
         );
     }

@@ -39,10 +39,6 @@ class JsonDumper extends AbstractDumper
      */
     public function dumpScalar(Cursor $cursor, $type, $val)
     {
-        if ('string' === $type) {
-            return $this->dumpString($cursor, $val, false, 0);
-        }
-
         if ($this->dumpKey($cursor)) {
             return;
         }
@@ -65,10 +61,10 @@ class JsonDumper extends AbstractDumper
                     $this->line .= json_encode($val);
                     break;
                 }
-                // No break;
-            default:
-            case 'const':
                 $this->line .= '"n`'.$val.'"';
+                break;
+            default:
+                $this->line .= '"n`'.$type.'"';
                 break;
         }
 
@@ -100,72 +96,27 @@ class JsonDumper extends AbstractDumper
     /**
      * {@inheritdoc}
      */
-    public function enterArray(Cursor $cursor, $count, $indexed, $hasChild)
+    public function enterHash(Cursor $cursor, $type, $class, $hasChild)
     {
-        if ($indexed && $cursor->depth) {
-            if ($this->dumpKey($cursor)) {
-                return;
-            }
+        if ($this->dumpKey($cursor)) {
+            return;
+        }
+
+        if (Cursor::HASH_INDEXED === $type && $cursor->depth) {
             $this->line .= '[';
             if ($hasChild) {
                 $this->dumpLine($cursor->depth);
             }
-        } else {
-            $this->enterHash($cursor, 'array:'.$count, $hasChild);
-        }
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveArray(Cursor $cursor, $count, $indexed, $hasChild, $cut)
-    {
-        $this->leaveHash($cursor, $indexed && $cursor->depth ? ']' : '}', $hasChild, $cut);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function enterObject(Cursor $cursor, $class, $hasChild)
-    {
-        $this->enterHash($cursor, $class, $hasChild);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveObject(Cursor $cursor, $class, $hasChild, $cut)
-    {
-        $this->leaveHash($cursor, '}', $hasChild, $cut);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function enterResource(Cursor $cursor, $res, $hasChild)
-    {
-        $this->enterHash($cursor, 'resource:'.$res, $hasChild);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveResource(Cursor $cursor, $res, $hasChild, $cut)
-    {
-        $this->leaveHash($cursor, '}', $hasChild, $cut);
-    }
-
-    /**
-     * Generic dumper used while entering any hash-style structure.
-     *
-     * @param Cursor $cursor   The Cursor position in the dump.
-     * @param string $type     The type of the hash structure.
-     * @param bool   $hasChild When the dump of the hash has child item.
-     */
-    protected function enterHash(Cursor $cursor, $type, $hasChild)
-    {
-        if ($this->dumpKey($cursor)) {
             return;
+        }
+
+        if (Cursor::HASH_OBJECT === $type) {
+            $type = $class;
+        } elseif (Cursor::HASH_RESOURCE === $type) {
+            $type = 'resource:'.$class;
+        } else {
+            $type = 'array:'.$class;
         }
 
         $this->line .= '{"_":';
@@ -183,14 +134,9 @@ class JsonDumper extends AbstractDumper
     }
 
     /**
-     * Generic dumper used while leaving any hash-style structure.
-     *
-     * @param Cursor $cursor   The Cursor position in the dump.
-     * @param string $suffix   The string that ends the next dumped line.
-     * @param bool   $hasChild When the dump of the hash has child item.
-     * @param int    $cut      The number of items the hash has been cut by.
+     * {@inheritdoc}
      */
-    protected function leaveHash(Cursor $cursor, $suffix, $hasChild, $cut)
+    public function leaveHash(Cursor $cursor, $type, $class, $hasChild, $cut)
     {
         if ($cursor->hardRefTo && $cursor->hardRefTo !== $cursor->refIndex) {
             return;
@@ -201,7 +147,7 @@ class JsonDumper extends AbstractDumper
         if (!$hasChild && $cut) {
             $this->line .= ',"__cutBy": '.$cut;
         }
-        $this->line .= $suffix;
+        $this->line .= Cursor::HASH_INDEXED === $type && $cursor->depth ? ']' : '}';
         $this->endLine($cursor);
     }
 
@@ -244,16 +190,15 @@ class JsonDumper extends AbstractDumper
             if (is_int($key)) {
                 $key = 'n`'.$key;
             } else {
-                if (!preg_match('//u', $key)) {
-                    $key = 'b`'.Data::utf8Encode($key);
-                } elseif (false !== strpos($key, '`')) {
-                    $key = 'u`'.$key;
-                }
-
                 if (isset($key[0]) && "\0" === $key[0] && $cursor::HASH_ASSOC !== $cursor->hashType) {
                     $key = implode(':', explode("\0", substr($key, 1), 2));
                 } elseif (isset(static::$reserved[$key]) || false !== strpos($key, ':')) {
                     $key = ':'.$key;
+                }
+                if ($cursor->hashKeyIsBinary) {
+                    $key = 'b`'.$key;
+                } elseif (false !== strpos($key, '`')) {
+                    $key = 'u`'.$key;
                 }
             }
 

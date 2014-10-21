@@ -35,10 +35,11 @@ class DumpDataCollectorTest extends \PHPUnit_Framework_TestCase
         $dump = $collector->getDumps('html');
         $this->assertTrue(isset($dump[0]['data']));
         $dump[0]['data'] = preg_replace('/^.*?<pre/', '<pre', $dump[0]['data']);
+        $dump[0]['data'] = preg_replace('/sf-dump-\d+/', 'sf-dump', $dump[0]['data']);
 
         $xDump = array(
             array(
-                'data' => "<pre class=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>123</span>\n</pre><script>Sfdump()</script>\n",
+                'data' => "<pre class=sf-dump id=sf-dump data-indent-pad=\"  \"><span class=sf-dump-num>123</span>\n</pre><script>Sfdump(\"sf-dump\")</script>\n",
                 'name' => 'DumpDataCollectorTest.php',
                 'file' => __FILE__,
                 'line' => $line,
@@ -48,7 +49,7 @@ class DumpDataCollectorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($xDump, $dump);
 
         $this->assertStringStartsWith(
-            'a:1:{i:0;a:5:{s:4:"data";O:39:"Symfony\Component\VarDumper\Cloner\Data":3:{s:45:"Symfony\Component\VarDumper\Cloner\Datadata";a:1:{i:0;a:1:{i:0;i:123;}}s:49:"Symfony\Component\VarDumper\Cloner\DatamaxDepth";i:-1;s:57:"Symfony\Component\VarDumper\Cloner\DatamaxItemsPerDepth";i:-1;}s:4:"name";s:25:"DumpDataCollectorTest.php";s:4:"file";s:',
+            'a:1:{i:0;a:5:{s:4:"data";O:39:"Symfony\Component\VarDumper\Cloner\Data":4:{s:45:"Symfony\Component\VarDumper\Cloner\Datadata";a:1:{i:0;a:1:{i:0;i:123;}}s:49:"Symfony\Component\VarDumper\Cloner\DatamaxDepth";i:-1;s:57:"Symfony\Component\VarDumper\Cloner\DatamaxItemsPerDepth";i:-1;s:54:"Symfony\Component\VarDumper\Cloner\DatauseRefHandles";i:-1;}s:4:"name";s:25:"DumpDataCollectorTest.php";s:4:"file";s:',
             str_replace("\0", '', $collector->serialize())
         );
 
