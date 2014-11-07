@@ -60,7 +60,7 @@ class JsonDumperTest extends \PHPUnit_Framework_TestCase
   "n`5": "n`-INF",
   "n`6": "n`'.PHP_INT_MAX.'",
   "str": "déjà",
-  "n`7": "b`é",
+  "n`7": "b`é\u0000",
   "[]": [],
   "res": {"_":"14:resource:stream",
     "wrapper_type": "plainfile",
