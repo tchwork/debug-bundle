@@ -22,6 +22,9 @@
     "require-dev": {
         "twig/twig": "~1.12"
     },
+    "conflict": {
+        "symfony/debug-bundle": ">=2.6"
+    },
     "autoload": {
         "psr-0": {
             "Symfony\\Bundle\\DebugBundle\\": "src",
